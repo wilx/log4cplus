@@ -97,11 +97,10 @@ struct is_same<T, T>
 { };
 
 
-struct string_param
+class string_param
 {
+public:
     typedef std::numeric_limits<std::size_t> size_t_limits;
-    typedef std::char_traits<char> traits;
-    typedef std::char_traits<wchar_t> wtraits;
 
 
     string_param ()
@@ -191,6 +190,89 @@ struct string_param
     }
 
 
+    std::size_t
+    get_size () const
+    {
+        assert (type & Defined);
+
+        if (value.size == (size_t_limits::max) ())
+            get_size_worker ();
+
+        return value.size;
+    }
+
+
+    char const *
+    c_str () const
+    {
+        assert (! is_wide ());
+        if (is_wide ())
+            throw std::runtime_error ("Calling c_str() on wchar_t parameter.");
+
+        if (is_string ())
+            return value.string.ptr->c_str ();
+        else
+            return value.array.ptr;
+    }
+
+
+    wchar_t const *
+    c_wstr () const
+    {
+        assert (is_wide ());
+        if (! is_wide ())
+            throw std::runtime_error ("Calling c_wstr() on char parameter.");
+
+        if (is_string ())
+            return value.wstring.ptr->c_str ();
+        else
+            return value.warray.ptr;
+    }
+
+
+    bool
+    is_wide () const
+    {
+        assert (type & Defined);
+        return (type & CharTypeMask) == CharTypeMask;
+    }
+
+
+    bool
+    is_string () const
+    {
+        assert (type & Defined);
+        return (type & StringMask) == StringMask;
+    }
+
+
+    template <typename Visitor>
+    void
+    visit (Visitor const & visitor) const
+    {
+        if (is_string ())
+            visit_string (visitor);
+        else
+            visit_char_array (visitor);
+    }
+
+
+    void
+    swap (string_param & other) throw ()
+    {
+        std::swap (type, other.type);
+        std::swap (value, other.value);
+    }
+
+private:
+    typedef std::char_traits<char> traits;
+    typedef std::char_traits<wchar_t> wtraits;
+
+
+    string_param (string_param const &);
+    string_param & operator = (string_param const &);
+
+
     void 
     delete_wchar_array () const
     {
@@ -257,18 +339,6 @@ struct string_param
     }
 
 
-    std::size_t
-    get_size () const
-    {
-        assert (type & Defined);
-
-        if (value.size == (size_t_limits::max) ())
-            get_size_worker ();
-
-        return value.size;
-    }
-
-
     static std::size_t (string_param:: * const size_func[4]) () const;
 
 
@@ -276,50 +346,6 @@ struct string_param
     get_size_worker () const
     {
         value.size = (this->*size_func[type >> CharTypeBit & 3]) ();
-    }
-
-
-    char const *
-    c_str () const
-    {
-        assert (! is_wide ());
-        if (is_wide ())
-            throw std::runtime_error ("Calling c_str() on wchar_t parameter.");
-
-        if (is_string ())
-            return value.string.ptr->c_str ();
-        else
-            return value.array.ptr;
-    }
-
-
-    wchar_t const *
-    c_wstr () const
-    {
-        assert (is_wide ());
-        if (! is_wide ())
-            throw std::runtime_error ("Calling c_wstr() on char parameter.");
-
-        if (is_string ())
-            return value.wstring.ptr->c_str ();
-        else
-            return value.warray.ptr;
-    }
-
-
-    bool
-    is_wide () const
-    {
-        assert (type & Defined);
-        return (type & CharTypeMask) == CharTypeMask;
-    }
-
-
-    bool
-    is_string () const
-    {
-        assert (type & Defined);
-        return (type & StringMask) == StringMask;
     }
 
 
@@ -343,29 +369,6 @@ struct string_param
         else
             visitor (*value.string.ptr, get_size ());
     }
-
-
-    template <typename Visitor>
-    void
-    visit (Visitor const & visitor) const
-    {
-        if (is_string ())
-            visit_string (visitor);
-        else
-            visit_char_array (visitor);
-    }
-
-
-    void
-    swap (string_param & other) throw ()
-    {
-        std::swap (type, other.type);
-        std::swap (value, other.value);
-    }
-
-private:
-    string_param (string_param const &);
-    string_param & operator = (string_param const &);
 
 
     enum Flags
