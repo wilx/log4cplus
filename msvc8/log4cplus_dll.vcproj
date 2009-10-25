@@ -1615,6 +1615,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\stringparam.cxx"
+				>
+			</File>
+			<File
+				RelativePath="..\include\log4cplus\helpers\stringparam.hxx"
+				>
+			</File>
+			<File
 				RelativePath="..\include\log4cplus\helpers\syncprims-pthreads.h"
 				>
 				<FileConfiguration
