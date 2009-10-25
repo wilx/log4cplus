@@ -29,19 +29,15 @@
 namespace log4cplus { namespace helpers {
 
 
-std::size_t (string_param:: * const string_param::size_func[4]) () const = {
+std::size_t (string_param:: * const string_param::size_func[2]) () const = {
     &string_param::get_size_char_array,
     &string_param::get_size_wchar_array,
-    &string_param::get_size_string,
-    &string_param::get_size_wstring
 };
 
 
-void (string_param:: * const string_param::delete_func[4]) () const  = {
+void (string_param:: * const string_param::delete_func[2]) () const  = {
     &string_param::delete_char_array,
     &string_param::delete_wchar_array,
-    &string_param::delete_string,
-    &string_param::delete_wstring
 };
 
 
@@ -56,19 +52,6 @@ struct visitor
     {
         std::wcout << str << std::endl;
     }
-
-
-    void operator () (std::wstring const & str, std::size_t) const
-    {
-        std::wcout << str << std::endl;
-    }
-
-
-    void operator () (std::string const & str, std::size_t) const
-    {
-        std::cout << str << std::endl;
-    }
-
 };
 
 

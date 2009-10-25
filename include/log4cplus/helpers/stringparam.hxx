@@ -27,29 +27,7 @@
 #include <cstring>
 #include <cwchar>
 #include <cassert>
-
 #include <log4cplus/config.hxx>
-
-
-#undef BARK
-#if 0
-#if defined (__GNUC__)
-#define FUNC() __PRETTY_FUNCTION__
-
-#else
-#define FUNC() __FUNCTION__
-
-#endif
-
-#define BARK() do { \
-    std::cout << FUNC() << ":" \
-    << std::dec << __LINE__ << std::endl;\
- } while (0)
-
-#else
-#define BARK() do { } while (0)
-
-#endif
 
 
 namespace log4cplus { namespace helpers {
@@ -111,78 +89,41 @@ public:
     template <typename T>
     string_param (T const & param,
         typename enable_if_c<is_same<char const *, T>::value
-            || is_same<char *, T>::value, std::size_t>::type strsize
+            || is_same<char *, T>::value
+            || is_same<wchar_t const *, T>::value
+            || is_same<wchar_t *, T>::value,
+            std::size_t>::type strsize
             = (size_t_limits::max) ())
-        : type (CharArray | Defined)
+        : type (param_traits<T>::type_value | Defined)
     {
-        BARK();
-
-        value.array.size = strsize;
-        value.array.ptr = param;
+        value.unspec.size = strsize;
+        value.unspec.ptr = param;
     }
 
 
-    template <std::size_t N>
-    string_param (char const (& param)[N])
-        : type (CharArray | Defined)
+    template <std::size_t N, typename T>
+    string_param (T const (& param)[N],
+        typename enable_if_c<is_same<char, T>::value
+            || is_same<wchar_t, T>::value,
+            std::size_t>::type * = 0)
+        : type (param_traits<T>::type_value | Defined)
     {
-        BARK();
-
-        value.array.size = N - 1;
-        value.array.ptr = &param[0];
-    }
-
-
-    template <typename T>
-    string_param (T const & str,
-       typename enable_if<is_same<std::string, T>, T *>::type = 0)
-        : type (String | Defined)
-    {
-        BARK();
-
-        value.string.size = (size_t_limits::max) ();
-        value.string.ptr = &str;
-    }
-
-    ///////////////////////////////////////////////////////////
-    template <typename T>
-    string_param (T const & param,
-        typename enable_if_c<is_same<wchar_t const *, T>::value
-            || is_same<wchar_t *, T>::value, std::size_t>::type strsize
-            = (size_t_limits::max) ())
-        : type (WCharArray | Defined)
-    {
-        BARK();
-
-        value.warray.size = strsize;
-        value.warray.ptr = param;
-    }
-
-
-    template <std::size_t N>
-    string_param (wchar_t const (& param)[N])
-        : type (WCharArray | Defined)
-    {
-        BARK();
-
-        value.warray.size = N - 1;
-        value.warray.ptr = &param[0];
+        value.unspec.size = N - 1;
+        value.unspec.ptr = &param[0];
     }
 
 
     template <typename T>
-    string_param (T const & str, 
-        typename enable_if<is_same<std::wstring, T>, T *>::type = 0)
-        : type (WString | Defined)
+    string_param (std::basic_string<T> const & str,
+        typename enable_if_c<is_same<char, T>::value
+            || is_same<wchar_t, T>::value, T *>::type = 0)
+            : type (param_traits<T>::type_value | Defined)
     {
-        BARK();
-
-        value.wstring.size = (size_t_limits::max) ();
-        value.wstring.ptr = &str;
+        value.unspec.size = str.size ();
+        value.unspec.ptr = str.c_str ();
     }
 
 
-    LOG4CPLUS_EXPORT
     ~string_param ()
     {
         if (type & Owndership)
@@ -209,10 +150,7 @@ public:
         if (is_wide ())
             throw std::runtime_error ("Calling c_str() on wchar_t parameter.");
 
-        if (is_string ())
-            return value.string.ptr->c_str ();
-        else
-            return value.array.ptr;
+        return value.array.ptr;
     }
 
 
@@ -223,10 +161,7 @@ public:
         if (! is_wide ())
             throw std::runtime_error ("Calling c_wstr() on char parameter.");
 
-        if (is_string ())
-            return value.wstring.ptr->c_str ();
-        else
-            return value.warray.ptr;
+        return value.warray.ptr;
     }
 
 
@@ -238,22 +173,11 @@ public:
     }
 
 
-    bool
-    is_string () const
-    {
-        assert (type & Defined);
-        return (type & StringMask) == StringMask;
-    }
-
-
     template <typename Visitor>
     void
     visit (Visitor const & visitor) const
     {
-        if (is_string ())
-            visit_string (visitor);
-        else
-            visit_char_array (visitor);
+        visit_char_array (visitor);
     }
 
 
@@ -264,6 +188,7 @@ public:
         std::swap (value, other.value);
     }
 
+
 private:
     typedef std::char_traits<char> traits;
     typedef std::char_traits<wchar_t> wtraits;
@@ -271,6 +196,42 @@ private:
 
     string_param (string_param const &);
     string_param & operator = (string_param const &);
+
+    enum Flags
+    {
+        Undefined = 0x0000,
+        Defined   = 0x0001,
+        
+        CharTypeBit  = 1,
+        OwnershipBit = 3,
+
+        CharTypeMask = 1 << CharTypeBit,
+
+        CharArray  = 0 << CharTypeBit,
+        WCharArray = 1 << CharTypeBit,
+
+        Owndership = 1 << OwnershipBit
+    };
+
+    template <typename T>
+    struct param_traits;
+
+#define LOG4CPLUS_DEF_PARAM_TRAITS(T, VAL)       \
+    friend struct param_traits<T>;               \
+    template <>                                  \
+    struct param_traits<T>                       \
+    {                                            \
+        enum TypeValue { type_value = (VAL) };   \
+    }
+
+    LOG4CPLUS_DEF_PARAM_TRAITS (char, CharArray);
+    LOG4CPLUS_DEF_PARAM_TRAITS (char *, CharArray);
+    LOG4CPLUS_DEF_PARAM_TRAITS (char const *, CharArray);
+    LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t, WCharArray);
+    LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t *, WCharArray);
+    LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t const *, WCharArray);
+
+#undef LOG4CPLUS_DEF_PARAM_TRAITS
 
 
     void 
@@ -281,33 +242,19 @@ private:
 
 
     void
-    delete_wstring () const
-    {
-        delete[] value.wstring.ptr;
-    }
-
-
-    void
     delete_char_array () const
     {
         delete[] value.array.ptr;
     }
 
 
-    void
-    delete_string () const
-    {
-        delete[] value.string.ptr;
-    }
-
-
-    static void (string_param:: * const delete_func[4]) () const;
+    static LOG4CPLUS_EXPORT void (string_param:: * const delete_func[2]) () const;
 
 
     void
     delete_worker () const
     {
-        (this->*delete_func[type >> CharTypeBit & 3]) ();
+        (this->*delete_func[type >> CharTypeBit & 1]) ();
     }
 
 
@@ -317,13 +264,6 @@ private:
         return wtraits::length (value.warray.ptr);
     }
 
-    
-    std::size_t
-    get_size_wstring () const 
-    {
-        return value.wstring.ptr->size ();
-    }
-
 
     std::size_t
     get_size_char_array () const 
@@ -331,21 +271,14 @@ private:
         return traits::length (value.array.ptr);
     }
 
-        
-    std::size_t
-    get_size_string () const 
-    {
-        return value.string.ptr->size ();
-    }
 
-
-    static std::size_t (string_param:: * const size_func[4]) () const;
+    static LOG4CPLUS_EXPORT std::size_t (string_param:: * const size_func[2]) () const;
 
 
     void
     get_size_worker () const
     {
-        value.size = (this->*size_func[type >> CharTypeBit & 3]) ();
+        value.size = (this->*size_func[type >> CharTypeBit & 1]) ();
     }
 
 
@@ -360,37 +293,6 @@ private:
     }
 
 
-    template <typename Visitor>
-    void
-    visit_string (Visitor const & visitor) const
-    {
-        if (is_wide ())
-            visitor (*value.wstring.ptr, get_size ());
-        else
-            visitor (*value.string.ptr, get_size ());
-    }
-
-
-    enum Flags
-    {
-        Undefined = 0x0000,
-        Defined   = 0x0001,
-        
-        CharTypeBit  = 1,
-        StringBit    = 2,
-        OwnershipBit = 3,
-
-        CharTypeMask = 1 << CharTypeBit,
-        StringMask   = 1 << StringBit,
-
-        CharArray  = 0 << StringBit | 0 << CharTypeBit,
-        WCharArray = 0 << StringBit | 1 << CharTypeBit,
-        String     = 1 << StringBit | 0 << CharTypeBit,
-        WString    = 1 << StringBit | 1 << CharTypeBit,
-        Owndership = 1 << OwnershipBit
-    };
-
-
     template <typename T>
     struct char_array_value_type
     {
@@ -401,23 +303,19 @@ private:
     };
 
 
-    template <typename T>
-    struct string_value_type
+    struct unspecified_type
     {
-        typedef T char_type;
-
         std::size_t size;
-        std::basic_string<char_type> const * ptr;
+        void const * ptr;
     };
 
 
     union param_value_type
     {
         std::size_t size;
+        unspecified_type unspec;
         char_array_value_type<char> array;
         char_array_value_type<wchar_t> warray;
-        string_value_type<char> string;
-        string_value_type<wchar_t> wstring;
     };
 
 
