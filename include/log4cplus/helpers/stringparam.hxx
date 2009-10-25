@@ -106,7 +106,7 @@ public:
         typename enable_if_c<is_same<char, T>::value
             || is_same<wchar_t, T>::value,
             std::size_t>::type * = 0)
-        : type (param_traits<T>::type_value | Defined)
+        : type (param_traits<T *>::type_value | Defined)
     {
         value.unspec.size = N - 1;
         value.unspec.ptr = &param[0];
@@ -117,7 +117,7 @@ public:
     string_param (std::basic_string<T> const & str,
         typename enable_if_c<is_same<char, T>::value
             || is_same<wchar_t, T>::value, T *>::type = 0)
-            : type (param_traits<T>::type_value | Defined)
+            : type (param_traits<T *>::type_value | Defined)
     {
         value.unspec.size = str.size ();
         value.unspec.ptr = str.c_str ();
@@ -224,10 +224,8 @@ private:
         enum TypeValue { type_value = (VAL) };   \
     }
 
-    LOG4CPLUS_DEF_PARAM_TRAITS (char, CharArray);
     LOG4CPLUS_DEF_PARAM_TRAITS (char *, CharArray);
     LOG4CPLUS_DEF_PARAM_TRAITS (char const *, CharArray);
-    LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t, WCharArray);
     LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t *, WCharArray);
     LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t const *, WCharArray);
 
