@@ -62,13 +62,57 @@ namespace log4cplus {
         LOG4CPLUS_EXPORT std::wstring towstring(const std::string&);
         LOG4CPLUS_EXPORT std::wstring towstring(char const *);
 #endif // LOG4CPLUS_WORKING_LOCALE
+
+#if defined (UNICODE)
+        inline tstring totstring (std::wstring const & str)
+        {
+            return str;
+        }
+
+        inline tstring totstring (wchar_t const * str)
+        {
+            return str;
+        }
+
+        inline tstring totstring (std::string const & str)
+        {
+            return helpers::towstring (str);
+        }
+
+        inline tstring totstring (char const * str)
+        {
+            return helpers::towstring (str);
+        }
+
+#else // UNICODE
+        inline tstring totstring (std::wstring const & str)
+        {
+            return helpers::tostring (str);
+        }
+
+        inline tstring totstring (wchar_t const * str)
+        {
+            return helpers::tostring (str);
+        }
+
+        inline tstring totstring (std::string const & str)
+        {
+            return str;
+        }
+
+        inline tstring totstring (char const * str)
+        {
+            return str;
+        }
+
+#endif // UNICODE
     }
 
 }
 
-#define LOG4CPLUS_C_STR_TO_TSTRING(STRING) log4cplus::helpers::towstring(STRING)
-#define LOG4CPLUS_STRING_TO_TSTRING(STRING) log4cplus::helpers::towstring(STRING)
-#define LOG4CPLUS_TSTRING_TO_STRING(STRING) log4cplus::helpers::tostring(STRING)
+#define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
+#define LOG4CPLUS_STRING_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
+#define LOG4CPLUS_TSTRING_TO_STRING(STRING) (log4cplus::helpers::tostring(STRING))
 
 #else // UNICODE
 namespace log4cplus {
@@ -76,9 +120,9 @@ namespace log4cplus {
     typedef std::string tstring;
 }
 
-#define LOG4CPLUS_C_STR_TO_TSTRING(STRING) std::string(STRING)
-#define LOG4CPLUS_STRING_TO_TSTRING(STRING) STRING
-#define LOG4CPLUS_TSTRING_TO_STRING(STRING) STRING
+#define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (std::string(STRING))
+#define LOG4CPLUS_STRING_TO_TSTRING(STRING) (STRING)
+#define LOG4CPLUS_TSTRING_TO_STRING(STRING) (STRING)
 
 #endif // UNICODE
 
