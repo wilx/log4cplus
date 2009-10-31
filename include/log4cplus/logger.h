@@ -29,6 +29,7 @@
 #include <log4cplus/tstring.h>
 #include <log4cplus/spi/appenderattachable.h>
 #include <log4cplus/spi/loggerfactory.h>
+#include <log4cplus/helpers/stringparam.hxx>
 
 #include <vector>
 
@@ -101,7 +102,7 @@ namespace log4cplus
          * 
          * @param name The name of the logger to retrieve.  
          */
-        static Logger getInstance(const log4cplus::tstring& name);
+        static Logger getInstance(helpers::string_param const & name);
 
         /**
          * Like getInstance() except that the type of logger
@@ -115,7 +116,8 @@ namespace log4cplus
          * @param factory A {@link spi::LoggerFactory} implementation that will
          * actually create a new Instance.
          */
-        static Logger getInstance(const log4cplus::tstring& name, spi::LoggerFactory& factory);
+        static Logger getInstance(helpers::string_param const & name,
+            spi::LoggerFactory& factory);
 
         /**
          * Return the root of the default logger hierrachy.

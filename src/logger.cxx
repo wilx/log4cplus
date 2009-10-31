@@ -65,14 +65,14 @@ Logger::getCurrentLoggers ()
 
 
 Logger 
-Logger::getInstance (const log4cplus::tstring& name) 
+Logger::getInstance (helpers::string_param const & name) 
 { 
     return getDefaultHierarchy().getInstance(name); 
 }
 
 
 Logger 
-Logger::getInstance (const log4cplus::tstring& name,
+Logger::getInstance (helpers::string_param const & name,
     spi::LoggerFactory& factory)
 { 
     return getDefaultHierarchy().getInstance(name, factory); 

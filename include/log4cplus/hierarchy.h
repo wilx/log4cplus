@@ -157,7 +157,7 @@ namespace log4cplus {
          *                                    
          * @param name The name of the logger to retrieve.
          */
-        virtual Logger getInstance(const log4cplus::tstring& name);
+        virtual Logger getInstance(helpers::string_param const & name);
 
         /**
          * Return a new logger instance named as the first parameter using
@@ -171,7 +171,8 @@ namespace log4cplus {
          * @param name The name of the logger to retrieve.
          * @param factory The factory that will make the new logger instance.
          */
-        virtual Logger getInstance(const log4cplus::tstring& name, spi::LoggerFactory& factory);
+        virtual Logger getInstance(helpers::string_param const & name,
+            spi::LoggerFactory& factory);
 
         /**
          * Returns all the currently defined loggers in this hierarchy.
@@ -241,7 +242,7 @@ namespace log4cplus {
          * This is the implementation of the <code>getInstance()</code> method.
          * NOTE: This method does not lock the <code>hashtable_mutex</code>.
          */
-        virtual Logger getInstanceImpl(const log4cplus::tstring& name, 
+        virtual Logger getInstanceImpl(helpers::string_param const & name, 
                                        spi::LoggerFactory& factory);
         
         /**

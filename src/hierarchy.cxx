@@ -153,14 +153,15 @@ Hierarchy::enableAll()
 
 
 Logger 
-Hierarchy::getInstance(const tstring& name) 
+Hierarchy::getInstance(helpers::string_param const & name) 
 { 
     return getInstance(name, *defaultFactory); 
 }
 
 
 Logger 
-Hierarchy::getInstance(const tstring& name, spi::LoggerFactory& factory)
+Hierarchy::getInstance(helpers::string_param const & name,
+    spi::LoggerFactory& factory)
 {
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( hashtable_mutex )
         return getInstanceImpl(name, factory);
@@ -254,9 +255,13 @@ Hierarchy::shutdown()
 //////////////////////////////////////////////////////////////////////////////
 
 Logger 
-Hierarchy::getInstanceImpl(const tstring& name, spi::LoggerFactory& factory)
+Hierarchy::getInstanceImpl(helpers::string_param const & name_param,
+    spi::LoggerFactory& factory)
 {
     Logger logger;
+
+    tstring name;
+    name_param.totstring (name);
 
     LoggerMap::iterator lm_it = loggerPtrs.find(name);
     if (lm_it != loggerPtrs.end())

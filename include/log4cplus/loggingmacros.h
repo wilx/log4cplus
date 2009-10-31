@@ -72,15 +72,7 @@ macros_get_logger (Logger & logger)
 
 inline
 Logger
-macros_get_logger (tstring const & logger)
-{
-    return Logger::getInstance (logger);
-}
-
-
-inline
-Logger
-macros_get_logger (tchar const * logger)
+macros_get_logger (log4cplus::helpers::string_param const & logger)
 {
     return Logger::getInstance (logger);
 }
