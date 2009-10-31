@@ -59,8 +59,6 @@ struct visitor
 void
 foo (string_param const & s)
 {
-    //BARK();
-
     std::cout << "s.get_size(): " << s.get_size ();
 
     s.visit (visitor ());
