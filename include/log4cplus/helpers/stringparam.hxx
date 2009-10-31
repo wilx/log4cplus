@@ -28,13 +28,22 @@
 #include <cwchar>
 #include <cassert>
 #include <log4cplus/config.hxx>
+#include <log4cplus/tstring.h>
 
 
 namespace log4cplus { namespace helpers {
 
 
+template <bool Val>
+struct boolean
+{
+    enum Value { value = Val };
+};
+
+
 template <bool B, class T = void>
 struct enable_if_c
+    : public boolean<true>
 {
     typedef T type;
 };
@@ -42,6 +51,7 @@ struct enable_if_c
 
 template <class T>
 struct enable_if_c<false, T>
+    : public boolean<false>
 { };
 
 
@@ -51,32 +61,24 @@ struct enable_if
 { };
 
 
-struct true_type
-{
-    enum Value { value = true };
-};
-
-
-struct false_type
-{
-    enum Value { value = false };
-};
-
-
 template <typename T, typename U>
 struct is_same
-    : public false_type
+    : public boolean<false>
 { };
 
 
 template <typename T>
 struct is_same<T, T>
-    : public true_type
+    : public boolean<true>
 { };
 
 
 class string_param
 {
+    struct sfinae_filler
+    { };
+
+
 public:
     typedef std::numeric_limits<std::size_t> size_t_limits;
 
@@ -104,8 +106,7 @@ public:
     template <std::size_t N, typename T>
     string_param (T const (& param)[N],
         typename enable_if_c<is_same<char, T>::value
-            || is_same<wchar_t, T>::value,
-            std::size_t>::type * = 0)
+            || is_same<wchar_t, T>::value, sfinae_filler>::type * = 0)
         : type (param_traits<T *>::type_value | Defined)
     {
         value.unspec.size = N - 1;
@@ -116,7 +117,7 @@ public:
     template <typename T>
     string_param (std::basic_string<T> const & str,
         typename enable_if_c<is_same<char, T>::value
-            || is_same<wchar_t, T>::value, T *>::type = 0)
+            || is_same<wchar_t, T>::value, sfinae_filler>::type * = 0)
             : type (param_traits<T *>::type_value | Defined)
     {
         value.unspec.size = str.size ();
@@ -136,10 +137,10 @@ public:
     {
         assert (type & Defined);
 
-        if (value.size == (size_t_limits::max) ())
+        if (value.unspec.size == (size_t_limits::max) ())
             get_size_worker ();
 
-        return value.size;
+        return value.unspec.size;
     }
 
 
@@ -165,11 +166,46 @@ public:
     }
 
 
+    log4cplus::tchar const *
+    c_tstr () const
+    {
+#if defined (UNICODE)
+        return c_wstr ();
+#else
+        return c_str ();
+#endif
+    }
+
+
+    log4cplus::tstring
+    totstring () const
+    {
+        log4cplus::tstring str;
+        this->totstring (str);
+        return str;
+    }
+
+
+    void
+    totstring (log4cplus::tstring & str) const
+    {
+        visit (totstring_visitor (str));
+    }
+
+
     bool
     is_wide () const
     {
         assert (type & Defined);
-        return (type & CharTypeMask) == CharTypeMask;
+        return (type & CharTypeMask) == WCharArray;
+    }
+
+
+    bool
+    is_tchar () const
+    {
+        assert (type & Defined);
+        return (type & CharTypeMask) == TCharArray;
     }
 
 
@@ -197,6 +233,7 @@ private:
     string_param (string_param const &);
     string_param & operator = (string_param const &);
 
+
     enum Flags
     {
         Undefined = 0x0000,
@@ -209,9 +246,15 @@ private:
 
         CharArray  = 0 << CharTypeBit,
         WCharArray = 1 << CharTypeBit,
+#if defined (UNICODE)
+        TCharArray = WCharArray,
+#else
+        TCharArray = CharArray,
+#endif
 
         Owndership = 1 << OwnershipBit
     };
+
 
     template <typename T>
     struct param_traits;
@@ -230,6 +273,40 @@ private:
     LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t const *, WCharArray);
 
 #undef LOG4CPLUS_DEF_PARAM_TRAITS
+
+
+    struct totstring_visitor;
+    friend struct totstring_visitor;
+
+    struct totstring_visitor
+    {
+        totstring_visitor (tstring & s)
+            : str (s)
+        { }
+
+
+        void operator () (char const * cstr, std::size_t size) const
+        {
+#if defined (UNICODE)
+            str = helpers::totstring (cstr);
+#else
+            str.assign (cstr, size);
+#endif
+        }
+
+
+        void operator () (wchar_t const * cstr, std::size_t size) const
+        {
+#if defined (UNICODE)
+                str.assign (cstr, size);
+#else
+                str = helpers::totstring (cstr);
+#endif
+        }
+
+
+        tstring & str;
+    };
 
 
     void 
@@ -276,7 +353,7 @@ private:
     void
     get_size_worker () const
     {
-        value.size = (this->*size_func[type >> CharTypeBit & 1]) ();
+        value.unspec.size = (this->*size_func[type >> CharTypeBit & 1]) ();
     }
 
 
@@ -301,17 +378,9 @@ private:
     };
 
 
-    struct unspecified_type
-    {
-        std::size_t size;
-        void const * ptr;
-    };
-
-
     union param_value_type
     {
-        std::size_t size;
-        unspecified_type unspec;
+        char_array_value_type<void> unspec;
         char_array_value_type<char> array;
         char_array_value_type<wchar_t> warray;
     };
