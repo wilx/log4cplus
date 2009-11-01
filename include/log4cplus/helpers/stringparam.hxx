@@ -21,6 +21,9 @@
 //   (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
 //   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef LOG4CPLUS_HELPERS_STRINGPARAM_HXX
+#define LOG4CPLUS_HELPERS_STRINGPARAM_HXX
+
 #include <string>
 #include <limits>
 #include <stdexcept>
@@ -392,3 +395,5 @@ private:
 
 
 } } // namespace log4cplus { namespace helpers {
+
+#endif // LOG4CPLUS_HELPERS_STRINGPARAM_HXX
