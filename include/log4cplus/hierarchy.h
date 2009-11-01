@@ -88,7 +88,7 @@ namespace log4cplus {
          *                
          * @param name The name of the logger to search for.
          */
-        virtual bool exists(const log4cplus::tstring& name);
+        virtual bool exists(helpers::string_param const & name);
 
         /**
          * Similar to {@link #disable(LogLevel)} except that the LogLevel

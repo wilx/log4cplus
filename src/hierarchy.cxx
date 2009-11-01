@@ -97,8 +97,9 @@ Hierarchy::clear()
 
 
 bool
-Hierarchy::exists(const tstring& name)
+Hierarchy::exists(helpers::string_param const & name_param)
 {
+    tstring name (name_param.totstring ());
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( hashtable_mutex )
         LoggerMap::iterator it = loggerPtrs.find(name);
         return it != loggerPtrs.end();

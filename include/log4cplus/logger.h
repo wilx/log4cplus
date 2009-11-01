@@ -75,7 +75,7 @@ namespace log4cplus
          *                
          * @param name The name of the logger to search for.
          */
-        static bool exists(const log4cplus::tstring& name);
+        static bool exists(helpers::string_param const & name);
 
         /*
          * Returns all the currently defined loggers in the default

@@ -51,7 +51,7 @@ Logger::getDefaultHierarchy ()
 
 
 bool 
-Logger::exists (const log4cplus::tstring & name) 
+Logger::exists (helpers::string_param const & name) 
 {
     return getDefaultHierarchy().exists(name); 
 }
