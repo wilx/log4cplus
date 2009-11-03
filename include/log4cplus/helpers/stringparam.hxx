@@ -312,28 +312,11 @@ private:
     };
 
 
-    void 
-    delete_wchar_array () const
-    {
-        delete[] value.warray.ptr;
-    }
-
-
-    void
-    delete_char_array () const
-    {
-        delete[] value.array.ptr;
-    }
-
-
     static LOG4CPLUS_EXPORT void (string_param:: * const delete_func[2]) () const;
 
-
-    void
-    delete_worker () const
-    {
-        (this->*delete_func[type >> CharTypeBit & 1]) ();
-    }
+    void delete_wchar_array () const;
+    void delete_char_array () const;
+    LOG4CPLUS_EXPORT void delete_worker () const;
 
 
     std::size_t

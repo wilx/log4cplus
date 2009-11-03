@@ -29,6 +29,28 @@
 namespace log4cplus { namespace helpers {
 
 
+void
+string_param::delete_worker () const
+{
+    (this->*delete_func[type >> CharTypeBit & 1]) ();
+}
+
+
+void 
+string_param::delete_wchar_array () const
+{
+    delete[] value.warray.ptr;
+}
+
+
+void
+string_param::delete_char_array () const
+{
+    delete[] value.array.ptr;
+}
+
+
+
 std::size_t (string_param:: * const string_param::size_func[2]) () const = {
     &string_param::get_size_char_array,
     &string_param::get_size_wchar_array,
