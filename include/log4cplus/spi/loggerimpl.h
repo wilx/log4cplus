@@ -28,6 +28,7 @@
 #include <log4cplus/helpers/appenderattachableimpl.h>
 #include <log4cplus/helpers/pointer.h>
 #include <log4cplus/spi/loggerfactory.h>
+#include <log4cplus/helpers/stringparam.hxx>
 #include <memory>
 #include <vector>
 
@@ -84,8 +85,8 @@ namespace log4cplus {
             /**
              * This generic form is intended to be used by wrappers. 
              */
-            virtual void log(LogLevel ll, const log4cplus::tstring& message,
-                             const char* file=NULL, int line=-1);
+            virtual void log(LogLevel ll, helpers::string_param const & message,
+                const char* file = 0, int line = -1);
 
             /**
              * Starting from this logger, search the logger hierarchy for a
@@ -153,9 +154,8 @@ namespace log4cplus {
              * without further checks.  
              */
             virtual void forcedLog(LogLevel ll,
-                                   const log4cplus::tstring& message,
-                                   const char* file=NULL, 
-                                   int line=-1);
+                helpers::string_param const & message, const char* file = 0, 
+                int line = -1);
 
 
           // Data

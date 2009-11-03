@@ -156,7 +156,7 @@ namespace log4cplus
          * @param msg The message to print if <code>assertion</code> is
          * false.
          */
-        void assertion(bool assertionVal, const log4cplus::tstring& msg) const;
+        void assertion(bool assertionVal, helpers::string_param const & msg) const;
 
         /**
          * Close all attached appenders implementing the AppenderAttachable
@@ -175,14 +175,14 @@ namespace log4cplus
         /**
          * This generic form is intended to be used by wrappers. 
          */
-        void log(LogLevel ll, const log4cplus::tstring& message,
+        void log(LogLevel ll, helpers::string_param const & message,
                  const char* file=NULL, int line=-1) const;
 
         /**
          * This method creates a new logging event and logs the event
          * without further checks.  
          */
-        void forcedLog(LogLevel ll, const log4cplus::tstring& message,
+        void forcedLog(LogLevel ll, helpers::string_param const & message,
                        const char* file=NULL, int line=-1) const;
 
         /**

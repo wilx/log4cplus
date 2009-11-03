@@ -97,7 +97,7 @@ LoggerImpl::isEnabledFor(LogLevel loglevel) const
 
 void 
 LoggerImpl::log(LogLevel loglevel, 
-                const log4cplus::tstring& message,
+                helpers::string_param const & message,
                 const char* file, 
                 int line)
 {
@@ -144,13 +144,12 @@ LoggerImpl::setAdditivity(bool additive_)
 
 
 void 
-LoggerImpl::forcedLog(LogLevel loglevel,
-                      const log4cplus::tstring& message,
-                      const char* file, 
-                      int line)
+LoggerImpl::forcedLog(LogLevel loglevel, helpers::string_param const & message,
+    const char* file, int line)
 {
     spi::InternalLoggingEvent & ev = internal::get_ptd ()->forced_log_ev;
-    ev.setLoggingEvent (this->getName(), loglevel, message, file, line);
+    ev.setLoggingEvent (this->getName(), loglevel, message.totstring (), file,
+        line);
     callAppenders(ev);
 }
 

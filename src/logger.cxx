@@ -202,7 +202,7 @@ Logger::removeAppender (const log4cplus::tstring& name)
 
 
 void
-Logger::assertion (bool assertionVal, const log4cplus::tstring& msg) const
+Logger::assertion (bool assertionVal, helpers::string_param const & msg) const
 {
     if (! assertionVal)
         log (FATAL_LOG_LEVEL, msg);
@@ -224,15 +224,15 @@ Logger::isEnabledFor (LogLevel ll) const
 
 
 void
-Logger::log (LogLevel ll, const log4cplus::tstring& message, const char* file,
-    int line) const
+Logger::log (LogLevel ll, helpers::string_param const & message,
+    const char* file, int line) const
 {
     value->log (ll, message, file, line);
 }
 
 
 void
-Logger::forcedLog (LogLevel ll, const log4cplus::tstring& message,
+Logger::forcedLog (LogLevel ll, helpers::string_param const & message,
     const char* file, int line) const
 {
     value->forcedLog (ll, message, file, line);
