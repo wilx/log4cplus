@@ -31,6 +31,7 @@
 #include <log4cplus/helpers/pointer.h>
 #include <log4cplus/helpers/property.h>
 #include <log4cplus/spi/filter.h>
+#include <log4cplus/helpers/stringparam.hxx>
 
 #include <memory>
 
@@ -110,7 +111,7 @@ namespace log4cplus {
          * Set the name of this appender. The name is used by other
          * components to identify this appender.
          */
-        virtual void setName(const log4cplus::tstring& name);
+        virtual void setName(helpers::string_param const & name);
 
         /**
          * Set the {@link ErrorHandler} for this Appender.

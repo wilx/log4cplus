@@ -235,9 +235,9 @@ Appender::getName()
 
 
 void
-Appender::setName(const log4cplus::tstring& n)
+Appender::setName(helpers::string_param const & n)
 {
-    this->name = n;
+    this->name = n.totstring ();
 }
 
 
