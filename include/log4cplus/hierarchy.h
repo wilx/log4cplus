@@ -83,7 +83,7 @@ namespace log4cplus {
         virtual void clear();
 
         /**
-         * Returns <code>true </code>if the named logger exists 
+         * Returns <code>true</code> if the named logger exists 
          * (in the default hierarchy).
          *                
          * @param name The name of the logger to search for.
@@ -242,8 +242,8 @@ namespace log4cplus {
          * This is the implementation of the <code>getInstance()</code> method.
          * NOTE: This method does not lock the <code>hashtable_mutex</code>.
          */
-        virtual Logger getInstanceImpl(helpers::string_param const & name, 
-                                       spi::LoggerFactory& factory);
+        Logger getInstanceImpl(tstring const & name,
+            spi::LoggerFactory& factory);
         
         /**
          * This is the implementation of the <code>getCurrentLoggers()</code>.

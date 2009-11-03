@@ -161,9 +161,11 @@ Hierarchy::getInstance(helpers::string_param const & name)
 
 
 Logger 
-Hierarchy::getInstance(helpers::string_param const & name,
+Hierarchy::getInstance(helpers::string_param const & name_param,
     spi::LoggerFactory& factory)
 {
+    tstring name (name_param.totstring ());
+
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( hashtable_mutex )
         return getInstanceImpl(name, factory);
     LOG4CPLUS_END_SYNCHRONIZE_ON_MUTEX;
@@ -207,10 +209,11 @@ Hierarchy::resetConfiguration()
 
     LoggerList loggers = getCurrentLoggers();
     LoggerList::iterator it = loggers.begin();
-    while(it != loggers.end()) {
-        (*it).setLogLevel(NOT_SET_LOG_LEVEL);
-        (*it).setAdditivity(true);
-        ++it;
+    for (LoggerList::iterator it = loggers.begin(); it != loggers.end(); ++it)
+    {
+        Logger & logger = *it;
+        logger.setLogLevel(NOT_SET_LOG_LEVEL);
+        logger.setAdditivity(true);
     }
 
 }
@@ -241,11 +244,11 @@ Hierarchy::shutdown()
     root.removeAllAppenders();
 
     // repeat
-    LoggerList::iterator it = loggers.begin();
-    while(it != loggers.end()) {
-        (*it).closeNestedAppenders();
-        (*it).removeAllAppenders();
-        ++it;
+    for (LoggerList::iterator it = loggers.begin(); it != loggers.end(); ++it)
+    {
+        Logger & logger = *it;
+        logger.closeNestedAppenders();
+        logger.removeAllAppenders();
     }
 }
 
@@ -256,13 +259,9 @@ Hierarchy::shutdown()
 //////////////////////////////////////////////////////////////////////////////
 
 Logger 
-Hierarchy::getInstanceImpl(helpers::string_param const & name_param,
-    spi::LoggerFactory& factory)
+Hierarchy::getInstanceImpl(tstring const & name, spi::LoggerFactory& factory)
 {
     Logger logger;
-
-    tstring name;
-    name_param.totstring (name);
 
     LoggerMap::iterator lm_it = loggerPtrs.find(name);
     if (lm_it != loggerPtrs.end())
