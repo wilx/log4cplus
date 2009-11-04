@@ -36,6 +36,9 @@
 
 namespace log4cplus { namespace helpers {
 
+namespace stringparam_impl
+{
+
 
 template <bool Val>
 struct boolean
@@ -74,6 +77,46 @@ template <typename T>
 struct is_same<T, T>
     : public boolean<true>
 { };
+
+
+enum Flags
+{
+    Undefined = 0x0000,
+    Defined   = 0x0001,
+    
+    CharTypeBit  = 1,
+    OwnershipBit = 3,
+    
+    CharTypeMask = 1 << CharTypeBit,
+    
+    CharArray  = 0 << CharTypeBit,
+    WCharArray = 1 << CharTypeBit,
+#if defined (UNICODE)
+    TCharArray = WCharArray,
+#else
+    TCharArray = CharArray,
+#endif
+    
+    Owndership = 1 << OwnershipBit
+};
+
+
+template <typename T>
+struct param_traits;
+
+#define LOG4CPLUS_DEF_PARAM_TRAITS(T, VAL)       \
+    template <>                                  \
+    struct param_traits<T>                       \
+    {                                            \
+        enum TypeValue { type_value = (VAL) };   \
+    }
+
+LOG4CPLUS_DEF_PARAM_TRAITS (char *, CharArray);
+LOG4CPLUS_DEF_PARAM_TRAITS (char const *, CharArray);
+LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t *, WCharArray);
+LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t const *, WCharArray);
+
+#undef LOG4CPLUS_DEF_PARAM_TRAITS
 
 
 class string_param
@@ -121,7 +164,7 @@ public:
     string_param (std::basic_string<T> const & str,
         typename enable_if_c<is_same<char, T>::value
             || is_same<wchar_t, T>::value, sfinae_filler>::type * = 0)
-            : type (param_traits<T *>::type_value | Defined)
+        : type (param_traits<T *>::type_value | Defined)
     {
         value.unspec.size = str.size ();
         value.unspec.ptr = str.c_str ();
@@ -236,48 +279,6 @@ private:
     string_param (string_param const &);
     string_param & operator = (string_param const &);
 
-
-    enum Flags
-    {
-        Undefined = 0x0000,
-        Defined   = 0x0001,
-        
-        CharTypeBit  = 1,
-        OwnershipBit = 3,
-
-        CharTypeMask = 1 << CharTypeBit,
-
-        CharArray  = 0 << CharTypeBit,
-        WCharArray = 1 << CharTypeBit,
-#if defined (UNICODE)
-        TCharArray = WCharArray,
-#else
-        TCharArray = CharArray,
-#endif
-
-        Owndership = 1 << OwnershipBit
-    };
-
-
-    template <typename T>
-    struct param_traits;
-
-#define LOG4CPLUS_DEF_PARAM_TRAITS(T, VAL)       \
-    friend struct param_traits<T>;               \
-    template <>                                  \
-    struct param_traits<T>                       \
-    {                                            \
-        enum TypeValue { type_value = (VAL) };   \
-    }
-
-    LOG4CPLUS_DEF_PARAM_TRAITS (char *, CharArray);
-    LOG4CPLUS_DEF_PARAM_TRAITS (char const *, CharArray);
-    LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t *, WCharArray);
-    LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t const *, WCharArray);
-
-#undef LOG4CPLUS_DEF_PARAM_TRAITS
-
-
     struct totstring_visitor;
     friend struct totstring_visitor;
 
@@ -303,6 +304,7 @@ private:
 #if defined (UNICODE)
                 str.assign (cstr, size);
 #else
+                (void)size;
                 str = helpers::totstring (cstr);
 #endif
         }
@@ -375,6 +377,12 @@ private:
     mutable unsigned type;
     mutable param_value_type value;
 };
+
+
+} // namespace stringparam_impl
+
+
+typedef stringparam_impl::string_param string_param;
 
 
 } } // namespace log4cplus { namespace helpers {

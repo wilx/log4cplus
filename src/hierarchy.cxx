@@ -208,7 +208,6 @@ Hierarchy::resetConfiguration()
     shutdown();
 
     LoggerList loggers = getCurrentLoggers();
-    LoggerList::iterator it = loggers.begin();
     for (LoggerList::iterator it = loggers.begin(); it != loggers.end(); ++it)
     {
         Logger & logger = *it;

@@ -26,8 +26,7 @@
 #include <log4cplus/helpers/stringparam.hxx>
 
 
-namespace log4cplus { namespace helpers {
-
+namespace log4cplus { namespace helpers { namespace stringparam_impl {
 
 void
 string_param::delete_worker () const
@@ -129,4 +128,4 @@ test_stringparam ()
 
 } // namespace
 
-} } // namespace log4cplus { namespace helpers {
+} } } // namespace log4cplus { namespace helpers { namespace stringparam {

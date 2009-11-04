@@ -74,8 +74,9 @@ am__liblog4cplus_la_SOURCES_DIST = appenderattachableimpl.cxx \
 	ndc.cxx nullappender.cxx objectregistry.cxx patternlayout.cxx \
 	pointer.cxx property.cxx rootlogger.cxx sleep.cxx socket.cxx \
 	socket-unix.cxx socketappender.cxx socketbuffer.cxx \
-	stringhelper.cxx syslogappender.cxx timehelper.cxx threads.cxx \
-	asyncappender.cxx queue.cxx syncprims.cxx
+	stringhelper.cxx stringparam.cxx syslogappender.cxx \
+	timehelper.cxx threads.cxx asyncappender.cxx queue.cxx \
+	syncprims.cxx
 am__objects_1 = appenderattachableimpl.lo appender.lo configurator.lo \
 	consoleappender.lo factory.lo fileappender.lo filter.lo \
 	global-init.lo hierarchy.lo hierarchylocker.lo layout.lo \
@@ -83,7 +84,7 @@ am__objects_1 = appenderattachableimpl.lo appender.lo configurator.lo \
 	logloguser.lo ndc.lo nullappender.lo objectregistry.lo \
 	patternlayout.lo pointer.lo property.lo rootlogger.lo sleep.lo \
 	socket.lo socket-unix.lo socketappender.lo socketbuffer.lo \
-	stringhelper.lo syslogappender.lo timehelper.lo
+	stringhelper.lo stringparam.lo syslogappender.lo timehelper.lo
 @MULTI_THREADED_FALSE@am__objects_2 = $(am__objects_1)
 @MULTI_THREADED_TRUE@am__objects_2 = $(am__objects_1) threads.lo \
 @MULTI_THREADED_TRUE@	asyncappender.lo queue.lo syncprims.lo
@@ -275,6 +276,7 @@ nobase_include_HEADERS = ../include/log4cplus/appender.h \
 			 ../include/log4cplus/helpers/socketbuffer.h \
 			 ../include/log4cplus/helpers/socket.h \
 			 ../include/log4cplus/helpers/stringhelper.h \
+			 ../include/log4cplus/helpers/stringparam.hxx \
 			 ../include/log4cplus/helpers/syncprims.h \
 			 ../include/log4cplus/helpers/syncprims-pthreads.h \
 			 ../include/log4cplus/helpers/thread-config.h \
@@ -319,6 +321,7 @@ SINGLE_THREADED_SRC = appenderattachableimpl.cxx \
 			 socketappender.cxx \
 			 socketbuffer.cxx \
 			 stringhelper.cxx \
+			 stringparam.cxx \
 			 syslogappender.cxx \
 			 timehelper.cxx
 
@@ -434,6 +437,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socketappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socketbuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringhelper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringparam.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/syncprims.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/syslogappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/threads.Plo@am__quote@

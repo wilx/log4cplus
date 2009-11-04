@@ -32,6 +32,7 @@ set (log4cplus_headers
   include/log4cplus/helpers/socket.h
   include/log4cplus/helpers/socketbuffer.h
   include/log4cplus/helpers/stringhelper.h
+  include/log4cplus/helpers/stringparam.hxx
   include/log4cplus/helpers/syncprims.h
   include/log4cplus/helpers/thread-config.h
   include/log4cplus/helpers/threads.h
@@ -93,6 +94,7 @@ set (log4cplus_sources
   src/socketappender.cxx
   src/socketbuffer.cxx
   src/stringhelper.cxx
+  src/stringparam.cxx
   src/syncprims.cxx
   src/syslogappender.cxx
   src/threads.cxx
