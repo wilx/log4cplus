@@ -114,8 +114,6 @@ namespace log4cplus
 namespace helpers
 {
 
-#ifdef UNICODE
-
 #ifdef LOG4CPLUS_WORKING_LOCALE
 
 static
@@ -363,8 +361,6 @@ towstring(char const * src)
 }
 
 #endif // LOG4CPLUS_WORKING_LOCALE
-
-#endif // UNICODE
 
 
 tstring

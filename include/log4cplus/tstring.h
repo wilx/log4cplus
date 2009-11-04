@@ -37,10 +37,19 @@
 #define LOG4CPLUS_TEXT(STRING) LOG4CPLUS_TEXT2(STRING)
 
 
+namespace log4cplus
+{
+
+
 #ifdef UNICODE
-namespace log4cplus {
     typedef wchar_t tchar;
-    typedef std::wstring tstring;
+#else
+    typedef char tchar;
+#endif
+
+
+    typedef std::basic_string<tchar> tstring;
+
 
     namespace helpers {
 #ifdef LOG4CPLUS_WORKING_LOCALE
@@ -63,6 +72,7 @@ namespace log4cplus {
         LOG4CPLUS_EXPORT std::wstring towstring(char const *);
 #endif // LOG4CPLUS_WORKING_LOCALE
 
+
 #if defined (UNICODE)
         inline tstring totstring (std::wstring const & str)
         {
@@ -84,6 +94,10 @@ namespace log4cplus {
             return helpers::towstring (str);
         }
 
+#define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
+#define LOG4CPLUS_STRING_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
+#define LOG4CPLUS_TSTRING_TO_STRING(STRING) (log4cplus::helpers::tostring(STRING))
+
 #else // UNICODE
         inline tstring totstring (std::wstring const & str)
         {
@@ -105,25 +119,14 @@ namespace log4cplus {
             return str;
         }
 
-#endif // UNICODE
-    }
-
-}
-
-#define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
-#define LOG4CPLUS_STRING_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
-#define LOG4CPLUS_TSTRING_TO_STRING(STRING) (log4cplus::helpers::tostring(STRING))
-
-#else // UNICODE
-namespace log4cplus {
-    typedef char tchar;
-    typedef std::string tstring;
-}
-
 #define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (std::string(STRING))
 #define LOG4CPLUS_STRING_TO_TSTRING(STRING) (STRING)
 #define LOG4CPLUS_TSTRING_TO_STRING(STRING) (STRING)
 
 #endif // UNICODE
+
+    } // namespace helpers
+} // namespace log4cplus
+
 
 #endif // LOG4CPLUS_TSTRING_HEADER_
