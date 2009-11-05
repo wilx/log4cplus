@@ -165,7 +165,6 @@ Hierarchy::getInstance(helpers::string_param const & name_param,
     spi::LoggerFactory& factory)
 {
     tstring name (name_param.totstring ());
-
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( hashtable_mutex )
         return getInstanceImpl(name, factory);
     LOG4CPLUS_END_SYNCHRONIZE_ON_MUTEX;
@@ -258,7 +257,7 @@ Hierarchy::shutdown()
 //////////////////////////////////////////////////////////////////////////////
 
 Logger 
-Hierarchy::getInstanceImpl(tstring const & name, spi::LoggerFactory& factory)
+Hierarchy::getInstanceImpl(const tstring& name, spi::LoggerFactory& factory)
 {
     Logger logger;
 
