@@ -264,6 +264,19 @@ PropertyConfigurator::configure()
 }
 
 
+helpers::Properties const &
+PropertyConfigurator::getProperties () const
+{
+    return properties;
+}
+
+
+log4cplus::tstring const &
+PropertyConfigurator::getPropertyFilename () const
+{
+    return propertyFilename;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PropertyConfigurator protected methods
