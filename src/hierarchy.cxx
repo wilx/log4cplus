@@ -99,7 +99,8 @@ Hierarchy::clear()
 bool
 Hierarchy::exists(helpers::string_param const & name_param)
 {
-    tstring name (name_param.totstring ());
+    tstring const & name (name_param.is_tstring ()
+        ? name_param.get_tstring () : name_param.to_tstring ());
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( hashtable_mutex )
         LoggerMap::iterator it = loggerPtrs.find(name);
         return it != loggerPtrs.end();
@@ -164,7 +165,8 @@ Logger
 Hierarchy::getInstance(helpers::string_param const & name_param,
     spi::LoggerFactory& factory)
 {
-    tstring name (name_param.totstring ());
+    tstring const & name (name_param.is_tstring ()
+        ? name_param.get_tstring () : name_param.to_tstring ());
     LOG4CPLUS_BEGIN_SYNCHRONIZE_ON_MUTEX( hashtable_mutex )
         return getInstanceImpl(name, factory);
     LOG4CPLUS_END_SYNCHRONIZE_ON_MUTEX;

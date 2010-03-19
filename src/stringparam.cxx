@@ -1,15 +1,15 @@
 //   Copyright (C) 2009, Vaclav Haisman. All rights reserved.
-//   
+//
 //   Redistribution and use in source and binary forms, with or without modifica-
 //   tion, are permitted provided that the following conditions are met:
-//   
+//
 //   1. Redistributions of  source code must  retain the above copyright  notice,
 //      this list of conditions and the following disclaimer.
-//   
+//
 //   2. Redistributions in binary form must reproduce the above copyright notice,
 //      this list of conditions and the following disclaimer in the documentation
 //      and/or other materials provided with the distribution.
-//   
+//
 //   THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
 //   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 //   FITNESS  FOR A PARTICULAR  PURPOSE ARE  DISCLAIMED.  IN NO  EVENT SHALL  THE
@@ -28,14 +28,15 @@
 
 namespace log4cplus { namespace helpers { namespace stringparam_impl {
 
+
 void
 string_param::delete_worker () const
 {
-    (this->*delete_func[type >> CharTypeBit & 1]) ();
+    (this->*delete_func[get_table_index ()]) ();
 }
 
 
-void 
+void
 string_param::delete_wchar_array () const
 {
     delete[] value.warray.ptr;
@@ -49,21 +50,38 @@ string_param::delete_char_array () const
 }
 
 
+void
+string_param::delete_string () const
+{
+    delete value.str.ptr;
+}
 
-std::size_t (string_param:: * const string_param::size_func[2]) () const = {
+
+void
+string_param::delete_wstring () const
+{
+    delete value.wstr.ptr;
+}
+
+
+std::size_t (string_param:: * const string_param::size_func[4]) () const = {
     &string_param::get_size_char_array,
     &string_param::get_size_wchar_array,
+    &string_param::get_size_string,
+    &string_param::get_size_wstring
 };
 
 
-void (string_param:: * const string_param::delete_func[2]) () const  = {
+void (string_param:: * const string_param::delete_func[4]) () const  = {
     &string_param::delete_char_array,
     &string_param::delete_wchar_array,
+    &string_param::delete_string,
+    &string_param::delete_wstring
 };
 
 
 
-namespace 
+namespace
 {
 
 struct visitor

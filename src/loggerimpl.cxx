@@ -148,8 +148,9 @@ LoggerImpl::forcedLog(LogLevel loglevel, helpers::string_param const & message,
     const char* file, int line)
 {
     spi::InternalLoggingEvent & ev = internal::get_ptd ()->forced_log_ev;
-    ev.setLoggingEvent (this->getName(), loglevel, message.totstring (), file,
-        line);
+    ev.setLoggingEvent (this->getName(), loglevel, 
+        message.is_tstring () ? message.get_tstring () : message.to_tstring (),
+        file, line);
     callAppenders(ev);
 }
 

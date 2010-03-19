@@ -137,8 +137,9 @@ Appender::Appender(const log4cplus::helpers::Properties & properties)
     int filterCount = 0;
     spi::FilterPtr filterChain;
     tstring filterName;
-    while (filterProps.exists(
-        filterName = helpers::convertIntegerToString (++filterCount)))
+    while (filterCount < (std::numeric_limits<int>::max) ()
+        && filterProps.exists(
+            filterName = helpers::convertIntegerToString (++filterCount)))
     {
         tstring const & factoryName = filterProps.getProperty(filterName);
         spi::FilterFactory* factory
@@ -237,7 +238,10 @@ Appender::getName()
 void
 Appender::setName(helpers::string_param const & n)
 {
-    this->name = n.totstring ();
+    if (n.is_tstring ())
+        this->name = n.is_tstring ();
+    else
+        n.to_tstring ().swap (this->name);
 }
 
 
