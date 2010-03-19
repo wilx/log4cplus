@@ -91,6 +91,12 @@ struct visitor
     {
         std::wcout << str << std::endl;
     }
+
+    template <typename T>
+    void operator () (std::basic_string<T> const & str) const
+    {
+        std::wcout << str.c_str () << std::endl;
+    }
 };
 
 

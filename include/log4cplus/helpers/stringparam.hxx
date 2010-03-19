@@ -380,11 +380,11 @@ public:
             break;
 
         case StdString >> CharTypeBit:
-            visitor (value.str.ptr->c_str (), size);
+            visitor (*value.str.ptr);
             break;
 
         case StdWString >> CharTypeBit:
-            visitor (value.wstr.ptr->c_str (), size);
+            visitor (*value.wstr.ptr);
             break;
 
         default:
