@@ -48,6 +48,7 @@ namespace log4cplus {
         ErrorHandler ();
         virtual ~ErrorHandler() = 0;
         virtual void error(const log4cplus::tstring& err) = 0;
+        virtual void reset() = 0;
     };
 
 
@@ -60,6 +61,7 @@ namespace log4cplus {
         OnlyOnceErrorHandler();
         virtual ~OnlyOnceErrorHandler ();
         virtual void error(const log4cplus::tstring& err);
+        virtual void reset();
 
     private:
         bool firstTime;
