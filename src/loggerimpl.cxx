@@ -107,6 +107,13 @@ LoggerImpl::log(LogLevel loglevel,
 }
 
 
+void 
+LoggerImpl::log(spi::InternalLoggingEvent const & ev)
+{
+    if (isEnabledFor(ev.getLogLevel ()))
+        forcedLog(ev);
+}
+
 
 LogLevel 
 LoggerImpl::getChainedLogLevel() const
@@ -151,6 +158,13 @@ LoggerImpl::forcedLog(LogLevel loglevel, helpers::string_param const & message,
     ev.setLoggingEvent (this->getName(), loglevel, 
         message.is_tstring () ? message.get_tstring () : message.to_tstring (),
         file, line);
+    callAppenders(ev);
+}
+
+
+void 
+LoggerImpl::forcedLog(spi::InternalLoggingEvent const & ev)
+{
     callAppenders(ev);
 }
 
