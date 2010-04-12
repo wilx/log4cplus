@@ -29,6 +29,9 @@
 namespace log4cplus { namespace helpers { namespace stringparam_impl {
 
 
+LOG4CPLUS_EXPORT make_copy_tag const string_param::makecopy;
+
+
 void
 string_param::delete_worker () const
 {
@@ -36,49 +39,28 @@ string_param::delete_worker () const
 }
 
 
-void
-string_param::delete_wchar_array () const
-{
-    delete[] value.warray.ptr;
-}
-
-
-void
-string_param::delete_char_array () const
-{
-    delete[] value.array.ptr;
-}
-
-
-void
-string_param::delete_string () const
-{
-    delete value.str.ptr;
-}
-
-
-void
-string_param::delete_wstring () const
-{
-    delete value.wstr.ptr;
-}
-
-
-std::size_t (string_param:: * const string_param::size_func[4]) () const = {
-    &string_param::get_size_char_array,
-    &string_param::get_size_wchar_array,
-    &string_param::get_size_string,
-    &string_param::get_size_wstring
+string_param::size_func_type const string_param::size_func[4] = {
+    &string_param::get_size_char_array<char>,
+    &string_param::get_size_char_array<wchar_t>,
+    &string_param::get_size_string<char>,
+    &string_param::get_size_string<wchar_t>
 };
 
 
-void (string_param:: * const string_param::delete_func[4]) () const  = {
-    &string_param::delete_char_array,
-    &string_param::delete_wchar_array,
-    &string_param::delete_string,
-    &string_param::delete_wstring
+string_param::delete_func_type const string_param::delete_func[4] = {
+    &string_param::delete_char_array<char>,
+    &string_param::delete_char_array<wchar_t>,
+    &string_param::delete_string<char>,
+    &string_param::delete_string<wchar_t>,
 };
 
+
+string_param::make_copy_func_type string_param::make_copy_func[4] = {
+    &string_param::make_copy_char_array<char>,
+    &string_param::make_copy_char_array<wchar_t>,
+    &string_param::make_copy_string<char>,
+    &string_param::make_copy_string<wchar_t>
+};
 
 
 namespace

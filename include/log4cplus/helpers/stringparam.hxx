@@ -107,7 +107,7 @@ enum Flags
     TString        = StdString,
 #endif
 
-    Owndership = 1 << OwnershipBit
+    Ownership = 1 << OwnershipBit
 };
 
 
@@ -163,6 +163,9 @@ LOG4CPLUS_DEF_PARAM_TRAITS (std::wstring, StdWString);
 #undef LOG4CPLUS_DEF_PARAM_TRAITS
 
 
+struct make_copy_tag { };
+
+
 class string_param
 {
     struct sfinae_filler
@@ -176,6 +179,16 @@ public:
     string_param ()
         : type (Undefined)
     { }
+
+
+    static LOG4CPLUS_EXPORT make_copy_tag const makecopy;
+
+
+    string_param (string_param const & other, make_copy_tag const &)
+        : type (other.type | Ownership)
+    {
+        make_copy (other);
+    }
 
 
     template <typename T>
@@ -217,7 +230,7 @@ public:
 
     ~string_param ()
     {
-        if (type & Owndership)
+        if (type & Ownership)
             delete_worker ();
     }
 
@@ -474,50 +487,94 @@ private:
     }
 
 
-    static LOG4CPLUS_EXPORT void (string_param:: * const delete_func[4]) () const;
+    typedef void (string_param:: * const delete_func_type) () const;
+    static LOG4CPLUS_EXPORT delete_func_type const delete_func[4];
 
-    void delete_wchar_array () const;
-    void delete_char_array () const;
-    void delete_string () const;
-    void delete_wstring () const;
+
+    template <typename CharType>
+    void
+    delete_char_array () const
+    {
+        delete[] static_cast<CharType const *>(value.unspec.ptr);
+    }
+
+
+    template <typename CharType>
+    void
+    delete_string () const
+    {
+        delete static_cast<std::basic_string<CharType> const *>(
+            value.unspec.ptr);
+    }
+
+
     LOG4CPLUS_EXPORT void delete_worker () const;
 
 
-    std::size_t
-    get_size_wchar_array () const
-    {
-        return wtraits::length (value.warray.ptr);
-    }
-
-
+    template <typename CharType>
     std::size_t
     get_size_char_array () const
     {
-        return traits::length (value.array.ptr);
+        return std::char_traits<CharType>::length (
+            static_cast<CharType const *>(value.unspec.ptr));
     }
 
 
+    template <typename CharType>
     std::size_t
     get_size_string () const
     {
-        return value.str.ptr->size ();
+        return static_cast<std::basic_string<CharType> const *>(
+            value.unspec.ptr)->size ();
     }
 
 
-    std::size_t
-    get_size_wstring () const
-    {
-        return value.wstr.ptr->size ();
-    }
-
-
-    static LOG4CPLUS_EXPORT std::size_t (string_param:: * const size_func[4]) () const;
+    typedef std::size_t (string_param:: * const size_func_type) () const;
+    static LOG4CPLUS_EXPORT size_func_type const size_func[4];
 
 
     void
     get_size_worker () const
     {
         value.unspec.size = (this->*size_func[get_table_index ()]) ();
+    }
+
+
+    template <typename CharType>
+    void
+    make_copy_char_array (string_param const & other)
+    {
+        size_t const other_len = other.get_size ();
+        CharType * copy_buf = new CharType[other_len + 1];
+        copy_buf[other_len] = 0;
+        std::char_traits<CharType>::copy (copy_buf,
+            static_cast<CharType const *>(other.value.unspec.ptr),
+            other_len);
+        value.unspec.ptr = copy_buf;
+        value.unspec.size = other_len;
+    }
+
+
+    template <typename CharType>
+    void
+    make_copy_string (string_param const & other)
+    {
+        typedef std::basic_string<CharType> string_type;
+        string_type * copy_str = new string_type (
+            *static_cast<string_type const *>(other.value.unspec.ptr));
+        value.unspec.ptr = copy_str;
+        value.unspec.size = other.value.unspec.size;
+    }
+
+
+    typedef void (string_param:: * const make_copy_func_type) (string_param const &);
+    static LOG4CPLUS_EXPORT make_copy_func_type make_copy_func[4];
+
+
+    void
+    make_copy (string_param const & other)
+    {
+         (this->*make_copy_func[get_table_index ()]) (other);
     }
 
 
