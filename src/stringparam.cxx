@@ -29,7 +29,7 @@
 namespace log4cplus { namespace helpers { namespace stringparam_impl {
 
 
-LOG4CPLUS_EXPORT make_copy_tag const string_param::makecopy;
+LOG4CPLUS_EXPORT make_copy_tag const string_param::makecopy = { };
 
 
 void
@@ -89,6 +89,9 @@ foo (string_param const & s)
     std::cout << "s.get_size(): " << s.get_size ();
 
     s.visit (visitor ());
+
+    string_param copy_of_s (s, log4cplus::helpers::string_param::makecopy);
+    copy_of_s.visit (visitor ());
 }
 
 
