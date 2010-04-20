@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2009 Tad E. Smith
+// Copyright 2001-2010 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,9 +39,39 @@
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/helpers/stringhelper.h>
 #include <log4cplus/helpers/timehelper.h>
+#include <log4cplus/helpers/syncprims.h>
 #include <log4cplus/internal/internal.h>
 
-#include <log4cplus/helpers/syncprims.h>
+
+namespace log4cplus { namespace thread {
+
+
+struct ThreadStart
+{
+#  ifdef LOG4CPLUS_USE_PTHREADS
+static void* threadStartFuncWorker(void *);
+#  elif defined(LOG4CPLUS_USE_WIN32_THREADS)
+static unsigned threadStartFuncWorker(void *);
+#  endif
+};
+
+
+} } // namespace log4cplus { namespace thread {
+
+
+namespace
+{
+
+#  ifdef LOG4CPLUS_USE_PTHREADS
+extern "C" void* threadStartFunc(void * param)
+#  elif defined(LOG4CPLUS_USE_WIN32_THREADS)
+static unsigned WINAPI threadStartFunc(void * param)
+#  endif
+{
+    return log4cplus::thread::ThreadStart::threadStartFuncWorker (param);
+}
+
+} // namespace
 
 
 namespace log4cplus { namespace thread {
@@ -131,11 +161,11 @@ getCurrentThreadName()
 
 
 #if defined(LOG4CPLUS_USE_PTHREADS)
-    void* 
-    threadStartFunc(void* arg)
+void* 
+ThreadStart::threadStartFuncWorker(void * arg)
 #elif defined(LOG4CPLUS_USE_WIN32_THREADS)
-    unsigned WINAPI
-    threadStartFunc(void * arg)
+unsigned
+ThreadStart::threadStartFuncWorker(void * arg)
 #endif
 {
     blockAllSignals ();
@@ -165,7 +195,6 @@ getCurrentThreadName()
             loglog->warn(LOG4CPLUS_TEXT("threadStartFunc()- run() terminated with an exception."));
         }
         thread->running = false;
-        getNDC().remove();
     }
 
     threadCleanup ();

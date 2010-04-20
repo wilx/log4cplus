@@ -79,12 +79,18 @@ HierarchyLocker::resetConfiguration()
     root.removeAllAppenders();
 
     // repeat
-    for(LoggerList::iterator it=loggerList.begin(); it!=loggerList.end(); ++it) {
+    for(LoggerList::iterator it=loggerList.begin(); it!=loggerList.end(); ++it)
+    {
         Logger & logger = *it;
+        
+        // We need to temporarilly unlock appender_list_mutex because
+        // closeNestedAppenders() and removeAllAppenders() lock it themselves.
+
         LOG4CPLUS_MUTEX_UNLOCK( logger.value->appender_list_mutex ) ;
         logger.closeNestedAppenders();
         logger.removeAllAppenders();
         LOG4CPLUS_MUTEX_LOCK( logger.value->appender_list_mutex ) ;
+
         logger.setLogLevel(NOT_SET_LOG_LEVEL);
         logger.setAdditivity(true);
     }

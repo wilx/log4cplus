@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2009 Tad E. Smith
+// Copyright 2001-2010 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@
 
 #include <log4cplus/config.hxx>
 #include <log4cplus/tstring.h>
-#include <log4cplus/helpers/sleep.h>
 #include <log4cplus/helpers/pointer.h>
-#include <memory>
 
 
 namespace log4cplus { namespace thread {
@@ -63,16 +61,12 @@ private:
 #ifndef LOG4CPLUS_SINGLE_THREADED
 
 LOG4CPLUS_EXPORT void blockAllSignals();
-
-#  ifdef LOG4CPLUS_USE_PTHREADS
-void* threadStartFunc(void*);
-#  elif defined(LOG4CPLUS_USE_WIN32_THREADS)
-unsigned WINAPI threadStartFunc(void *);
-#  endif
-
-
 LOG4CPLUS_EXPORT void yield();
 LOG4CPLUS_EXPORT log4cplus::tstring const & getCurrentThreadName();
+
+
+struct ThreadStart;
+
 
 /**
  * There are many cross-platform C++ Threading libraries.  The goal of
@@ -100,14 +94,14 @@ private:
     bool running;
 
     // Friends.
+    friend struct ThreadStart;
+
 #  ifdef LOG4CPLUS_USE_PTHREADS
-    friend void* threadStartFunc(void*);
     pthread_t handle;
 
 #  elif defined(LOG4CPLUS_USE_WIN32_THREADS)
     HANDLE handle;
     unsigned thread_id;
-    friend unsigned WINAPI threadStartFunc(void *);
 
 #  endif
 
