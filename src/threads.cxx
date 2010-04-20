@@ -40,6 +40,7 @@
 #include <log4cplus/helpers/stringhelper.h>
 #include <log4cplus/helpers/timehelper.h>
 #include <log4cplus/helpers/syncprims.h>
+#include <log4cplus/helpers/syncprims-pub-impl.h>
 #include <log4cplus/internal/internal.h>
 
 
@@ -81,16 +82,12 @@ namespace log4cplus { namespace thread {
 // public methods
 ///////////////////////////////////////////////////////////////////////////////
 
+#if defined(LOG4CPLUS_USE_PTHREADS)
 LOG4CPLUS_MUTEX_PTR_DECLARE 
 createNewMutex()
 {
-#if defined(LOG4CPLUS_USE_PTHREADS)
     ::pthread_mutex_t* m = new ::pthread_mutex_t;
     ::pthread_mutex_init(m, NULL);
-#elif defined(LOG4CPLUS_USE_WIN32_THREADS)
-    ::CRITICAL_SECTION* m = new ::CRITICAL_SECTION;
-    ::InitializeCriticalSection(m);
-#endif
     return m;
 }
 
@@ -98,17 +95,11 @@ createNewMutex()
 void 
 deleteMutex(LOG4CPLUS_MUTEX_PTR_DECLARE m)
 {
-#if defined(LOG4CPLUS_USE_PTHREADS)
     ::pthread_mutex_destroy(m);
-#elif defined(LOG4CPLUS_USE_WIN32_THREADS)
-    ::DeleteCriticalSection(m);
-#endif
     delete m;
 }
 
 
-
-#if defined(LOG4CPLUS_USE_PTHREADS)
 pthread_key_t*
 createPthreadKey(void (*cleanupfunc)(void *))
 {

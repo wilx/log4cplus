@@ -2434,7 +2434,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\loggingevent.cxx"
+				RelativePath="..\include\log4cplus\helpers\syncprims-impl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\log4cplus\helpers\syncprims-pthreads.h"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2510,7 +2514,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\include\log4cplus\spi\loggingevent.h"
+				RelativePath="..\include\log4cplus\helpers\syncprims-pub-impl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\log4cplus\helpers\syncprims-win32.h"
 				>
 			</File>
 			<File
