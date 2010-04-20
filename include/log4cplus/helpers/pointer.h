@@ -29,6 +29,7 @@
 #define _LOG4CPLUS_HELPERS_POINTERS_HEADER_
 
 #include <log4cplus/config.hxx>
+#include <log4cplus/thread/syncprims.h>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -52,12 +53,12 @@ namespace log4cplus {
         protected:
           // Ctor
             SharedObject()
-                : access_mutex(LOG4CPLUS_MUTEX_CREATE)
+                : access_mutex()
                 , count(0)
             { }
 
             SharedObject(const SharedObject&)
-                : access_mutex(LOG4CPLUS_MUTEX_CREATE)
+                : access_mutex()
                 , count(0)
             { }
 
@@ -68,11 +69,11 @@ namespace log4cplus {
             SharedObject& operator=(const SharedObject&) { return *this; }
 
         public:
-            LOG4CPLUS_MUTEX_PTR_DECLARE access_mutex;
+            thread::Mutex access_mutex;
 
         private:
 #if defined (WIN32)
-            typedef LONG count_type;
+            typedef long count_type;
 #else
             typedef unsigned count_type;
 #endif

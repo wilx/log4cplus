@@ -65,11 +65,11 @@ const LogLevel Hierarchy::DISABLE_OVERRIDE = -2;
 //////////////////////////////////////////////////////////////////////////////
 
 Hierarchy::Hierarchy()
-  : hashtable_mutex(LOG4CPLUS_MUTEX_CREATE),
-    defaultFactory(new DefaultLoggerFactory()),
-    root(NULL),
-    disableValue(DISABLE_OFF),  // Don't disable any LogLevel level by default.
-    emittedNoAppenderWarning(false)
+  : defaultFactory(new DefaultLoggerFactory())
+  , root(NULL)
+  // Don't disable any LogLevel level by default.
+  , disableValue(DISABLE_OFF)
+  , emittedNoAppenderWarning(false)
 {
     root = Logger( new spi::RootLogger(*this, DEBUG_LOG_LEVEL) );
 }
@@ -78,7 +78,6 @@ Hierarchy::Hierarchy()
 Hierarchy::~Hierarchy()
 {
     shutdown();
-    LOG4CPLUS_MUTEX_FREE( hashtable_mutex );
 }
 
 
@@ -90,7 +89,7 @@ Hierarchy::~Hierarchy()
 void 
 Hierarchy::clear() 
 {
-    thread::Guard guard (hashtable_mutex);
+    thread::MutexGuard guard (hashtable_mutex);
 
     provisionNodes.erase(provisionNodes.begin(), provisionNodes.end());
     loggerPtrs.erase(loggerPtrs.begin(), loggerPtrs.end());
@@ -100,7 +99,7 @@ Hierarchy::clear()
 bool
 Hierarchy::exists(helpers::string_param const & name_param)
 {
-    thread::Guard guard (hashtable_mutex);
+    thread::MutexGuard guard (hashtable_mutex);
 
     tstring const & name (name_param.is_tstring ()
         ? name_param.get_tstring () : name_param.to_tstring ());
@@ -166,7 +165,7 @@ Logger
 Hierarchy::getInstance(helpers::string_param const & name_param,
     spi::LoggerFactory& factory)
 {
-    thread::Guard guard (hashtable_mutex);
+    thread::MutexGuard guard (hashtable_mutex);
 
     tstring const & name (name_param.is_tstring ()
         ? name_param.get_tstring () : name_param.to_tstring ());
@@ -180,7 +179,7 @@ Hierarchy::getCurrentLoggers()
     LoggerList ret;
     
     {
-        thread::Guard guard (hashtable_mutex);
+        thread::MutexGuard guard (hashtable_mutex);
         initializeLoggerList(ret);
     }
 

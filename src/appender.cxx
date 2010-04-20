@@ -26,6 +26,7 @@
 #include <log4cplus/spi/factory.h>
 #include <log4cplus/spi/loggingevent.h>
 #include <log4cplus/internal/internal.h>
+#include <log4cplus/thread/syncprims-pub-impl.h>
 
 
 namespace log4cplus
@@ -205,7 +206,7 @@ Appender::destructorImpl()
 void
 Appender::doAppend(const log4cplus::spi::InternalLoggingEvent& event)
 {
-    thread::Guard guard (access_mutex);
+    thread::MutexGuard guard (access_mutex);
 
     if(closed) {
         getLogLog().error(  LOG4CPLUS_TEXT("Attempted to append to closed appender named [")
@@ -272,7 +273,7 @@ Appender::setErrorHandler(std::auto_ptr<ErrorHandler> eh)
         return;
     }
 
-    thread::Guard guard (access_mutex);
+    thread::MutexGuard guard (access_mutex);
 
     this->errorHandler = eh;
 }
@@ -282,7 +283,7 @@ Appender::setErrorHandler(std::auto_ptr<ErrorHandler> eh)
 void
 Appender::setLayout(std::auto_ptr<Layout> lo)
 {
-    thread::Guard guard (access_mutex);
+    thread::MutexGuard guard (access_mutex);
 
     this->layout = lo;
 }

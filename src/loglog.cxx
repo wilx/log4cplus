@@ -20,6 +20,8 @@
 
 #include <log4cplus/streams.h>
 #include <log4cplus/helpers/loglog.h>
+#include <log4cplus/thread/syncprims-pub-impl.h>
+#include <log4cplus/thread/threads.h>
 #include <ostream>
 
 
@@ -54,17 +56,13 @@ LogLog::getLogLog()
 ///////////////////////////////////////////////////////////////////////////////
 
 LogLog::LogLog()
- : mutex(LOG4CPLUS_MUTEX_CREATE),
-   debugEnabled(false),
-   quietMode(false)
-{
-}
+    : debugEnabled(false)
+    , quietMode(false)
+{ }
 
 
 LogLog::~LogLog()
-{
-    LOG4CPLUS_MUTEX_FREE( mutex );
-}
+{ }
 
 
 
@@ -147,7 +145,7 @@ void
 LogLog::logging_worker (tostream & os, bool (LogLog:: * cond) () const,
     tchar const * prefix, StringType const & msg)
 {
-    thread::Guard guard (mutex);
+    thread::MutexGuard guard (mutex);
 
     if (! (this->*cond) ())
         return;

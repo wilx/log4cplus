@@ -4,7 +4,7 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/ndc.h>
 #include <log4cplus/helpers/loglog.h>
-#include <log4cplus/helpers/threads.h>
+#include <log4cplus/thread/threads.h>
 #include <log4cplus/helpers/sleep.h>
 #include <log4cplus/streams.h>
 #include <exception>
@@ -25,14 +25,16 @@ using namespace log4cplus::thread;
 class SlowObject {
 public:
     SlowObject() 
-      : mutex( LOG4CPLUS_MUTEX_CREATE ), 
-        logger(Logger::getInstance(LOG4CPLUS_TEXT("SlowObject"))) 
-    { logger.setLogLevel(TRACE_LOG_LEVEL); }
+        : logger(Logger::getInstance(LOG4CPLUS_TEXT("SlowObject"))) 
+    {
+        logger.setLogLevel(TRACE_LOG_LEVEL);
+    }
 
-    void doSomething() {
+    void doSomething()
+    {
         LOG4CPLUS_TRACE_METHOD(logger, LOG4CPLUS_TEXT("SlowObject::doSomething()"));
         {
-            thread::Guard guard (mutex);
+            thread::MutexGuard guard (mutex);
             LOG4CPLUS_INFO(logger, LOG4CPLUS_TEXT("Actually doing something..."));
             sleep(0, 75 * MILLIS_TO_NANOS);
             LOG4CPLUS_INFO(logger, LOG4CPLUS_TEXT("Actually doing something...DONE"));
@@ -41,14 +43,13 @@ public:
     }
 
     ~SlowObject ()
-    {
-        LOG4CPLUS_MUTEX_FREE (mutex);
-    }
+    { }
 
 private:
-    LOG4CPLUS_MUTEX_PTR_DECLARE mutex;
+    thread::Mutex mutex;
     Logger logger;
 };
+
 SlowObject *global;
 
 

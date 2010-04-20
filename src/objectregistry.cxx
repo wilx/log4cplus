@@ -20,6 +20,7 @@
 
 #include <log4cplus/spi/objectregistry.h>
 #include <log4cplus/thread/syncprims-pub-impl.h>
+#include <log4cplus/thread/threads.h>
 
 
 namespace log4cplus { namespace spi {
@@ -30,15 +31,11 @@ namespace log4cplus { namespace spi {
 ///////////////////////////////////////////////////////////////////////////////
 
 ObjectRegistryBase::ObjectRegistryBase()
- : mutex(LOG4CPLUS_MUTEX_CREATE)
-{
-}
+{ }
 
 
 ObjectRegistryBase::~ObjectRegistryBase()
-{
-    LOG4CPLUS_MUTEX_FREE( mutex );
-}
+{ }
 
 
 
@@ -49,7 +46,7 @@ ObjectRegistryBase::~ObjectRegistryBase()
 bool
 ObjectRegistryBase::exists(const tstring& name) const
 {
-    thread::Guard guard (mutex);
+    thread::MutexGuard guard (mutex);
 
     return data.find(name) != data.end();
 }
@@ -61,7 +58,7 @@ ObjectRegistryBase::getAllNames() const
     std::vector<tstring> tmp;
 
     {
-        thread::Guard guard (mutex);
+        thread::MutexGuard guard (mutex);
         for(ObjectMap::const_iterator it=data.begin(); it!=data.end(); ++it)
             tmp.push_back( (*it).first );
     }
@@ -82,7 +79,7 @@ ObjectRegistryBase::putVal(const tstring& name, void* object)
     std::pair<ObjectMap::iterator, bool> ret;
 
     {
-        thread::Guard guard (mutex);
+        thread::MutexGuard guard (mutex);
         ret = data.insert(value);
     }
 
@@ -95,7 +92,7 @@ ObjectRegistryBase::putVal(const tstring& name, void* object)
 void*
 ObjectRegistryBase::getVal(const tstring& name) const
 {
-    thread::Guard guard (mutex);
+    thread::MutexGuard guard (mutex);
 
     ObjectMap::const_iterator it (data.find (name));
     if (it != data.end ())
@@ -110,7 +107,7 @@ ObjectRegistryBase::getVal(const tstring& name) const
 void
 ObjectRegistryBase::clear()
 {
-    thread::Guard guard (mutex);
+    thread::MutexGuard guard (mutex);
 
     for(ObjectMap::iterator it=data.begin(); it!=data.end(); ++it)
         deleteObject( it->second );

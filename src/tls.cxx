@@ -1,9 +1,3 @@
-// Module:  Log4CPLUS
-// File:    windowsh-inc.h
-// Created: 4/2010
-// Author:  Vaclav Haisman
-//
-//
 //   Copyright (C) 2010, Vaclav Haisman. All rights reserved.
 //   
 //   Redistribution and use in source and binary forms, with or without modifica-
@@ -27,12 +21,13 @@
 //   (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
 //   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// NOTE: This file is a fragment intentionally left without include guards.
+#include <log4cplus/thread/impl/tls.h>
 
-#if defined (_WIN32)
-#undef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
 
-// NOTE: This file is a fragment intentionally left without include guards.
+namespace log4cplus { namespace thread { namespace impl {
+
+
+tls_value_type tls_single_threaded_value;
+
+
+} } } // namespace log4cplus { namespace thread { namespace impl {

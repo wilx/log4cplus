@@ -22,7 +22,7 @@
 //   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sstream>
-#include <log4cplus/thread/syncprims.h>
+#include <stdexcept>
 #include <log4cplus/thread/syncprims-pub-impl.h>
 
 

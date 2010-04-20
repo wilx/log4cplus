@@ -23,12 +23,10 @@
 #define _LOG4CPLUS_NT_EVENT_LOG_APPENDER_HEADER_
 
 #include <log4cplus/config.hxx>
-#include <log4cplus/appender.h>
+#if defined (LOG4CPLUS_HAVE_NT_EVENT_LOG)
 
-#if defined(_WIN32)
-#  if ! defined (LOG4CPLUS_HAVE_NT_EVENT_LOG)
-#    error "Your platform does not support NT event log."
-#  else
+#include <log4cplus/appender.h>
+#include <log4cplus/config/windowsh-inc.h>
 
 
 namespace log4cplus {
@@ -77,5 +75,4 @@ namespace log4cplus {
 } // end namespace log4cplus
 
 #endif // LOG4CPLUS_HAVE_NT_EVENT_LOG
-#endif // _WIN32
 #endif //_LOG4CPLUS_NT_EVENT_LOG_APPENDER_HEADER_

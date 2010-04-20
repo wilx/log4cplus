@@ -35,7 +35,6 @@ namespace log4cplus { namespace helpers {
 SharedObject::~SharedObject()
 {
     assert(count == 0);
-    LOG4CPLUS_MUTEX_FREE( access_mutex );
 }
 
 
@@ -55,9 +54,11 @@ SharedObject::addReference() const
     && defined (WIN32)
     InterlockedIncrement (&count);
 
-#else
-    thread::Guard guard (access_mutex);
+#elif ! defined(LOG4CPLUS_SINGLE_THREADED)
+    thread::MutexGuard guard (access_mutex);
+    ++count;
 
+#else
     ++count;
 
 #endif
@@ -77,7 +78,7 @@ SharedObject::removeReference() const
 
 #else
     {
-        thread::Guard guard (access_mutex);
+        thread::MutexGuard guard (access_mutex);
         assert (count > 0);
         if (--count == 0)
             destroy = true;
