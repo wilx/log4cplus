@@ -39,7 +39,7 @@
 #include "common.h"
 
 // Netxx includes
-#include "socket.h"
+#include "netxx/socket.h"
 #include "netxx/timeout.h"
 
 // standard includes

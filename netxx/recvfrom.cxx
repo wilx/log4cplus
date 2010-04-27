@@ -38,8 +38,8 @@
 #include "common.h"
 
 // Netxx includes
-#include "recvfrom.h"
-#include "sockaddr.h"
+#include "netxx/recvfrom.h"
+#include "netxx/sockaddr.h"
 
 // standard includes
 #include <utility>

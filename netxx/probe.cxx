@@ -41,7 +41,7 @@
 #include <netxx/probe.h>
 #include <netxx/types.h>
 #include <netxx/probeinfo.h>
-#include "probe_impl.h"
+#include "netxx/probe_impl.h"
 
 // standard includes
 #include <list>

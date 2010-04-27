@@ -42,7 +42,7 @@
 #include "common.h"
 
 // Netxx includes
-#include "probe_impl.h"
+#include "netxx/probe_impl.h"
 #include "netxx/types.h"
 #include "netxx/timeout.h"
 

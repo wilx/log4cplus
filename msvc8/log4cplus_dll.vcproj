@@ -3838,7 +3838,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\accept.h"
+				RelativePath="..\netxx\netxx\accept.h"
 				>
 			</File>
 			<File
@@ -3846,7 +3846,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\address.h"
+				RelativePath="..\netxx\netxx\address.h"
 				>
 			</File>
 			<File
@@ -3862,7 +3862,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\datagram.h"
+				RelativePath="..\netxx\netxx\datagram.h"
 				>
 			</File>
 			<File
@@ -3870,7 +3870,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\datagramserver.h"
+				RelativePath="..\netxx\netxx\datagramserver.h"
 				>
 			</File>
 			<File
@@ -3890,11 +3890,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\netbuf.h"
+				RelativePath="..\netxx\netxx\netbuf.h"
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\netxx.h"
+				RelativePath="..\netxx\netxx\netxx.h"
 				>
 			</File>
 			<File
@@ -3910,7 +3910,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\peer.h"
+				RelativePath="..\netxx\netxx\peer.h"
 				>
 			</File>
 			<File
@@ -3918,11 +3918,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\probe.h"
+				RelativePath="..\netxx\netxx\probe.h"
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\probe_impl.h"
+				RelativePath="..\netxx\netxx\probe_impl.h"
 				>
 			</File>
 			<File
@@ -3930,7 +3930,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\probeinfo.h"
+				RelativePath="..\netxx\netxx\probeinfo.h"
 				>
 			</File>
 			<File
@@ -3938,11 +3938,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\recvfrom.h"
+				RelativePath="..\netxx\netxx\recvfrom.h"
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\resolve.h"
+				RelativePath="..\netxx\netxx\resolve.h"
 				>
 			</File>
 			<File
@@ -3950,19 +3950,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\resolve_gethostbyname.cxx"
-				>
-			</File>
-			<File
-				RelativePath="..\netxx\resolve_getservbyname.cxx"
-				>
-			</File>
-			<File
 				RelativePath="..\netxx\serverbase.cxx"
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\serverbase.h"
+				RelativePath="..\netxx\netxx\serverbase.h"
 				>
 			</File>
 			<File
@@ -3970,7 +3962,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\sockaddr.h"
+				RelativePath="..\netxx\netxx\sockaddr.h"
 				>
 			</File>
 			<File
@@ -4050,7 +4042,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\netxx\socket.h"
+				RelativePath="..\netxx\netxx\socket.h"
 				>
 			</File>
 			<File
@@ -4058,7 +4050,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\sockopt.h"
+				RelativePath="..\netxx\netxx\sockopt.h"
 				>
 			</File>
 			<File
@@ -4066,7 +4058,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\stream.h"
+				RelativePath="..\netxx\netxx\stream.h"
 				>
 			</File>
 			<File
@@ -4074,7 +4066,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\streambase.h"
+				RelativePath="..\netxx\netxx\streambase.h"
 				>
 			</File>
 			<File
@@ -4082,15 +4074,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\streamserver.h"
+				RelativePath="..\netxx\netxx\streamserver.h"
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\timeout.h"
+				RelativePath="..\netxx\netxx\timeout.h"
 				>
 			</File>
 			<File
-				RelativePath="..\netxx\types.h"
+				RelativePath="..\netxx\netxx\types.h"
 				>
 			</File>
 		</Filter>

@@ -42,7 +42,7 @@
 
 // standard includes
 #include <algorithm>
-#include <iostream>
+#include <ostream>
 #include <cstdlib>
 #include <cstring>
 #include <new>

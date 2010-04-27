@@ -41,21 +41,21 @@
 int inet_pton (int family, const char *strptr, void *addrptr) 
 {
     if (family == AF_INET) {
-	unsigned long in_val;
+        unsigned long in_val;
 
-	if ( (in_val = inet_addr(strptr)) != INADDR_NONE) {
-	    in_addr in_struct;
-	    std::memset(&in_struct, 0, sizeof(in_struct));
-	    in_struct.s_addr = in_val;
-	    std::memcpy(addrptr, &in_struct, sizeof(in_struct));
-	    return 1;
-	}
+        if ( (in_val = inet_addr(strptr)) != INADDR_NONE) {
+            in_addr in_struct;
+            std::memset(&in_struct, 0, sizeof(in_struct));
+            in_struct.s_addr = in_val;
+            std::memcpy(addrptr, &in_struct, sizeof(in_struct));
+            return 1;
+        }
 
-	return 0;
+        return 0;
     }
 
 #   ifndef WIN32
-	errno = EAFNOSUPPORT;
+    errno = EAFNOSUPPORT;
 #   endif
 
     return -1;

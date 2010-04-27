@@ -40,6 +40,9 @@
 #if defined (WIN32)
 # include <winsock2.h>
 # include <winbase.h>
+# ifndef NETXX_NO_INET6
+#  include <ws2tcpip.h>
+# endif
 # include <errno.h>
 
 # undef  EINTR
@@ -80,7 +83,7 @@
 #endif
 
 #include <string>
-#include "config.h"
+#include "log4cplus/config.hxx"
 
 namespace Netxx 
 {
@@ -93,14 +96,14 @@ namespace Netxx
     std::string str_error(error_type);
 
 
-#if defined(HAVE_SOCKLEN_T)
-    typedef socklen_t  os_socklen_type;
-    typedef socklen_t* os_socklen_ptr_type;
-#   define get_socklen_ptr(x) &x
-#else
+#if defined (WIN32)
     typedef int  os_socklen_type;
     typedef int* os_socklen_ptr_type;
 #   define get_socklen_ptr(x) reinterpret_cast<int*>(&x)
+#else
+    typedef socklen_t  os_socklen_type;
+    typedef socklen_t* os_socklen_ptr_type;
+#   define get_socklen_ptr(x) (&x)
 #endif
 
 } // end Netxx namespace

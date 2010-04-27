@@ -39,9 +39,9 @@
 #include "common.h"
 
 // Netxx includes
-#include "resolve.h"
+#include "netxx/resolve.h"
 #include "netxx/types.h"
-#include "sockaddr.h"
+#include "netxx/sockaddr.h"
 
 // standard includes
 #include <cstring>
@@ -95,7 +95,7 @@ void Netxx::resolve_hostname (const char *hostname, port_type port, bool use_ipv
 
     if (gai_error != 0) {
 	std::string error("name resolution failure for "); error += hostname;
-	error += ": "; error += gai_strerror(gai_error);
+	error += ": "; error += gai_strerrorA(gai_error);
 	throw NetworkException(error);
     }
 

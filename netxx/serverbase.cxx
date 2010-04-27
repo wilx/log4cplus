@@ -38,11 +38,11 @@
 #include "common.h"
 
 // Netxx includes
-#include "serverbase.h"
+#include "netxx/serverbase.h"
 #include "netxx/address.h"
 #include "netxx/sockopt.h"
 #include "netxx/probeinfo.h"
-#include "socket.h"
+#include "netxx/socket.h"
 
 // standard includes
 #include <map>

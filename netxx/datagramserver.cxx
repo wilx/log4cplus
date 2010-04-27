@@ -42,9 +42,9 @@
 #include "netxx/datagram.h"
 #include "netxx/address.h"
 #include "netxx/probeinfo.h"
-#include "serverbase.h"
-#include "socket.h"
-#include "recvfrom.h"
+#include "netxx/serverbase.h"
+#include "netxx/socket.h"
+#include "netxx/recvfrom.h"
 
 // standard includes
 #include <memory>

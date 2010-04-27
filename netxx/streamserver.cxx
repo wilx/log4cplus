@@ -44,9 +44,9 @@
 #include "netxx/address.h"
 #include "netxx/types.h"
 #include "netxx/probeinfo.h"
-#include "serverbase.h"
-#include "socket.h"
-#include "accept.h"
+#include "netxx/serverbase.h"
+#include "netxx/socket.h"
+#include "netxx/accept.h"
 
 // standard includes
 #include <memory>

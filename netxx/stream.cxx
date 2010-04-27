@@ -40,7 +40,7 @@
 // Netxx includes
 #include "netxx/stream.h"
 #include "netxx/probeinfo.h"
-#include "socket.h"
+#include "netxx/socket.h"
 
 // standard includes
 #include <memory>

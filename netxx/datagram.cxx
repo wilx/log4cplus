@@ -41,9 +41,9 @@
 #include "netxx/datagram.h"
 #include "netxx/address.h"
 #include "netxx/peer.h"
-#include "socket.h"
-#include "sockaddr.h"
-#include "recvfrom.h"
+#include "netxx/socket.h"
+#include "netxx/sockaddr.h"
+#include "netxx/recvfrom.h"
 
 // standard includes
 #include <string>

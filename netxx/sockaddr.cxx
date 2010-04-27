@@ -38,7 +38,7 @@
 #include "common.h"
 
 // Netxx includes
-#include "sockaddr.h"
+#include "netxx/sockaddr.h"
 
 // standard includes
 #include <cstring>

@@ -44,7 +44,7 @@
 #include "netxx/address.h"
 #include "netxx/peer.h"
 #include "netxx/types.h"
-#include "socket.h"
+#include "netxx/socket.h"
 
 // standard includes
 #include <cstring>

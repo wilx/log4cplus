@@ -41,8 +41,8 @@
 // Netxx includes
 #include "netxx/address.h"
 #include "netxx/types.h"
-#include "sockaddr.h"
-#include "resolve.h"
+#include "netxx/sockaddr.h"
+#include "netxx/resolve.h"
 
 // standard includes
 #include <cstdlib>
