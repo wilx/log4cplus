@@ -65,6 +65,32 @@ namespace log4cplus
         LOG4CPLUS_EXPORT std::wstring towstring(char const *,
             std::locale const & = std::locale ());
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+        LOG4CPLUS_EXPORT std::string tostring(const std::u16string&,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::string tostring (char16_t const *,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::string tostring(const std::u32string&,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::string tostring (char32_t const *,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::wstring towstring(const std::u16string&,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::wstring towstring (char16_t const *,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::wstring towstring(const std::u32string&,
+            std::locale const & = std::locale ());
+
+        LOG4CPLUS_EXPORT std::wstring towstring (char32_t const *,
+            std::locale const & = std::locale ());
+#endif
+
 #else // LOG4CPLUS_WORKING_LOCALE
         LOG4CPLUS_EXPORT std::string tostring(const std::wstring&);
         LOG4CPLUS_EXPORT std::string tostring(wchar_t const *);
@@ -94,6 +120,28 @@ namespace log4cplus
             return helpers::towstring (str);
         }
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+        inline tstring totstring (std::u16string const & str)
+        {
+            return helpers::towstring (str);
+        }
+
+        inline tstring totstring (char16_t const * str)
+        {
+            return helpers::towstring (str);
+        }
+
+        inline tstring totstring (std::u32string const & str)
+        {
+            return helpers::towstring (str);
+        }
+
+        inline tstring totstring (char32_t const * str)
+        {
+            return helpers::towstring (str);
+        }
+#endif
+
 #define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
 #define LOG4CPLUS_STRING_TO_TSTRING(STRING) (log4cplus::helpers::towstring(STRING))
 #define LOG4CPLUS_TSTRING_TO_STRING(STRING) (log4cplus::helpers::tostring(STRING))
@@ -118,6 +166,28 @@ namespace log4cplus
         {
             return str;
         }
+
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+        inline tstring totstring (std::u16string const & str)
+        {
+            return helpers::tostring (str);
+        }
+
+        inline tstring totstring (char16_t const * str)
+        {
+            return helpers::tostring (str);
+        }
+
+        inline tstring totstring (std::u32string const & str)
+        {
+            return helpers::tostring (str);
+        }
+
+        inline tstring totstring (char32_t const * str)
+        {
+            return helpers::tostring (str);
+        }
+#endif
 
 #define LOG4CPLUS_C_STR_TO_TSTRING(STRING) (std::string(STRING))
 #define LOG4CPLUS_STRING_TO_TSTRING(STRING) (STRING)

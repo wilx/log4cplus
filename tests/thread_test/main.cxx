@@ -68,6 +68,116 @@ private:
 };
 
 
+
+struct visitor
+{
+    template <typename T>
+    void operator () (T const * str, std::size_t) const
+    {
+        std::wcout << str << std::endl;
+    }
+
+    template <typename T>
+    void operator () (std::basic_string<T> const & str) const
+    {
+        std::wcout << str.c_str () << std::endl;
+    }
+};
+
+
+
+void
+foo (string_param const & s)
+{
+    std::wcout << "s.get_size(): " << s.get_size () << std::endl;
+
+    s.visit (visitor ());
+
+    string_param copy_of_s (s, log4cplus::helpers::string_param::makecopy);
+    copy_of_s.visit (visitor ());
+
+    log4cplus::tstring tstr (s.to_tstring ());
+    std::wcout << tstr << std::endl;
+}
+
+
+int
+test_stringparam ()
+{
+    char array[] = "test";
+    char const carray[] = "test";
+    char * pchar = &array[0];
+    char const * pcchar = &array[0];
+    char const * const cpcchar = &array[0];
+    std::string str ("test");
+
+    wchar_t warray[] = L"test";
+    wchar_t const cwarray[] = L"test";
+    wchar_t * pwchar = &warray[0];
+    wchar_t const * pcwchar = &warray[0];
+    wchar_t const * const cpcwchar = &warray[0];
+    std::wstring wstr (L"test");
+
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    char16_t u16array[] = { 't', 'e', 's', 't', '\0' };
+    char16_t const cu16array[] = { 't', 'e', 's', 't', '\0' };
+    char16_t * pu16char = &u16array[0];
+    char16_t const * pcu16char = &u16array[0];
+    char16_t const * const cpcu16char = &u16array[0];
+    std::u16string u16str;
+
+    char32_t u32array[] = { 't', 'e', 's', 't', '\0' };
+    char32_t const cu32array[] = { 't', 'e', 's', 't', '\0' };
+    char32_t * pu32char = &u32array[0];
+    char32_t const * pcu32char = &u32array[0];
+    char32_t const * const cpcu32char = &u32array[0];
+    std::u32string u32str;
+#endif
+
+    foo ("test");
+    foo (array);
+    foo (carray);
+    foo (str);
+    foo (str.c_str ());
+    foo (pchar);
+    foo (pcchar);
+    foo (cpcchar);
+
+    foo (L"test");
+    foo (warray);
+    foo (cwarray);
+    foo (wstr);
+    foo (wstr.c_str ());
+    foo (pwchar);
+    foo (pcwchar);
+    foo (cpcwchar);
+
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    //foo (u"test");
+    foo (u16array);
+    foo (cu16array);
+    foo (u16str);
+    foo (u16str.c_str ());
+    foo (pu16char);
+    foo (pcu16char);
+    foo (cpcu16char);
+
+    //foo (U"test");
+    foo (u32array);
+    foo (cu32array);
+    foo (u32str);
+    foo (u32str.c_str ());
+    foo (pu32char);
+    foo (pcu32char);
+    foo (cpcu32char);
+#endif
+
+    int dummy = 0;
+
+    return 0;
+}
+
+
 int
 main() 
 {
@@ -85,6 +195,8 @@ main()
         append_1->setLayout( std::auto_ptr<Layout>(new log4cplus::TTCCLayout()) );
         Logger::getRoot().addAppender(append_1);
         append_1->setName(LOG4CPLUS_TEXT("cout"));
+
+        test_stringparam ();
 
 	    append_1 = 0;
 

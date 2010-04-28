@@ -39,27 +39,51 @@ string_param::delete_worker () const
 }
 
 
-string_param::size_func_type const string_param::size_func[4] = {
+string_param::size_func_type const string_param::size_func[STRING_PARAM_TABLE_SIZE] = {
     &string_param::get_size_char_array<char>,
     &string_param::get_size_char_array<wchar_t>,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    &string_param::get_size_char_array<char16_t>,
+    &string_param::get_size_char_array<char32_t>,
+#endif
     &string_param::get_size_string<char>,
-    &string_param::get_size_string<wchar_t>
+    &string_param::get_size_string<wchar_t>,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    &string_param::get_size_string<char16_t>,
+    &string_param::get_size_string<char32_t>,
+#endif
 };
 
 
-string_param::delete_func_type const string_param::delete_func[4] = {
+string_param::delete_func_type const string_param::delete_func[STRING_PARAM_TABLE_SIZE] = {
     &string_param::delete_char_array<char>,
     &string_param::delete_char_array<wchar_t>,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    &string_param::delete_char_array<char16_t>,
+    &string_param::delete_char_array<char32_t>,
+#endif
     &string_param::delete_string<char>,
     &string_param::delete_string<wchar_t>,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    &string_param::delete_string<char16_t>,
+    &string_param::delete_string<char32_t>,
+#endif
 };
 
 
-string_param::make_copy_func_type string_param::make_copy_func[4] = {
+string_param::make_copy_func_type const string_param::make_copy_func[STRING_PARAM_TABLE_SIZE] = {
     &string_param::make_copy_char_array<char>,
     &string_param::make_copy_char_array<wchar_t>,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    &string_param::make_copy_char_array<char16_t>,
+    &string_param::make_copy_char_array<char32_t>,
+#endif
     &string_param::make_copy_string<char>,
-    &string_param::make_copy_string<wchar_t>
+    &string_param::make_copy_string<wchar_t>,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    &string_param::make_copy_string<char16_t>,
+    &string_param::make_copy_string<char32_t>,
+#endif
 };
 
 
@@ -112,6 +136,22 @@ test_stringparam ()
     wchar_t const * const cpcwchar = &warray[0];
     std::wstring wstr (L"test");
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    char16_t u16array[1] = {};
+    char16_t const cu16array[1] = {};
+    char16_t * pu16char = &u16array[0];
+    char16_t const * pcu16char = &u16array[0];
+    char16_t const * const cpcu16char = &u16array[0];
+    std::u16string u16str;
+
+    char32_t u32array[1] = {};
+    char32_t const cu32array[1] = {};
+    char32_t * pu32char = &u32array[0];
+    char32_t const * pcu32char = &u32array[0];
+    char32_t const * const cpcu32char = &u32array[0];
+    std::u32string u32str;
+#endif
+
     foo ("test");
     foo (array);
     foo (carray);
@@ -129,6 +169,26 @@ test_stringparam ()
     foo (pwchar);
     foo (pcwchar);
     foo (cpcwchar);
+
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    //foo (u"test");
+    foo (u16array);
+    foo (cu16array);
+    foo (u16str);
+    foo (u16str.c_str ());
+    foo (pu16char);
+    foo (pcu16char);
+    foo (cpcu16char);
+
+    //foo (U"test");
+    foo (u32array);
+    foo (cu32array);
+    foo (u32str);
+    foo (u32str.c_str ());
+    foo (pu32char);
+    foo (pcu32char);
+    foo (cpcu32char);
+#endif
 
     int dummy = 0;
 

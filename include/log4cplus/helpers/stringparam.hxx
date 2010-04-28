@@ -85,22 +85,30 @@ enum Flags
     Defined   = 0x0001,
 
     CharTypeBit  = 1,
-    StringBit    = 2,
-    OwnershipBit = 3,
+    StringBit    = 3,
+    OwnershipBit = 4,
 
-    CharTypeMask = 1 << CharTypeBit,
+    CharTypeMask = 3 << CharTypeBit,
     StringTypeMask = 1 << StringBit,
 
-    CharArray  = 0 << CharTypeBit,
-    WCharArray = 1 << CharTypeBit,
+    CharArray   = 0 << CharTypeBit,
+    WCharArray  = 1 << CharTypeBit,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    Char16Array = 2 << CharTypeBit,
+    Char32Array = 3 << CharTypeBit,
+#endif
 #if defined (UNICODE)
     TCharArray = WCharArray,
 #else
     TCharArray = CharArray,
 #endif
 
-    StdString  = CharArray | 1 << StringBit,
-    StdWString = WCharArray | 1 << StringBit,
+    StdString    = CharArray | 1 << StringBit,
+    StdWString   = WCharArray | 1 << StringBit,
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    StdU16String = Char16Array | 1 << StringBit,
+    StdU32String = Char32Array | 1 << StringBit,
+#endif
 #if defined (UNICODE)
     TString    = StdWString,
 #else
@@ -140,6 +148,12 @@ union param_value_type
     string_value_type<char> str;
     string_value_type<wchar_t> wstr;
     string_value_type<log4cplus::tchar> tstr;
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    char_array_value_type<char16_t> u16array;
+    char_array_value_type<char32_t> u32array;
+    string_value_type<char16_t> u16str;
+    string_value_type<char32_t> u32str;
+#endif
 };
 
 
@@ -159,11 +173,26 @@ LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t *, WCharArray);
 LOG4CPLUS_DEF_PARAM_TRAITS (wchar_t const *, WCharArray);
 LOG4CPLUS_DEF_PARAM_TRAITS (std::string, StdString);
 LOG4CPLUS_DEF_PARAM_TRAITS (std::wstring, StdWString);
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+LOG4CPLUS_DEF_PARAM_TRAITS (char16_t *, Char16Array);
+LOG4CPLUS_DEF_PARAM_TRAITS (char16_t const *, Char16Array);
+LOG4CPLUS_DEF_PARAM_TRAITS (char32_t *, Char32Array);
+LOG4CPLUS_DEF_PARAM_TRAITS (char32_t const *, Char32Array);
+LOG4CPLUS_DEF_PARAM_TRAITS (std::u16string, StdU16String);
+LOG4CPLUS_DEF_PARAM_TRAITS (std::u32string, StdU32String);
+#endif
 
 #undef LOG4CPLUS_DEF_PARAM_TRAITS
 
 
 struct make_copy_tag { };
+
+
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+size_t const STRING_PARAM_TABLE_SIZE = 8;
+#else
+size_t const STRING_PARAM_TABLE_SIZE = 4;
+#endif
 
 
 class string_param
@@ -196,8 +225,14 @@ public:
         typename enable_if_c<is_same<char const *, T>::value
             || is_same<char *, T>::value
             || is_same<wchar_t const *, T>::value
-            || is_same<wchar_t *, T>::value,
-            std::size_t>::type strsize
+            || is_same<wchar_t *, T>::value
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+            || is_same<char16_t *, T>::value
+            || is_same<char16_t const *, T>::value
+            || is_same<char32_t *, T>::value
+            || is_same<char32_t const *, T>::value
+#endif
+            , std::size_t>::type strsize
             = (size_t_limits::max) ())
         : type (param_traits<T>::type_value | Defined)
     {
@@ -209,7 +244,12 @@ public:
     template <std::size_t N, typename T>
     string_param (T const (& param)[N],
         typename enable_if_c<is_same<char, T>::value
-            || is_same<wchar_t, T>::value, sfinae_filler>::type * = 0)
+            || is_same<wchar_t, T>::value
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+            || is_same<char16_t, T>::value
+            || is_same<char32_t, T>::value
+#endif
+            , sfinae_filler>::type * = 0)
         : type (param_traits<T *>::type_value | Defined)
     {
         value.unspec.size = N - 1;
@@ -220,7 +260,12 @@ public:
     template <typename T>
     string_param (std::basic_string<T> const & str,
         typename enable_if_c<is_same<char, T>::value
-            || is_same<wchar_t, T>::value, sfinae_filler>::type * = 0)
+            || is_same<wchar_t, T>::value
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+            || is_same<char16_t, T>::value
+            || is_same<char32_t, T>::value
+#endif
+            , sfinae_filler>::type * = 0)
         : type (param_traits<std::basic_string<T> >::type_value | Defined)
     {
         value.unspec.size = str.size ();
@@ -342,6 +387,24 @@ public:
     }
 
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    bool
+    is_char16_t () const
+    {
+        assert (type & Defined);
+        return (type & CharTypeMask) == Char16Array;
+    }
+
+
+    bool
+    is_char32_t () const
+    {
+        assert (type & Defined);
+        return (type & CharTypeMask) == Char32Array;
+    }
+#endif
+
+
     bool
     is_basic_string () const
     {
@@ -377,6 +440,26 @@ public:
     }
 
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+    bool
+    is_u16string () const
+    {
+        assert (type & Defined);
+        return (type & (CharTypeMask | StringTypeMask))
+            == (Char16Array | StringTypeMask);
+    }
+
+
+    bool
+    is_u32string () const
+    {
+        assert (type & Defined);
+        return (type & (CharTypeMask | StringTypeMask))
+            == (Char32Array | StringTypeMask);
+    }
+#endif
+
+
     template <typename Visitor>
     void
     visit (Visitor const & visitor) const
@@ -392,12 +475,28 @@ public:
             visitor (value.warray.ptr, size);
             break;
 
+        case Char16Array >> CharTypeBit:
+            visitor (value.u16array.ptr, size);
+            break;
+
+        case Char32Array >> CharTypeBit:
+            visitor (value.u32array.ptr, size);
+            break;
+
         case StdString >> CharTypeBit:
             visitor (*value.str.ptr);
             break;
 
         case StdWString >> CharTypeBit:
             visitor (*value.wstr.ptr);
+            break;
+
+        case StdU16String >> CharTypeBit:
+            visitor (*value.u16str.ptr);
+            break;
+
+        case StdU32String >> CharTypeBit:
+            visitor (*value.u32str.ptr);
             break;
 
         default:
@@ -446,10 +545,10 @@ private:
         void operator () (wchar_t const * cstr, std::size_t size) const
         {
 #if defined (UNICODE)
-                str.assign (cstr, size);
+            str.assign (cstr, size);
 #else
-                (void)size;
-                helpers::totstring (cstr).swap (str);
+            (void)size;
+            helpers::totstring (cstr).swap (str);
 #endif
         }
 
@@ -467,11 +566,37 @@ private:
         void operator () (std::wstring const & s) const
         {
 #if defined (UNICODE)
-                str = s;
+            str = s;
 #else
-                helpers::totstring (s).swap (str);
+            helpers::totstring (s).swap (str);
 #endif
         }
+
+
+#if defined (LOG4CPLUS_HAVE_CPP0X)
+        void operator () (char16_t const * cstr, std::size_t) const
+        {
+            helpers::totstring (cstr).swap (str);
+        }
+
+
+        void operator () (std::u16string const & s) const
+        {
+            helpers::totstring (s).swap (str);
+        }
+
+
+        void operator () (char32_t const * cstr, std::size_t) const
+        {
+            helpers::totstring (cstr).swap (str);
+        }
+
+
+        void operator () (std::u32string const & s) const
+        {
+            helpers::totstring (s).swap (str);
+        }
+#endif
 
 
         tstring & str;
@@ -488,7 +613,8 @@ private:
 
 
     typedef void (string_param:: * const delete_func_type) () const;
-    static LOG4CPLUS_EXPORT delete_func_type const delete_func[4];
+    static LOG4CPLUS_EXPORT delete_func_type const
+        delete_func[STRING_PARAM_TABLE_SIZE];
 
 
     template <typename CharType>
@@ -530,7 +656,8 @@ private:
 
 
     typedef std::size_t (string_param:: * const size_func_type) () const;
-    static LOG4CPLUS_EXPORT size_func_type const size_func[4];
+    static LOG4CPLUS_EXPORT size_func_type const
+        size_func[STRING_PARAM_TABLE_SIZE];
 
 
     void
@@ -568,7 +695,8 @@ private:
 
 
     typedef void (string_param:: * const make_copy_func_type) (string_param const &);
-    static LOG4CPLUS_EXPORT make_copy_func_type make_copy_func[4];
+    static LOG4CPLUS_EXPORT make_copy_func_type const
+        make_copy_func[STRING_PARAM_TABLE_SIZE];
 
 
     void
