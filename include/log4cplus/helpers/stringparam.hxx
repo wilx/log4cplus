@@ -475,6 +475,7 @@ public:
             visitor (value.warray.ptr, size);
             break;
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
         case Char16Array >> CharTypeBit:
             visitor (value.u16array.ptr, size);
             break;
@@ -482,6 +483,7 @@ public:
         case Char32Array >> CharTypeBit:
             visitor (value.u32array.ptr, size);
             break;
+#endif
 
         case StdString >> CharTypeBit:
             visitor (*value.str.ptr);
@@ -491,6 +493,7 @@ public:
             visitor (*value.wstr.ptr);
             break;
 
+#if defined (LOG4CPLUS_HAVE_CPP0X)
         case StdU16String >> CharTypeBit:
             visitor (*value.u16str.ptr);
             break;
@@ -498,6 +501,7 @@ public:
         case StdU32String >> CharTypeBit:
             visitor (*value.u32str.ptr);
             break;
+#endif
 
         default:
             assert (0 && "Unknown string_param type");
