@@ -98,5 +98,10 @@
 /* Defined if the compiler supports __PRETTY_FUNCTION__ macro. */
 #undef LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO
 
+/* */
+#undef LOG4CPLUS_HAVE_CHAR16_T
+
+/* */
+#undef LOG4CPLUS_HAVE_CHAR32_T
 
 #endif // LOG4CPLUS_CONFIG_DEFINES_HXX

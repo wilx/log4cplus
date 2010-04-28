@@ -11,6 +11,12 @@
 /* Defined if the compiler supports GNU style variadic macros. */
 #undef HAS_GNU_VARIADIC_MACROS
 
+/* Define to 1 if the system has the type `char16_t'. */
+#undef HAVE_CHAR16_T
+
+/* Define to 1 if the system has the type `char32_t'. */
+#undef HAVE_CHAR32_T
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -114,6 +120,12 @@
 
 /* */
 #undef LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
+
+/* */
+#undef LOG4CPLUS_HAVE_CHAR16_T
+
+/* */
+#undef LOG4CPLUS_HAVE_CHAR32_T
 
 /* */
 #undef LOG4CPLUS_HAVE_ENAMETOOLONG
