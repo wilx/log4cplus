@@ -30,6 +30,10 @@ namespace log4cplus
 {
 
 
+AbstractHierarchy::~AbstractHierarchy ()
+{ }
+
+
 //////////////////////////////////////////////////////////////////////////////
 // File "Local" methods
 //////////////////////////////////////////////////////////////////////////////
@@ -89,7 +93,7 @@ Hierarchy::~Hierarchy()
 void 
 Hierarchy::clear() 
 {
-    thread::MutexGuard guard (hashtable_mutex);
+    HashTableWriterGuard guard (hashtable_mutex);
 
     provisionNodes.erase(provisionNodes.begin(), provisionNodes.end());
     loggerPtrs.erase(loggerPtrs.begin(), loggerPtrs.end());
@@ -99,7 +103,7 @@ Hierarchy::clear()
 bool
 Hierarchy::exists(const tstring& name)
 {
-    thread::MutexGuard guard (hashtable_mutex);
+    HashTableWriterGuard guard (hashtable_mutex);
 
     LoggerMap::iterator it = loggerPtrs.find(name);
     return it != loggerPtrs.end();
@@ -162,7 +166,7 @@ Hierarchy::getInstance(const tstring& name)
 Logger 
 Hierarchy::getInstance(const tstring& name, spi::LoggerFactory& factory)
 {
-    thread::MutexGuard guard (hashtable_mutex);
+    HashTableWriterGuard guard (hashtable_mutex);
 
     return getInstanceImpl(name, factory);
 }
@@ -174,7 +178,7 @@ Hierarchy::getCurrentLoggers()
     LoggerList ret;
     
     {
-        thread::MutexGuard guard (hashtable_mutex);
+        HashTableWriterGuard guard (hashtable_mutex);
         initializeLoggerList(ret);
     }
 
@@ -248,6 +252,47 @@ Hierarchy::shutdown()
     }
 }
 
+
+void
+Hierarchy::readLock () const
+{
+    hashtable_mutex.rdlock ();
+}
+
+
+void
+Hierarchy::readUnlock () const
+{
+    hashtable_mutex.rdunlock ();
+}
+
+
+void
+Hierarchy::writeLock () const
+{
+    hashtable_mutex.wrlock ();
+}
+
+
+void
+Hierarchy::writeUnlock () const
+{
+    hashtable_mutex.wrunlock ();
+}
+
+
+AbstractHierarchy *
+Hierarchy::get ()
+{
+    return this;
+}
+
+
+AbstractHierarchy const *
+Hierarchy::get () const
+{
+    return this;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -366,6 +411,43 @@ Hierarchy::updateChildren(ProvisionNode& pn, Logger const & logger)
         }
     }
 }
+
+
+//
+//
+//
+
+
+template <typename GuardType>
+HierarchyManip<GuardType>::HierarchyManip (Hierarchy & h)
+    : GuardType (h)
+    , hier (&h)
+{ }
+
+
+template <typename GuardType>
+HierarchyManip<GuardType>::~HierarchyManip ()
+{ }
+
+
+template <typename GuardType>
+AbstractHierarchy &
+HierarchyManip<GuardType>::operator * () const
+{
+    return *hier->get ();
+}
+
+
+template <typename GuardType>
+AbstractHierarchy *
+HierarchyManip<GuardType>::operator -> () const
+{
+    return hier->get ();
+}
+
+
+template LOG4CPLUS_EXPORT HierarchyManip<HierarchyReaderGuard>;
+template LOG4CPLUS_EXPORT HierarchyManip<HierarchyWriterGuard>;
 
 
 } // namespace log4cplus

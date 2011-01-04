@@ -51,43 +51,55 @@ Logger::getDefaultHierarchy ()
 bool 
 Logger::exists (const log4cplus::tstring & name) 
 {
-    return getDefaultHierarchy().exists(name); 
+    HierarchyReader h (getDefaultHierarchy ());
+
+    return h->exists(name);
 }
 
 
 LoggerList
 Logger::getCurrentLoggers () 
 {
-    return getDefaultHierarchy ().getCurrentLoggers ();
+    HierarchyReader h (getDefaultHierarchy ());
+
+    return h->getCurrentLoggers ();
 }
 
 
 Logger 
 Logger::getInstance (const log4cplus::tstring& name) 
-{ 
-    return getDefaultHierarchy().getInstance(name); 
+{
+    HierarchyWriter h (getDefaultHierarchy ());
+
+    return h->getInstance(name); 
 }
 
 
 Logger 
 Logger::getInstance (const log4cplus::tstring& name,
     spi::LoggerFactory& factory)
-{ 
-    return getDefaultHierarchy().getInstance(name, factory); 
+{
+    HierarchyWriter h (getDefaultHierarchy ());
+
+    return h->getInstance(name, factory);
 }
 
 
 Logger 
 Logger::getRoot () 
-{ 
-    return getDefaultHierarchy ().getRoot (); 
+{
+    HierarchyReader h (getDefaultHierarchy ());
+
+    return h->getRoot (); 
 }
 
 
 void 
 Logger::shutdown () 
-{ 
-    getDefaultHierarchy ().shutdown (); 
+{
+    HierarchyWriter h (getDefaultHierarchy ());
+
+    h->shutdown (); 
 }
 
 

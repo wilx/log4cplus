@@ -26,6 +26,7 @@
 #include <log4cplus/tstring.h>
 #include <log4cplus/appender.h>
 #include <log4cplus/logger.h>
+#include <log4cplus/hierarchy.h>
 
 
 namespace log4cplus
@@ -63,7 +64,7 @@ namespace log4cplus
     private:
       // Data
         Hierarchy& h;
-        log4cplus::thread::MutexGuard hierarchyLocker;
+        Hierarchy::HashTableWriterGuard hierarchyLocker;
         LoggerList loggerList;
     };
 

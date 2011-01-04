@@ -259,7 +259,6 @@ namespace log4cplus
         void configureAppenders();
         void configureAdditivity();
         
-        virtual Logger getLogger(const log4cplus::tstring& name);
         virtual void addAppender(Logger &logger, log4cplus::SharedAppenderPtr& appender);
 
       // Types

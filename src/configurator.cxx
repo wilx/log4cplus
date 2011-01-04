@@ -390,9 +390,11 @@ PropertyConfigurator::replaceEnvironVariables()
 void
 PropertyConfigurator::configureLoggers()
 {
+    HierarchyWriter hw (h);
+
     if(properties.exists( LOG4CPLUS_TEXT("rootLogger") ))
     {
-        Logger root = h.getRoot();
+        Logger root = hw->getRoot();
         configureLogger(root,
                         properties.getProperty(LOG4CPLUS_TEXT("rootLogger")));
     }
@@ -403,7 +405,7 @@ PropertyConfigurator::configureLoggers()
     for(std::vector<tstring>::iterator it=loggers.begin(); it!=loggers.end();
         ++it)
     {
-        Logger log = getLogger(*it);
+        Logger log = hw->getInstance(*it);
         configureLogger(log, loggerProperties.getProperty(*it));
     }
 }
@@ -525,6 +527,8 @@ PropertyConfigurator::configureAppenders()
 void
 PropertyConfigurator::configureAdditivity()
 {
+    HierarchyWriter hw (h);
+
     helpers::Properties additivityProperties =
         properties.getPropertySubset(LOG4CPLUS_TEXT("additivity."));
     std::vector<tstring> additivitysProps
@@ -533,19 +537,11 @@ PropertyConfigurator::configureAdditivity()
     for(std::vector<tstring>::const_iterator it = additivitysProps.begin();
         it != additivitysProps.end(); ++it)
     {
-        Logger logger = getLogger(*it);
+        Logger logger = hw->getInstance(*it);
         bool additivity;
         if (additivityProperties.getBool (additivity, *it))
             logger.setAdditivity (additivity);
     }
-}
-
-
-
-Logger
-PropertyConfigurator::getLogger(const tstring& name)
-{
-    return h.getInstance(name);
 }
 
 
@@ -606,7 +602,6 @@ public:
         , waitMillis(waitMillis < 1000 ? 1000 : millis)
         , shouldTerminate(false)
         , lastModTime(helpers::Time::gettimeofday())
-        , lock(NULL)
     {
         updateLastModTime();
     }
@@ -622,9 +617,7 @@ public:
 
 protected:
     virtual void run();
-    virtual Logger getLogger(const tstring& name);
-    virtual void addAppender(Logger &logger, SharedAppenderPtr& appender);
-    
+
     bool checkForFileModification();
     void updateLastModTime();
     
@@ -636,7 +629,6 @@ private:
     unsigned int const waitMillis;
     thread::ManualResetEvent shouldTerminate;
     helpers::Time lastModTime;
-    HierarchyLocker* lock;
 };
 
 
@@ -646,41 +638,17 @@ ConfigurationWatchDogThread::run()
     while (! shouldTerminate.timed_wait (waitMillis))
     {
         bool modified = checkForFileModification();
-        if(modified) {
-            // Lock the Hierarchy
-            HierarchyLocker theLock(h);
-            lock = &theLock;
+        if(modified)
+        {
+            {
+                HierarchyWriter lock (h);
+                lock->resetConfiguration();
+            }
 
-            // reconfigure the Hierarchy
-            theLock.resetConfiguration();
             reconfigure();
             updateLastModTime();
-
-            // release the lock
-            lock = NULL;
         }
     }
-}
-
-
-Logger
-ConfigurationWatchDogThread::getLogger(const tstring& name)
-{
-    if(lock)
-        return lock->getInstance(name);
-    else
-        return PropertyConfigurator::getLogger(name);
-}
-
-
-void
-ConfigurationWatchDogThread::addAppender(Logger& logger,
-                                         SharedAppenderPtr& appender)
-{
-    if(lock)
-        lock->addAppender(logger, appender);
-    else
-        PropertyConfigurator::addAppender(logger, appender);
 }
 
 
