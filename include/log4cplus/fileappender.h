@@ -111,6 +111,12 @@ namespace log4cplus {
         bool immediateFlush;
 
         /**
+         * Use lock file for inter-process synchronization of access
+         * to log file.
+         */
+        bool useLockFile;
+
+        /**
          * When any append operation fails, <code>reopenDelay</code> says 
          * for how many seconds the next attempt to re-open the log file and 
          * resume logging will be delayed. If <code>reopenDelay</code> is zero, 
@@ -124,6 +130,7 @@ namespace log4cplus {
 
         log4cplus::tofstream out;
         log4cplus::tstring filename;
+        log4cplus::tstring lock_filename;
 
         log4cplus::helpers::Time reopen_time;
 
