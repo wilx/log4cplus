@@ -249,12 +249,13 @@ FileAppender::FileAppender(const Properties& properties,
         tstring tmp = properties.getProperty( LOG4CPLUS_TEXT("BufferSize") );
         bufferSize = std::atoi(LOG4CPLUS_TSTRING_TO_STRING(tmp).c_str());
     }
-    if (properties.exist (LOG4CPLUS_TEXT("LockFile")))
+    if (properties.exists (LOG4CPLUS_TEXT("UseLockFile")))
     {
-        lock_filename = properties.getProperty (LOG4CPLUS_TEXT ("LockFile"));
-        useLockFile = true;
+        tstring tmp = properties.getProperty (LOG4CPLUS_TEXT("UseLockFile"));
+        useLockFile = (helpers::toLower(tmp) == LOG4CPLUS_TEXT("true"));
     }
-        
+    if (properties.exist (LOG4CPLUS_TEXT("LockFile")))
+        lockFilename = properties.getProperty (LOG4CPLUS_TEXT ("LockFile"));
 
     init(filename_, (append_ ? std::ios::app : std::ios::trunc));
 }

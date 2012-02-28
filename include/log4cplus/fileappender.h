@@ -130,7 +130,7 @@ namespace log4cplus {
 
         log4cplus::tofstream out;
         log4cplus::tstring filename;
-        log4cplus::tstring lock_filename;
+        log4cplus::tstring lockFilename;
 
         log4cplus::helpers::Time reopen_time;
 
