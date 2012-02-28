@@ -241,7 +241,12 @@ PropertyConfigurator::PropertyConfigurator(const tstring& propertyFile,
     Hierarchy& hier, unsigned f)
     : h(hier)
     , propertyFilename(propertyFile)
+#if defined (LOG4CPLUS_HAVE_CODECVT_UTF16_FACET)
+    , properties(propertyFile,
+        (f & fUTF16File) == fUTF16File ? helpers::Properties::fUTF16File : 0)
+#else
     , properties(propertyFile)
+#endif
     , flags (f)
 {
     init();
@@ -599,7 +604,7 @@ class ConfigurationWatchDogThread
 public:
     ConfigurationWatchDogThread(const tstring& file, unsigned int millis)
         : PropertyConfigurator(file)
-        , waitMillis(waitMillis < 1000 ? 1000 : millis)
+        , waitMillis(millis < 1000 ? 1000 : millis)
         , shouldTerminate(false)
         , lastModTime(helpers::Time::gettimeofday())
     {

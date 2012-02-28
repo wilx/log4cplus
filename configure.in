@@ -12,12 +12,12 @@ AM_INIT_AUTOMAKE([1.11.1 no-define nostdinc gnu -Wall])
 
 #
 # +1 : ? : +1  == new interface that does not break old one
-# +1 : ? : 0   == new interfac that breaks old one
+# +1 : ? : 0   == new interface that breaks old one
 #  ? : ? : 0   == no new interfaces, but breaks apps
 #  ? :+1 : ?   == just some internal changes, nothing breaks but might work
 #                 better
 # CURRENT : REVISION : AGE
-LT_VERSION=0:0:0
+LT_VERSION=1:0:1
 AC_SUBST([LT_VERSION])
 
 dnl Use C++ std::locale and std::codecvt facet for string conversion.
@@ -346,6 +346,9 @@ dnl Multi threaded library.
    CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
    LIBS="$PTHREAD_LIBS $LIBS"
 
+   dnl required on HP-UX
+   AC_SEARCH_LIBS([sem_init], [rt])
+
    AS_CASE([$ax_cv_cxx_compiler_vendor],
      [gnu],
      [dnl GCC, empty case to avoid false positive for -qtls check.
@@ -420,4 +423,4 @@ AC_CONFIG_FILES([Makefile
 AC_SUBST([LOG4CPLUS_PROFILING_LDFLAGS])
 AC_SUBST([LOG4CPLUS_PROFILING_CXXFLAGS])
 
-AC_OUTPUT
+AC_OUTPUT([log4cplus.pc])
