@@ -4,5 +4,4 @@ noinst_PROGRAMS = appender_test
 
 appender_test_SOURCES = main.cxx
 
-appender_test_LDADD = $(top_builddir)/src/liblog4cplus.la 
-
+appender_test_LDADD = $(TESTSLDADD)

@@ -70,8 +70,7 @@ PROGRAMS = $(noinst_PROGRAMS)
 am_customloglevel_test_OBJECTS = main.$(OBJEXT) func.$(OBJEXT) \
 	customloglevel.$(OBJEXT)
 customloglevel_test_OBJECTS = $(am_customloglevel_test_OBJECTS)
-customloglevel_test_DEPENDENCIES =  \
-	$(top_builddir)/src/liblog4cplus.la
+customloglevel_test_DEPENDENCIES = $(TESTSLDADD)
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -223,8 +222,12 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_LDFLAGS = @LOG4CPLUS_PROFILING_LDFLAGS@
 AM_CXXFLAGS = @LOG4CPLUS_PROFILING_CXXFLAGS@
+TESTSLDADD = \
+	$(top_builddir)/src/core/liblog4cplus.la \
+	$(top_builddir)/src/appenders/liblog4cplus_appenders.la
+
 customloglevel_test_SOURCES = main.cxx func.cxx customloglevel.cxx
-customloglevel_test_LDADD = $(top_builddir)/src/liblog4cplus.la 
+customloglevel_test_LDADD = $(TESTSLDADD)
 all: all-am
 
 .SUFFIXES:
