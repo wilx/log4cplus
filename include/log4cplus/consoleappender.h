@@ -25,6 +25,7 @@
 
 #include <log4cplus/config.hxx>
 #include <log4cplus/appender.h>
+#include "log4cplus/appendersexports.h"
 
 namespace log4cplus {
     /**
@@ -32,7 +33,7 @@ namespace log4cplus {
      * <code>System.err</code> using a layout specified by the
      * user. The default target is <code>System.out</code>.
      */
-    class LOG4CPLUS_EXPORT ConsoleAppender : public Appender {
+    class LOG4CPLUS_APPENDERS_EXPORT ConsoleAppender : public Appender {
     public:
       // Ctors
         ConsoleAppender(bool logToStdErr = false, bool immediateFlush = false);
