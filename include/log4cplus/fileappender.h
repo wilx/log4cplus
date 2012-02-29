@@ -29,6 +29,7 @@
 #include <log4cplus/helpers/timehelper.h>
 #include <fstream>
 #include <locale>
+#include "log4cplus/appendersexports.h"
 
 
 namespace log4cplus
@@ -36,7 +37,6 @@ namespace log4cplus
 
     /**
      * Appends log events to a file. 
-     * Appends log events to a file.
      * 
      * <h3>Properties</h3>
      * <dl>
@@ -62,7 +62,7 @@ namespace log4cplus
      * </dd>
      * </dl>
      */
-    class LOG4CPLUS_EXPORT FileAppender : public Appender {
+    class LOG4CPLUS_APPENDERS_EXPORT FileAppender : public Appender {
     public:
       // Ctors
         FileAppender(const log4cplus::tstring& filename, 
@@ -155,7 +155,7 @@ namespace log4cplus
      * will be kept.</dd>
      * </dl>
      */
-    class LOG4CPLUS_EXPORT RollingFileAppender : public FileAppender {
+    class LOG4CPLUS_APPENDERS_EXPORT RollingFileAppender : public FileAppender {
     public:
       // Ctors
         RollingFileAppender(const log4cplus::tstring& filename,
@@ -205,7 +205,7 @@ namespace log4cplus
      *
      * </dl>
      */
-    class LOG4CPLUS_EXPORT DailyRollingFileAppender : public FileAppender {
+    class LOG4CPLUS_APPENDERS_EXPORT DailyRollingFileAppender : public FileAppender {
     public:
       // Ctors
         DailyRollingFileAppender(const log4cplus::tstring& filename,

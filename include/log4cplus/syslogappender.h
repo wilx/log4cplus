@@ -27,6 +27,7 @@
 
 #if defined(LOG4CPLUS_HAVE_SYSLOG_H) && !defined(_WIN32)
 #include <log4cplus/appender.h>
+#include "log4cplus/appendersexports.h"
 
 
 namespace log4cplus
@@ -48,7 +49,7 @@ namespace log4cplus
      * etc.</dd>
      * </dl>
      */
-    class LOG4CPLUS_EXPORT SysLogAppender : public Appender {
+    class LOG4CPLUS_APPENDERS_EXPORT SysLogAppender : public Appender {
     public:
       // Ctors
         SysLogAppender(const tstring& ident);

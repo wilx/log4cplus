@@ -42,13 +42,13 @@
 #include <log4cplus/appender.h>
 #include <log4cplus/thread/threads.h>
 #include <log4cplus/helpers/appenderattachableimpl.h>
-
+#include <log4cplus/appendersexports.h>
 
 namespace log4cplus
 {
 
 
-class LOG4CPLUS_EXPORT AsyncAppender
+class LOG4CPLUS_APPENDERS_EXPORT AsyncAppender
     : public Appender
     , public helpers::AppenderAttachableImpl
 {

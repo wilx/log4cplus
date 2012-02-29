@@ -28,13 +28,15 @@
 #include <log4cplus/appender.h>
 #include <log4cplus/config/windowsh-inc.h>
 
+#include "log4cplus/appendersexports.h"
+
 
 namespace log4cplus {
 
     /**
      * Appends log events to NT EventLog. 
      */
-    class LOG4CPLUS_EXPORT NTEventLogAppender : public Appender {
+    class LOG4CPLUS_APPENDERS_EXPORT NTEventLogAppender : public Appender {
     public:
       // ctors
         NTEventLogAppender(const log4cplus::tstring& server, 

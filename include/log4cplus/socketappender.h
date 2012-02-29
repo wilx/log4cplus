@@ -28,7 +28,7 @@
 #include <log4cplus/helpers/socket.h>
 #include <log4cplus/thread/syncprims.h>
 #include <log4cplus/thread/threads.h>
-
+#include "log4cplus/appendersexports.h"
 
 namespace log4cplus
 {
@@ -79,7 +79,7 @@ namespace log4cplus
      *   but the log events will be lost due to server unavailability.
      * </ul>
      */
-    class LOG4CPLUS_EXPORT SocketAppender : public Appender {
+    class LOG4CPLUS_APPENDERS_EXPORT SocketAppender : public Appender {
     public:
       // Ctors
         SocketAppender(const log4cplus::tstring& host, unsigned short port, 
@@ -104,10 +104,10 @@ namespace log4cplus
         log4cplus::tstring serverName;
 
 #if ! defined (LOG4CPLUS_SINGLE_THREADED)
-        class LOG4CPLUS_EXPORT ConnectorThread;
+        class LOG4CPLUS_APPENDERS_EXPORT ConnectorThread;
         friend class ConnectorThread;
 
-        class LOG4CPLUS_EXPORT ConnectorThread
+        class LOG4CPLUS_APPENDERS_EXPORT ConnectorThread
             : public thread::AbstractThread
         {
         public:
@@ -136,12 +136,12 @@ namespace log4cplus
     };
 
     namespace helpers {
-        LOG4CPLUS_EXPORT
+        LOG4CPLUS_APPENDERS_EXPORT
         void convertToBuffer (SocketBuffer & buffer,
             const log4cplus::spi::InternalLoggingEvent& event,
             const log4cplus::tstring& serverName);
 
-        LOG4CPLUS_EXPORT
+        LOG4CPLUS_APPENDERS_EXPORT
         log4cplus::spi::InternalLoggingEvent readFromBuffer(SocketBuffer& buffer);
     } // end namespace helpers
 

@@ -36,7 +36,7 @@
 #ifndef LOG4CPLUS_INTERNAL_INTERNAL_HEADER_
 #define LOG4CPLUS_INTERNAL_INTERNAL_HEADER_
 
-#if ! defined (INSIDE_LOG4CPLUS)
+#if ! defined (INSIDE_LOG4CPLUS) && ! defined (INSIDE_LOG4CPLUS_APPENDERS)
 #  error "This header must not be be used outside log4cplus' implementation files."
 #endif
 

@@ -71,7 +71,8 @@ am__loggingserver_SOURCES_DIST = loggingserver.cxx
 @MULTI_THREADED_TRUE@	loggingserver.$(OBJEXT)
 loggingserver_OBJECTS = $(am_loggingserver_OBJECTS)
 @MULTI_THREADED_TRUE@loggingserver_DEPENDENCIES =  \
-@MULTI_THREADED_TRUE@	$(top_builddir)/src/liblog4cplus.la
+@MULTI_THREADED_TRUE@	$(top_builddir)/src/core/liblog4cplus.la \
+@MULTI_THREADED_TRUE@	$(top_builddir)/src/appenders/liblog4cplus_appenders.la
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -137,6 +138,7 @@ LOG4CPLUS_PROFILING_LDFLAGS = @LOG4CPLUS_PROFILING_LDFLAGS@
 LTLIBOBJS = @LTLIBOBJS@
 LT_VERSION = @LT_VERSION@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -165,6 +167,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -222,7 +225,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include \
 	@LOG4CPLUS_NDEBUG@
 
 @MULTI_THREADED_TRUE@loggingserver_SOURCES = loggingserver.cxx
-@MULTI_THREADED_TRUE@loggingserver_LDADD = $(top_builddir)/src/liblog4cplus.la 
+@MULTI_THREADED_TRUE@loggingserver_LDADD = \
+@MULTI_THREADED_TRUE@	$(top_builddir)/src/core/liblog4cplus.la \
+@MULTI_THREADED_TRUE@	$(top_builddir)/src/appenders/liblog4cplus_appenders.la 
+
 all: all-am
 
 .SUFFIXES:

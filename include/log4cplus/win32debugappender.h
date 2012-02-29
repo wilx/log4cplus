@@ -27,6 +27,7 @@
 #if defined (LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING) 
 
 #include <log4cplus/appender.h>
+#include "log4cplus/appendersexports.h"
 
 
 namespace log4cplus {
@@ -34,7 +35,7 @@ namespace log4cplus {
     /**
      * Prints log events using OutputDebugString(). 
      */
-    class LOG4CPLUS_EXPORT Win32DebugAppender
+    class LOG4CPLUS_APPENDERS_EXPORT Win32DebugAppender
         : public Appender
     {
     public:

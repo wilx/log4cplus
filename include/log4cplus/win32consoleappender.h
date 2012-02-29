@@ -29,6 +29,7 @@
 #if defined(_WIN32) && defined (LOG4CPLUS_HAVE_WIN32_CONSOLE)
 
 #include <log4cplus/appender.h>
+#include "log4cplus/appendersexports.h"
 
 
 namespace log4cplus
@@ -46,7 +47,7 @@ namespace log4cplus
     *
     * </dl>
     */
-    class LOG4CPLUS_EXPORT Win32ConsoleAppender
+    class LOG4CPLUS_APPENDERS_EXPORT Win32ConsoleAppender
         : public Appender
     {
     public:
