@@ -139,25 +139,25 @@ REG_PRODUCT (reg, "log4cplus::spi::", filtername, spi::, spi::FilterFactory)
 void initializeFactoryRegistry()
 {
     spi::AppenderFactoryRegistry& reg = spi::getAppenderFactoryRegistry();
-    REG_APPENDER (reg, ConsoleAppender);
+    //REG_APPENDER (reg, ConsoleAppender);
     REG_APPENDER (reg, NullAppender);
-    REG_APPENDER (reg, FileAppender);
-    REG_APPENDER (reg, RollingFileAppender);
-    REG_APPENDER (reg, DailyRollingFileAppender);
-    REG_APPENDER (reg, SocketAppender);
+    //REG_APPENDER (reg, FileAppender);
+    //REG_APPENDER (reg, RollingFileAppender);
+    //REG_APPENDER (reg, DailyRollingFileAppender);
+    //REG_APPENDER (reg, SocketAppender);
 #if defined(_WIN32)
 #  if defined(LOG4CPLUS_HAVE_NT_EVENT_LOG)
-    REG_APPENDER (reg, NTEventLogAppender);
+    //REG_APPENDER (reg, NTEventLogAppender);
 #  endif
 #  if defined(LOG4CPLUS_HAVE_WIN32_CONSOLE)
-    REG_APPENDER (reg, Win32ConsoleAppender);
+    //REG_APPENDER (reg, Win32ConsoleAppender);
 #  endif
-    REG_APPENDER (reg, Win32DebugAppender);
+    //REG_APPENDER (reg, Win32DebugAppender);
 #elif defined(LOG4CPLUS_HAVE_SYSLOG_H)
-    REG_APPENDER (reg, SysLogAppender);
+    //REG_APPENDER (reg, SysLogAppender);
 #endif
 #ifndef LOG4CPLUS_SINGLE_THREADED
-    REG_APPENDER (reg, AsyncAppender);
+    //REG_APPENDER (reg, AsyncAppender);
 #endif
 
     spi::LayoutFactoryRegistry& reg2 = spi::getLayoutFactoryRegistry();

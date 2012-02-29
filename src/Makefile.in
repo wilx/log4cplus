@@ -90,25 +90,35 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 liblog4cplus_la_LIBADD =
 am__objects_1 =
 am__objects_2 = $(am__objects_1) appenderattachableimpl.lo appender.lo \
-	asyncappender.lo clogger.lo configurator.lo consoleappender.lo \
-	cygwin-win32.lo env.lo factory.lo fileappender.lo filter.lo \
-	global-init.lo hierarchy.lo hierarchylocker.lo layout.lo \
-	logger.lo loggerimpl.lo loggingevent.lo loggingmacros.lo \
-	loglevel.lo loglog.lo logloguser.lo mdc.lo ndc.lo \
-	nullappender.lo nteventlogappender.lo objectregistry.lo \
-	patternlayout.lo pointer.lo property.lo queue.lo rootlogger.lo \
-	sleep.lo snprintf.lo socketappender.lo socketbuffer.lo \
-	socket.lo socket-unix.lo socket-win32.lo stringhelper.lo \
-	stringhelper-clocale.lo stringhelper-cxxlocale.lo \
-	stringhelper-iconv.lo syncprims.lo syslogappender.lo \
-	threads.lo timehelper.lo tls.lo version.lo \
-	win32consoleappender.lo win32debugappender.lo
+	clogger.lo configurator.lo cygwin-win32.lo env.lo factory.lo \
+	filter.lo global-init.lo hierarchy.lo hierarchylocker.lo \
+	layout.lo logger.lo loggerimpl.lo loggingevent.lo \
+	loggingmacros.lo loglevel.lo loglog.lo logloguser.lo mdc.lo \
+	ndc.lo nullappender.lo objectregistry.lo patternlayout.lo \
+	pointer.lo property.lo queue.lo rootlogger.lo sleep.lo \
+	snprintf.lo socketbuffer.lo socket.lo socket-unix.lo \
+	socket-win32.lo stringhelper.lo stringhelper-clocale.lo \
+	stringhelper-cxxlocale.lo stringhelper-iconv.lo syncprims.lo \
+	threads.lo timehelper.lo tls.lo version.lo
 am__objects_3 = $(am__objects_2)
 am_liblog4cplus_la_OBJECTS = $(am__objects_3)
 liblog4cplus_la_OBJECTS = $(am_liblog4cplus_la_OBJECTS)
 liblog4cplus_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(liblog4cplus_la_LDFLAGS) $(LDFLAGS) -o $@
+liblog4cplus_appenders_la_DEPENDENCIES =  \
+	$(top_builddir)/src/liblog4cplus.la
+am__objects_4 = $(am__objects_1) asyncappender.lo consoleappender.lo \
+	fileappender.lo nteventlogappender.lo socketappender.lo \
+	syslogappender.lo win32consoleappender.lo \
+	win32debugappender.lo
+am_liblog4cplus_appenders_la_OBJECTS = $(am__objects_4)
+liblog4cplus_appenders_la_OBJECTS =  \
+	$(am_liblog4cplus_appenders_la_OBJECTS)
+liblog4cplus_appenders_la_LINK = $(LIBTOOL) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(liblog4cplus_appenders_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -131,8 +141,10 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(liblog4cplus_la_SOURCES)
-DIST_SOURCES = $(liblog4cplus_la_SOURCES)
+SOURCES = $(liblog4cplus_la_SOURCES) \
+	$(liblog4cplus_appenders_la_SOURCES)
+DIST_SOURCES = $(liblog4cplus_la_SOURCES) \
+	$(liblog4cplus_appenders_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -264,7 +276,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-lib_LTLIBRARIES = liblog4cplus.la
+lib_LTLIBRARIES = liblog4cplus.la liblog4cplus_appenders.la
 AM_CPPFLAGS = -DINSIDE_LOG4CPLUS \
 		-I$(top_srcdir)/include -I$(top_builddir)/include \
 		@LOG4CPLUS_NDEBUG@
@@ -274,7 +286,6 @@ AM_LDFLAGS = @LOG4CPLUS_PROFILING_LDFLAGS@
 INCLUDES_SRC_PATH = $(top_srcdir)/include/log4cplus
 INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/appender.h \
-	$(INCLUDES_SRC_PATH)/asyncappender.h \
 	$(INCLUDES_SRC_PATH)/boost/deviceappender.hxx \
 	$(INCLUDES_SRC_PATH)/clogger.h \
 	$(INCLUDES_SRC_PATH)/config.hxx \
@@ -282,8 +293,6 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/config/win32.h \
 	$(INCLUDES_SRC_PATH)/config/windowsh-inc.h \
 	$(INCLUDES_SRC_PATH)/configurator.h \
-	$(INCLUDES_SRC_PATH)/consoleappender.h \
-	$(INCLUDES_SRC_PATH)/fileappender.h \
 	$(INCLUDES_SRC_PATH)/fstreams.h \
 	$(INCLUDES_SRC_PATH)/helpers/appenderattachableimpl.h \
 	$(INCLUDES_SRC_PATH)/helpers/loglog.h \
@@ -310,7 +319,6 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/loglevel.h \
 	$(INCLUDES_SRC_PATH)/mdc.h \
 	$(INCLUDES_SRC_PATH)/ndc.h \
-	$(INCLUDES_SRC_PATH)/nteventlogappender.h \
 	$(INCLUDES_SRC_PATH)/nullappender.h \
 	$(INCLUDES_SRC_PATH)/spi/appenderattachable.h \
 	$(INCLUDES_SRC_PATH)/spi/factory.h \
@@ -320,9 +328,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/spi/loggingevent.h \
 	$(INCLUDES_SRC_PATH)/spi/objectregistry.h \
 	$(INCLUDES_SRC_PATH)/spi/rootlogger.h \
-	$(INCLUDES_SRC_PATH)/socketappender.h \
 	$(INCLUDES_SRC_PATH)/streams.h \
-	$(INCLUDES_SRC_PATH)/syslogappender.h \
 	$(INCLUDES_SRC_PATH)/tchar.h \
 	$(INCLUDES_SRC_PATH)/thread/impl/syncprims-impl.h \
 	$(INCLUDES_SRC_PATH)/thread/impl/syncprims-pmsm.h \
@@ -336,22 +342,17 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/tracelogger.h \
 	$(INCLUDES_SRC_PATH)/tstring.h \
 	$(INCLUDES_SRC_PATH)/version.h \
-	$(INCLUDES_SRC_PATH)/win32consoleappender.h \
-	$(INCLUDES_SRC_PATH)/win32debugappender.h \
 	$(top_builddir)/include/log4cplus/config/defines.hxx
 
 SINGLE_THREADED_SRC = \
 	$(INCLUDES_SRC) \
 	appenderattachableimpl.cxx \
 	appender.cxx \
-	asyncappender.cxx \
 	clogger.cxx \
 	configurator.cxx \
-	consoleappender.cxx \
 	cygwin-win32.cxx \
 	env.cxx \
 	factory.cxx \
-	fileappender.cxx \
 	filter.cxx \
 	global-init.cxx \
 	hierarchy.cxx \
@@ -367,7 +368,6 @@ SINGLE_THREADED_SRC = \
 	mdc.cxx \
 	ndc.cxx \
 	nullappender.cxx \
-	nteventlogappender.cxx \
 	objectregistry.cxx \
 	patternlayout.cxx \
 	pointer.cxx \
@@ -376,7 +376,6 @@ SINGLE_THREADED_SRC = \
 	rootlogger.cxx \
 	sleep.cxx \
 	snprintf.cxx \
-	socketappender.cxx \
 	socketbuffer.cxx \
 	socket.cxx \
 	socket-unix.cxx \
@@ -386,19 +385,39 @@ SINGLE_THREADED_SRC = \
 	stringhelper-cxxlocale.cxx \
 	stringhelper-iconv.cxx \
 	syncprims.cxx \
-	syslogappender.cxx \
 	threads.cxx \
 	timehelper.cxx \
 	tls.cxx \
-	version.cxx \
-	win32consoleappender.cxx \
-	win32debugappender.cxx
+	version.cxx
 
 LIB_SRC = $(SINGLE_THREADED_SRC)
 liblog4cplus_la_SOURCES = $(LIB_SRC)
-
-#liblog4cplus_a_LIBADD = @LIBOBJS@ @ALLOCA@
 liblog4cplus_la_LDFLAGS = -no-undefined -version-info @LT_VERSION@ -release 1.1
+APPENDERS_INC = \
+	$(INCLUDES_SRC_PATH)/asyncappender.h \
+	$(INCLUDES_SRC_PATH)/consoleappender.h \
+	$(INCLUDES_SRC_PATH)/fileappender.h \
+	$(INCLUDES_SRC_PATH)/nteventlogappender.h \
+	$(INCLUDES_SRC_PATH)/socketappender.h \
+	$(INCLUDES_SRC_PATH)/win32consoleappender.h \
+	$(INCLUDES_SRC_PATH)/win32debugappender.h
+
+APPENDERS_SRC = \
+	$(APPENDERS_INC) \
+	asyncappender.cxx \
+	consoleappender.cxx \
+	fileappender.cxx \
+	nteventlogappender.cxx \
+	socketappender.cxx \
+	syslogappender.cxx \
+	win32consoleappender.cxx \
+	win32debugappender.cxx
+
+liblog4cplus_appenders_la_SOURCES = $(APPENDERS_SRC)
+liblog4cplus_appenders_la_LIBADD = $(top_builddir)/src/liblog4cplus.la 
+liblog4cplus_appenders_la_LDFLAGS = -no-undefined -version-info @LT_VERSION@ \
+		-release 1.1
+
 all: all-am
 
 .SUFFIXES:
@@ -466,6 +485,8 @@ clean-libLTLIBRARIES:
 	done
 liblog4cplus.la: $(liblog4cplus_la_OBJECTS) $(liblog4cplus_la_DEPENDENCIES) 
 	$(liblog4cplus_la_LINK) -rpath $(libdir) $(liblog4cplus_la_OBJECTS) $(liblog4cplus_la_LIBADD) $(LIBS)
+liblog4cplus_appenders.la: $(liblog4cplus_appenders_la_OBJECTS) $(liblog4cplus_appenders_la_DEPENDENCIES) 
+	$(liblog4cplus_appenders_la_LINK) -rpath $(libdir) $(liblog4cplus_appenders_la_OBJECTS) $(liblog4cplus_appenders_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
