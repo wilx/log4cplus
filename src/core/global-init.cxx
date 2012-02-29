@@ -234,15 +234,25 @@ per_thread_data::~per_thread_data ()
 }
 
 
-log4cplus::thread::impl::tls_key_type tls_storage_key;
+//! TLS key whose value is pointer struct per_thread_data.
+static log4cplus::thread::impl::tls_key_type tls_storage_key;
 
 
 #if ! defined (LOG4CPLUS_SINGLE_THREADED) \
     && defined (LOG4CPLUS_THREAD_LOCAL_VAR)
 
-LOG4CPLUS_THREAD_LOCAL_VAR per_thread_data * ptd = 0;
+static LOG4CPLUS_THREAD_LOCAL_VAR per_thread_data * ptd = 0;
 
 
+static inline
+void
+set_ptd (per_thread_data * p)
+{
+    ptd = p;
+}
+
+
+static
 per_thread_data *
 alloc_ptd ()
 {
@@ -258,15 +268,53 @@ alloc_ptd ()
     return tmp;
 }
 
-#  else
 
 per_thread_data *
+get_ptd (bool alloc)
+{
+    if (! ptd && alloc)
+        return alloc_ptd ();
+
+    // The assert() does not belong here. get_ptd() might be called by
+    // cleanup code that can handle the returned NULL pointer.
+    //assert (ptd);
+
+    return ptd;
+}
+
+
+#  else
+
+static inline
+void
+set_ptd (per_thread_data * p)
+{
+    thread::impl::tls_set_value (tls_storage_key, p);
+}
+
+
+static per_thread_data *
 alloc_ptd ()
 {
     per_thread_data * tmp = new per_thread_data;
     set_ptd (tmp);
     return tmp;
 }
+
+
+per_thread_data *
+get_ptd (bool alloc)
+{
+    per_thread_data * ptd
+        = reinterpret_cast<per_thread_data *>(
+            thread::impl::tls_get_value (tls_storage_key));
+
+    if (! ptd && alloc)
+        return alloc_ptd ();
+
+    return ptd;
+}
+
 
 #  endif
 

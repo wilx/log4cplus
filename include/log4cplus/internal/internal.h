@@ -61,10 +61,10 @@ namespace internal {
 
 //! Canonical empty string. It is used when the need to return empty string
 //! by reference arises.
-extern log4cplus::tstring const empty_str;
+extern LOG4CPLUS_EXPORT log4cplus::tstring const empty_str;
 
 
-struct gft_scratch_pad
+struct LOG4CPLUS_EXPORT gft_scratch_pad
 {
     gft_scratch_pad ();
     ~gft_scratch_pad ();
@@ -91,7 +91,7 @@ struct gft_scratch_pad
 };
 
 
-struct appender_sratch_pad
+struct LOG4CPLUS_EXPORT appender_sratch_pad
 {
     appender_sratch_pad ();
     ~appender_sratch_pad ();
@@ -102,7 +102,7 @@ struct appender_sratch_pad
 
 
 //! Per thread data.
-struct per_thread_data
+struct LOG4CPLUS_EXPORT per_thread_data
 {
     per_thread_data ();
     ~per_thread_data ();
@@ -121,29 +121,12 @@ struct per_thread_data
 };
 
 
-per_thread_data * alloc_ptd ();
-
-// TLS key whose value is pointer struct per_thread_data.
-extern log4cplus::thread::impl::tls_key_type tls_storage_key;
-
-
 #if ! defined (LOG4CPLUS_SINGLE_THREADED) \
     && defined (LOG4CPLUS_THREAD_LOCAL_VAR)
 
-extern LOG4CPLUS_THREAD_LOCAL_VAR per_thread_data * ptd;
-
-
-inline
-void
-set_ptd (per_thread_data * p)
-{
-    ptd = p;
-}
-
-
 //! The default value of the \param alloc is false for Win32 DLL builds
 //! since per thread data are already initialized by DllMain().
-inline
+LOG4CPLUS_EXPORT
 per_thread_data *
 get_ptd (bool alloc
 #if defined (_WIN32) && defined (LOG4CPLUS_BUILD_DLL)
@@ -151,44 +134,11 @@ get_ptd (bool alloc
 #else
          = true
 #endif
-         )
-{
-    if (! ptd && alloc)
-        return alloc_ptd ();
-
-    // The assert() does not belong here. get_ptd() might be called by
-    // cleanup code that can handle the returned NULL pointer.
-    //assert (ptd);
-
-    return ptd;
-}
-
+    );
 
 #else // defined (LOG4CPLUS_THREAD_LOCAL_VAR)
 
-
-inline
-void
-set_ptd (per_thread_data * p)
-{
-    thread::impl::tls_set_value (tls_storage_key, p);
-}
-
-
-inline
-per_thread_data *
-get_ptd (bool alloc = true)
-{
-    per_thread_data * ptd
-        = reinterpret_cast<per_thread_data *>(
-            thread::impl::tls_get_value (tls_storage_key));
-
-    if (! ptd && alloc)
-        return alloc_ptd ();
-
-    return ptd;
-}
-
+LOG4CPLUS_EXPORT per_thread_data * get_ptd (bool alloc = true);
 
 #endif // defined (LOG4CPLUS_THREAD_LOCAL_VAR)
 
