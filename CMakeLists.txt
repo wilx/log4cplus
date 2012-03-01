@@ -1,5 +1,6 @@
+cmake_minimum_required (VERSION 2.8.4)
+
 project (log4cplus)
-cmake_minimum_required (VERSION 2.6.4)
 
 set (log4cplus_version_major 1)
 set (log4cplus_version_minor 1)
@@ -10,14 +11,19 @@ set (log4cplus_postfix "")
 find_package (Threads)
 message (STATUS "Threads: ${CMAKE_THREAD_LIBS_INIT}")
 
-set(BUILD_SHARED_LIBS TRUE CACHE BOOL "If TRUE, log4cplus is built as a shared library, otherwise as a static library")
+set(BUILD_SHARED_LIBS TRUE CACHE BOOL
+    "If TRUE, log4cplus is built as a shared library, otherwise as a static library")
 
-option(LOG4CPLUS_WORKING_LOCALE "Define for compilers/standard libraries that support more than just the C locale." OFF)
+option(LOG4CPLUS_WORKING_LOCALE
+    "Define for compilers/standard libraries that support more than just the C locale."
+    OFF)
 
 include(ConfigureChecks.cmake)
 
-configure_file(include/log4cplus/config.h.cmake.in ${CMAKE_BINARY_DIR}/include/log4cplus/config.h @ONLY)
-configure_file(include/log4cplus/config/defines.hxx.cmake.in ${CMAKE_BINARY_DIR}/include/log4cplus/config/defines.hxx @ONLY)
+configure_file(include/log4cplus/config.h.cmake.in
+	${CMAKE_BINARY_DIR}/include/log4cplus/config.h @ONLY)
+configure_file(include/log4cplus/config/defines.hxx.cmake.in
+    ${CMAKE_BINARY_DIR}/include/log4cplus/config/defines.hxx @ONLY)
 
 include_directories (${CMAKE_SOURCE_DIR}/include
                      ${CMAKE_BINARY_DIR}/include
@@ -30,3 +36,4 @@ add_subdirectory (loggingserver)
 add_subdirectory (tests)
 
 include(Log4CPlusCPack.cmake)
+
