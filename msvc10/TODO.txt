@@ -1,0 +1,1 @@
+Add log4cplus_appendersS.vcxproj.
