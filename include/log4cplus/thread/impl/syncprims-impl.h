@@ -24,10 +24,6 @@
 #ifndef LOG4CPLUS_THREAD_SYNCPRIMS_IMPL_H
 #define LOG4CPLUS_THREAD_SYNCPRIMS_IMPL_H
 
-#if ! defined (INSIDE_LOG4CPLUS)
-#  error "This header must not be be used outside log4cplus' implementation files."
-#endif
-
 #include <stdexcept>
 #include <log4cplus/config.hxx>
 #include <log4cplus/thread/syncprims.h>

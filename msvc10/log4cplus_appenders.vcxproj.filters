@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\appenders\win32consoleappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\consoleappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\fileappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\nteventlogappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\socketappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\syslogappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\win32debugappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\log4cplus\fileappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\consoleappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\nteventlogappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\socketappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\syslogappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\win32debugappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\win32consoleappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\appendersexports.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Appenders">
+      <UniqueIdentifier>{D2BFD96F-1535-4662-AEFD-48F051F5F181}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="log4cplus.props" />
+  </ItemGroup>
+</Project>

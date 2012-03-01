@@ -27,12 +27,6 @@
 //! It does not contain any include guards because it is only a fragment
 //! to be included by syncprims-{pthreads,win32}.h.
 
-
-#if ! defined (INSIDE_LOG4CPLUS)
-#  error "This header must not be be used outside log4cplus' implementation files."
-#endif
-
-
 // This implements algorithm described in "Concurrent Control with "Readers"
 // and "Writers"; P.J. Courtois, F. Heymans, and D.L. Parnas;
 // MBLE Research Laboratory; Brussels, Belgium"

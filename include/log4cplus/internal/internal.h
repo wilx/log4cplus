@@ -27,18 +27,13 @@
 //   (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
 //   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/** @file 
- * This header contains declaration internal to log4cplus. They must never be
- * visible from user accesible headers or exported in DLL/shared libray.
+/** @file This header contains declaration internal to log4cplus
+ * and/or its appenders.
  */
 
 
 #ifndef LOG4CPLUS_INTERNAL_INTERNAL_HEADER_
 #define LOG4CPLUS_INTERNAL_INTERNAL_HEADER_
-
-#if ! defined (INSIDE_LOG4CPLUS) && ! defined (INSIDE_LOG4CPLUS_APPENDERS)
-#  error "This header must not be be used outside log4cplus' implementation files."
-#endif
 
 #include <memory>
 #include <vector>
