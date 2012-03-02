@@ -346,7 +346,7 @@ ptd_cleanup_func (void * arg)
 }
 
 
-void initializeLog4cplus()
+LOG4CPLUS_EXPORT void initializeLog4cplus()
 {
     static bool initialized = false;
     if (initialized)
