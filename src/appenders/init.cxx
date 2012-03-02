@@ -38,6 +38,7 @@
 namespace log4cplus
 {
 
+LOG4CPLUS_APPENDERS_EXPORT
 void
 initializeLog4cplusAppenders()
 {

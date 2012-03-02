@@ -42,6 +42,12 @@ createAppender (tstring const & name)
 int
 main()
 {
+    // Calling initializeLog4cplusAppenders() is necessary to create a
+    // dependency of this executable on log4cplus_appenders
+    // library. Without this dependency the library will not get
+    // loaded and thus no appenders will be registered.
+    log4cplus::initializeLog4cplusAppenders ();
+
     LogLog::getLogLog()->setInternalDebugging(true);
     {
         AppenderAttachableImpl aai;
