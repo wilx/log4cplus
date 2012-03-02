@@ -121,6 +121,9 @@
     <ClCompile Include="..\src\core\stringhelper-iconv.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\core\queue.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\log4cplus\internal\cygwin-win32.h">

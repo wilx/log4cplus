@@ -37,7 +37,7 @@ namespace log4cplus {
     public:
       // Ctors
         ConsoleAppender(bool logToStdErr = false, bool immediateFlush = false);
-        ConsoleAppender(const log4cplus::helpers::Properties properties);
+        ConsoleAppender(const log4cplus::helpers::Properties & properties);
 
       // Dtor
         ~ConsoleAppender();

@@ -4,11 +4,15 @@
 #include <iostream>
 #include <string>
 #include "log4cplus/logger.h"
+#include "log4cplus/spi/factory.h"
+#include "log4cplus/helpers//property.h"
 #include "log4cplus/consoleappender.h"
 #include "log4cplus/helpers/appenderattachableimpl.h"
 #include "log4cplus/helpers/loglog.h"
 #include "log4cplus/helpers/pointer.h"
 #include "log4cplus/spi/loggingevent.h"
+#include "log4cplus/appendersexports.h"
+
 
 using namespace std;
 using namespace log4cplus;
@@ -26,6 +30,15 @@ printAppenderList(SharedAppenderPtrList list)
 }
 
 
+SharedObjectPtr<Appender>
+createAppender (tstring const & name)
+{
+    return SharedObjectPtr<Appender> (
+        log4cplus::spi::getAppenderFactoryRegistry ().get (name)
+            ->createObject (helpers::Properties ()));
+}
+
+
 int
 main()
 {
@@ -33,10 +46,12 @@ main()
     {
         AppenderAttachableImpl aai;
         try {
-            SharedObjectPtr<Appender> append_1(new ConsoleAppender());
+            SharedObjectPtr<Appender> append_1(
+                createAppender (LOG4CPLUS_TEXT("log4cplus::ConsoleAppender")));
             append_1->setName(LOG4CPLUS_TEXT("First"));
 
-            SharedObjectPtr<Appender> append_2(new ConsoleAppender());
+            SharedObjectPtr<Appender> append_2(
+                createAppender (LOG4CPLUS_TEXT("log4cplus::ConsoleAppender")));
             append_2->setName(LOG4CPLUS_TEXT("Second"));
 
             InternalLoggingEvent event(

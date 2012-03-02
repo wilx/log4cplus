@@ -22,6 +22,12 @@
     <ClCompile Include="..\src\appenders\win32debugappender.cxx">
       <Filter>Appenders</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\appenders\init.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\appenders\asyncappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\log4cplus\fileappender.h">
@@ -48,10 +54,16 @@
     <ClInclude Include="..\include\log4cplus\appendersexports.h">
       <Filter>Appenders</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\log4cplus\asyncappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Appenders">
       <UniqueIdentifier>{D2BFD96F-1535-4662-AEFD-48F051F5F181}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{776d4811-2ead-4709-89a1-03b9b7e19f07}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
