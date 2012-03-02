@@ -2,6 +2,7 @@ set (log4cplus_appenders_sources
   asyncappender.cxx
   consoleappender.cxx
   fileappender.cxx
+  init.cxx
   socketappender.cxx
   syslogappender.cxx)
 
