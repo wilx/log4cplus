@@ -153,7 +153,7 @@ namespace log4cplus {
         /** 
          * Is the LogLevel specified by <code>level</code> enabled? 
          */
-        virtual bool isDisabled(int level) = 0;
+        virtual bool isDisabled(LogLevel level) = 0;
 
         /**
          * Get the root of this hierarchy.

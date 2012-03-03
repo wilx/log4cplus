@@ -1,4 +1,9 @@
-//   Copyright (C) 2010-2012, Vaclav Zeman. All rights reserved.
+// Module:  Log4CPLUS
+// File:    cygwin-win32.h
+// Created: 7/2011
+// Author:  Vaclav Zeman
+//
+//   Copyright (C) 2011, Vaclav Zeman. All rights reserved.
 //   
 //   Redistribution and use in source and binary forms, with or without modifica-
 //   tion, are permitted provided that the following conditions are met:
@@ -21,32 +26,22 @@
 //   (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
 //   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef LOG4CPLUS_HELPERS_SNPRINTF_H
-#define LOG4CPLUS_HELPERS_SNPRINTF_H
+#if ! defined (LOG4CPLUS_CONFIG_CYGWIN_WIN32_H)
+#define LOG4CPLUS_CONFIG_CYGWIN_WIN32_H
 
-#include <log4cplus/tchar.h>
-#include <cstdarg>
-#include <vector>
+#if defined (__CYGWIN__)
 
-
-namespace log4cplus { namespace helpers {
-
-
-class LOG4CPLUS_EXPORT snprintf_buf
-{
-public:
-    snprintf_buf ();
-
-    tchar const * print (tchar const * fmt, ...);
-    tchar const * print_va_list (tchar const * fmt, std::va_list);
-
-private:
-    std::vector<tchar> buf;
-};
-  
-
-} } // namespace log4cplus { namespace helpers
+#if ! defined (INSIDE_LOG4CPLUS)
+#  error "This header must not be be used outside log4cplus' implementation files."
+#endif
 
 
+namespace log4cplus { namespace cygwin {
 
-#endif // LOG4CPLUS_HELPERS_SNPRINTF_H
+unsigned long get_current_win32_thread_id ();
+
+} } // namespace log4cplus { namespace cygwin {
+
+
+#endif // defined (__CYGWIN__)
+#endif // LOG4CPLUS_CONFIG_CYGWIN_WIN32_H

@@ -67,6 +67,33 @@
 #  define LOG4CPLUS_INLINE_EXPORT
 #endif
 
+#if defined (UNICODE)
+#  if defined (_MSC_VER) && _MSC_VER >= 1400
+#    define LOG4CPLUS_FSTREAM_ACCEPTS_WCHAR_T
+#  endif
+#  if defined (_MSC_VER) && _MSC_VER >= 1600
+#    define LOG4CPLUS_HAVE_CODECVT_UTF8_FACET
+#    define LOG4CPLUS_HAVE_CODECVT_UTF16_FACET
+#  endif
+#endif
+
+// C++11 stuff
+
+#if ! defined (__has_feature)
+//! __has_feature(X) is Clangs way for testing features.
+//! Define it to 0 if it does not exist.
+#  define __has_feature(X) 0
+#endif
+
+#if (defined (_MSC_VER) && _MSC_VER >= 1600) \
+    || defined (__GXX_EXPERIMENTAL_CXX0X__)
+#  define LOG4CPLUS_HAVE_CXX11_SUPPORT
+#endif
+
+#if defined (LOG4CPLUS_HAVE_CXX11_SUPPORT) \
+    || __has_feature (cxx_rvalue_references)
+#  define LOG4CPLUS_HAVE_RVALUE_REFS
+#endif
 
 #include <log4cplus/helpers/thread-config.h>
 

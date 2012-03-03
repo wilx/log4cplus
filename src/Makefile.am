@@ -14,6 +14,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/appender.h \
 	$(INCLUDES_SRC_PATH)/asyncappender.h \
 	$(INCLUDES_SRC_PATH)/boost/deviceappender.hxx \
+	$(INCLUDES_SRC_PATH)/clogger.h \
 	$(INCLUDES_SRC_PATH)/config.hxx \
 	$(INCLUDES_SRC_PATH)/config/macosx.h \
 	$(INCLUDES_SRC_PATH)/config/win32.h \
@@ -37,6 +38,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/helpers/timehelper.h \
 	$(INCLUDES_SRC_PATH)/hierarchy.h \
 	$(INCLUDES_SRC_PATH)/hierarchylocker.h \
+	$(INCLUDES_SRC_PATH)/internal/cygwin-win32.h \
 	$(INCLUDES_SRC_PATH)/internal/env.h \
 	$(INCLUDES_SRC_PATH)/internal/internal.h \
 	$(INCLUDES_SRC_PATH)/internal/socket.h \
@@ -81,8 +83,10 @@ SINGLE_THREADED_SRC = \
 	appenderattachableimpl.cxx \
 	appender.cxx \
 	asyncappender.cxx \
+	clogger.cxx \
 	configurator.cxx \
 	consoleappender.cxx \
+	cygwin-win32.cxx \
 	env.cxx \
 	factory.cxx \
 	fileappender.cxx \

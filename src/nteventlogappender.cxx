@@ -27,6 +27,8 @@
 #include <log4cplus/helpers/property.h>
 #include <log4cplus/spi/loggingevent.h>
 #include <log4cplus/internal/internal.h>
+#include <sstream>
+#include <cstdlib>
 
 
 namespace log4cplus
@@ -41,31 +43,24 @@ namespace {
 
     static
     bool
-    FreeSid(SID* pSid) 
+    copySID(SID** ppDstSid, SID* pSrcSid) 
     {
-        return ::HeapFree(GetProcessHeap(), 0, pSid) != 0;
-    }
-
-
-    static
-    bool 
-    CopySid(SID** ppDstSid, SID* pSrcSid) 
-    {
-        bool bSuccess = false;
-
         DWORD dwLength = ::GetLengthSid(pSrcSid);
-        *ppDstSid = static_cast<SID *>(
-            ::HeapAlloc(GetProcessHeap(),
-                HEAP_ZERO_MEMORY, dwLength));
 
-        if(::CopySid(dwLength, *ppDstSid, pSrcSid)) {
-            bSuccess = true;
-        }
-        else {
-            FreeSid(*ppDstSid);
-        }
+        SID * pDstSid = (SID *) std::calloc (1, dwLength);
+        if (! pDstSid)
+            return false;
 
-        return bSuccess;
+        if (CopySid(dwLength, pDstSid, pSrcSid))
+        {
+            *ppDstSid = pDstSid;
+            return true;
+        }
+        else
+        {
+            std::free (pDstSid);
+            return false;
+        }
     }
 
 
@@ -74,23 +69,30 @@ namespace {
     GetCurrentUserSID(SID** ppSid) 
     {
         bool bSuccess = false;
-
-        // Pseudohandle so don't need to close it
+        TOKEN_USER * ptu = 0;
+        DWORD tusize = 0;
         HANDLE hProcess = ::GetCurrentProcess();
-        HANDLE hToken = NULL;
-        if(::OpenProcessToken(hProcess, TOKEN_QUERY, &hToken)) {
-            // Get the required size
-            DWORD tusize = 0;
-            GetTokenInformation(hToken, TokenUser, NULL, 0, &tusize);
-            TOKEN_USER* ptu = reinterpret_cast<TOKEN_USER*>(new BYTE[tusize]);
+        HANDLE hToken = 0;
 
-            if(GetTokenInformation(hToken, TokenUser, ptu, tusize, &tusize)) {
-                bSuccess = CopySid(ppSid, static_cast<SID *>(ptu->User.Sid));
-            }
-            
-            CloseHandle(hToken);
-            delete [] reinterpret_cast<BYTE *>(ptu);
-        }
+        if (! ::OpenProcessToken(hProcess, TOKEN_QUERY, &hToken))
+            goto finish;
+
+        // Get the required size
+        if (! GetTokenInformation(hToken, TokenUser, NULL, 0, &tusize))
+            goto finish;
+
+        ptu = (TOKEN_USER*) std::calloc (1, tusize);
+        if (! ptu)
+            goto finish;
+
+        if (GetTokenInformation(hToken, TokenUser, (LPVOID)ptu, tusize, &tusize))
+            bSuccess = copySID (ppSid, (SID *)ptu->User.Sid);
+
+    finish:;
+        if (hToken)
+            CloseHandle (hToken);
+
+        std::free (ptu);
 
         return bSuccess;
     }
@@ -209,7 +211,7 @@ NTEventLogAppender::~NTEventLogAppender()
     destructorImpl();
 
     if(pCurrentUserSID != NULL) {
-        FreeSid(pCurrentUserSID);
+        std::free (pCurrentUserSID);
         pCurrentUserSID = NULL;
     }
 }
@@ -244,7 +246,14 @@ NTEventLogAppender::append(const spi::InternalLoggingEvent& event)
         return;
     }
 
-    const tchar * s = formatEvent (event).c_str ();
+    tstring & str = formatEvent (event);
+
+    // From MSDN documentation for ReportEvent():
+    // Each string is limited to 31,839 characters.
+    if (str.size () > 31839)
+        str.resize (31839);
+
+    const tchar * s = str.c_str ();
     BOOL bSuccess = ::ReportEvent(hEventLog,
                                   getEventType(event),
                                   getEventCategory(event),
@@ -268,22 +277,14 @@ WORD
 NTEventLogAppender::getEventType(const spi::InternalLoggingEvent& event)
 {
     WORD ret_val;
-    
-    switch ((int)event.getLogLevel())
-    {
-    case FATAL_LOG_LEVEL:
-    case ERROR_LOG_LEVEL:
+    LogLevel const ll = event.getLogLevel();
+
+    if (ll >= ERROR_LOG_LEVEL) // or FATAL_LOG_LEVEL
         ret_val = EVENTLOG_ERROR_TYPE;
-        break;
-    case WARN_LOG_LEVEL:
+    else if (ll >= WARN_LOG_LEVEL)
         ret_val = EVENTLOG_WARNING_TYPE;
-        break;
-    case INFO_LOG_LEVEL:
-    case DEBUG_LOG_LEVEL:
-    default:
+    else // INFO_LOG_LEVEL or DEBUG_LOG_LEVEL or TRACE_LOG_LEVEL
         ret_val = EVENTLOG_INFORMATION_TYPE;
-        break;
-    }
 
     return ret_val;
 }
@@ -294,26 +295,20 @@ WORD
 NTEventLogAppender::getEventCategory(const spi::InternalLoggingEvent& event)
 {
     WORD ret_val;
-    
-    switch (event.getLogLevel())
-    {
-    case FATAL_LOG_LEVEL:
+    LogLevel const ll = event.getLogLevel();
+
+    if (ll >= FATAL_LOG_LEVEL)
         ret_val = 1;
-        break;
-    case ERROR_LOG_LEVEL:
+    else if (ll >= ERROR_LOG_LEVEL)
         ret_val = 2;
-        break;
-    case WARN_LOG_LEVEL:
+    else if (ll >= WARN_LOG_LEVEL)
         ret_val = 3;
-        break;
-    case INFO_LOG_LEVEL:
+    else if (ll >= INFO_LOG_LEVEL)
         ret_val = 4;
-        break;
-    case DEBUG_LOG_LEVEL:
-    default:
+    else if (ll >= DEBUG_LOG_LEVEL)
         ret_val = 5;
-        break;
-    }
+    else // TRACE_LOG_LEVEL
+        ret_val = 6;
 
     return ret_val;
 }

@@ -90,15 +90,15 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 liblog4cplus_la_LIBADD =
 am__objects_1 =
 am__objects_2 = $(am__objects_1) appenderattachableimpl.lo appender.lo \
-	asyncappender.lo configurator.lo consoleappender.lo env.lo \
-	factory.lo fileappender.lo filter.lo global-init.lo \
-	hierarchy.lo hierarchylocker.lo layout.lo logger.lo \
-	loggerimpl.lo loggingevent.lo loggingmacros.lo loglevel.lo \
-	loglog.lo logloguser.lo mdc.lo ndc.lo nullappender.lo \
-	nteventlogappender.lo objectregistry.lo patternlayout.lo \
-	pointer.lo property.lo queue.lo rootlogger.lo sleep.lo \
-	snprintf.lo socketappender.lo socketbuffer.lo socket.lo \
-	socket-unix.lo socket-win32.lo stringhelper.lo \
+	asyncappender.lo clogger.lo configurator.lo consoleappender.lo \
+	cygwin-win32.lo env.lo factory.lo fileappender.lo filter.lo \
+	global-init.lo hierarchy.lo hierarchylocker.lo layout.lo \
+	logger.lo loggerimpl.lo loggingevent.lo loggingmacros.lo \
+	loglevel.lo loglog.lo logloguser.lo mdc.lo ndc.lo \
+	nullappender.lo nteventlogappender.lo objectregistry.lo \
+	patternlayout.lo pointer.lo property.lo queue.lo rootlogger.lo \
+	sleep.lo snprintf.lo socketappender.lo socketbuffer.lo \
+	socket.lo socket-unix.lo socket-win32.lo stringhelper.lo \
 	stringhelper-clocale.lo stringhelper-cxxlocale.lo \
 	stringhelper-iconv.lo syncprims.lo syslogappender.lo \
 	threads.lo timehelper.lo tls.lo version.lo \
@@ -147,7 +147,6 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
-CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -184,6 +183,7 @@ LOG4CPLUS_PROFILING_LDFLAGS = @LOG4CPLUS_PROFILING_LDFLAGS@
 LTLIBOBJS = @LTLIBOBJS@
 LT_VERSION = @LT_VERSION@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -212,6 +212,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -277,6 +278,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/appender.h \
 	$(INCLUDES_SRC_PATH)/asyncappender.h \
 	$(INCLUDES_SRC_PATH)/boost/deviceappender.hxx \
+	$(INCLUDES_SRC_PATH)/clogger.h \
 	$(INCLUDES_SRC_PATH)/config.hxx \
 	$(INCLUDES_SRC_PATH)/config/macosx.h \
 	$(INCLUDES_SRC_PATH)/config/win32.h \
@@ -300,6 +302,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/helpers/timehelper.h \
 	$(INCLUDES_SRC_PATH)/hierarchy.h \
 	$(INCLUDES_SRC_PATH)/hierarchylocker.h \
+	$(INCLUDES_SRC_PATH)/internal/cygwin-win32.h \
 	$(INCLUDES_SRC_PATH)/internal/env.h \
 	$(INCLUDES_SRC_PATH)/internal/internal.h \
 	$(INCLUDES_SRC_PATH)/internal/socket.h \
@@ -344,8 +347,10 @@ SINGLE_THREADED_SRC = \
 	appenderattachableimpl.cxx \
 	appender.cxx \
 	asyncappender.cxx \
+	clogger.cxx \
 	configurator.cxx \
 	consoleappender.cxx \
+	cygwin-win32.cxx \
 	env.cxx \
 	factory.cxx \
 	fileappender.cxx \
@@ -473,8 +478,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appenderattachableimpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asyncappender.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/clogger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/configurator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/consoleappender.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cygwin-win32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/env.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/factory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileappender.Plo@am__quote@

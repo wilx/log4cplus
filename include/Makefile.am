@@ -4,6 +4,7 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/appender.h \
 	log4cplus/asyncappender.h \
 	log4cplus/boost/deviceappender.hxx \
+	log4cplus/clogger.h \
 	log4cplus/config.hxx \
 	log4cplus/config/defines.hxx \
 	log4cplus/config/macosx.h \
@@ -28,6 +29,7 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/helpers/timehelper.h \
 	log4cplus/hierarchy.h \
 	log4cplus/hierarchylocker.h \
+	log4cplus/internal/cygwin-win32.h \
 	log4cplus/internal/env.h \
 	log4cplus/internal/internal.h \
 	log4cplus/internal/socket.h \
