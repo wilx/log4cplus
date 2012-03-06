@@ -1,3 +1,4 @@
+// -*- C++ -*-
 // Module:  Log4CPLUS
 // File:    fileappender.h
 // Created: 6/2001
@@ -27,8 +28,10 @@
 #include <log4cplus/appender.h>
 #include <log4cplus/fstreams.h>
 #include <log4cplus/helpers/timehelper.h>
+#include <log4cplus/helpers/lockfile.h>
 #include <fstream>
 #include <locale>
+#include <memory>
 #include "log4cplus/appendersexports.h"
 
 
@@ -106,6 +109,12 @@ namespace log4cplus
         bool immediateFlush;
 
         /**
+         * Use lock file for inter-process synchronization of access
+         * to log file.
+         */
+        bool useLockFile;
+
+        /**
          * When any append operation fails, <code>reopenDelay</code> says 
          * for how many seconds the next attempt to re-open the log file and 
          * resume logging will be delayed. If <code>reopenDelay</code> is zero, 
@@ -119,6 +128,9 @@ namespace log4cplus
 
         log4cplus::tofstream out;
         log4cplus::tstring filename;
+
+        log4cplus::tstring lockFileName;
+        std::auto_ptr<log4cplus::helpers::LockFile> lockFile;
 
         log4cplus::helpers::Time reopen_time;
 
@@ -134,8 +146,6 @@ namespace log4cplus
 
 
     /**
-     * RollingFileAppender extends FileAppender to backup the log files when 
-     * they reach a certain size. 
      * RollingFileAppender extends FileAppender to backup the log
      * files when they reach a certain size.
      *

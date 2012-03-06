@@ -21,10 +21,8 @@
 #include <log4cplus/streams.h>
 #include <log4cplus/helpers/pointer.h>
 #include <log4cplus/thread/threads.h>
-#include <log4cplus/thread/syncprims-pub-impl.h>
-#if defined (_WIN32)
+#include <log4cplus/thread/impl/syncprims-impl.h>
 #include <log4cplus/config/windowsh-inc.h>
-#endif
 #include <cassert>
 #if defined (LOG4CPLUS_HAVE_INTRIN_H)
 #include <intrin.h>
@@ -61,7 +59,7 @@ SharedObject::addReference() const
     _InterlockedIncrement (&count);
 
 #elif ! defined(LOG4CPLUS_SINGLE_THREADED) \
-    && (defined (_WIN32) || defined (__CYGWIN__))
+    && defined (_WIN32)
     InterlockedIncrement (&count);
 
 #elif ! defined(LOG4CPLUS_SINGLE_THREADED)
@@ -78,7 +76,9 @@ SharedObject::addReference() const
 void
 SharedObject::removeReference() const
 {
-    bool destroy = false;
+    assert (count > 0);
+    bool destroy;
+
 #if ! defined(LOG4CPLUS_SINGLE_THREADED) \
     && defined (LOG4CPLUS_HAVE___SYNC_SUB_AND_FETCH)
     destroy = __sync_sub_and_fetch (&count, 1) == 0;
@@ -88,16 +88,17 @@ SharedObject::removeReference() const
     destroy = _InterlockedDecrement (&count) == 0;
 
 #elif ! defined(LOG4CPLUS_SINGLE_THREADED) \
-    && (defined (_WIN32) || defined (__CYGWIN__))
+    && defined (_WIN32)
     destroy = InterlockedDecrement (&count) == 0;
 
-#else
+#elif ! defined(LOG4CPLUS_SINGLE_THREADED)
     {
         thread::MutexGuard guard (access_mutex);
-        assert (count > 0);
-        if (--count == 0)
-            destroy = true;
+        destroy = --count == 0;
     }
+
+#else
+    destroy = --count == 0;
 
 #endif
     if (destroy)

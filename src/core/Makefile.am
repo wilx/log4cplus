@@ -19,11 +19,13 @@ SINGLE_THREADED_SRC = \
 	cygwin-win32.cxx \
 	env.cxx \
 	factory.cxx \
+	fileinfo.cxx \
 	filter.cxx \
 	global-init.cxx \
 	hierarchy.cxx \
 	hierarchylocker.cxx \
 	layout.cxx \
+	lockfile.cxx \
 	logger.cxx \
 	loggerimpl.cxx \
 	loggingevent.cxx \

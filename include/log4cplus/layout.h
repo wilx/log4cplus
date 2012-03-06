@@ -1,3 +1,4 @@
+// -*- C++ -*-
 // Module:  Log4CPLUS
 // File:    Layout.h
 // Created: 6/2001
@@ -46,6 +47,7 @@ namespace log4cplus {
     {
 
         class Properties;
+        class Time;
 
     }
 
@@ -171,6 +173,7 @@ namespace log4cplus {
     };
 
 
+    LOG4CPLUS_EXPORT helpers::Time const & getTTCCLayoutTimeBase ();
 
 
     /**
