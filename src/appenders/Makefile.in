@@ -99,8 +99,8 @@ liblog4cplus_appenders_la_DEPENDENCIES =  \
 am__objects_1 =
 am__objects_2 = $(am__objects_1)
 am__objects_3 = $(am__objects_2) asyncappender.lo consoleappender.lo \
-	fileappender.lo nteventlogappender.lo socketappender.lo \
-	syslogappender.lo win32consoleappender.lo \
+	fileappender.lo init.lo nteventlogappender.lo \
+	socketappender.lo syslogappender.lo win32consoleappender.lo \
 	win32debugappender.lo
 am_liblog4cplus_appenders_la_OBJECTS = $(am__objects_3)
 liblog4cplus_appenders_la_OBJECTS =  \
@@ -268,8 +268,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 lib_LTLIBRARIES = liblog4cplus_appenders.la
 AM_CPPFLAGS = -DINSIDE_LOG4CPLUS_APPENDERS \
-		-I$(top_srcdir)/include -I$(top_builddir)/include \
-		@LOG4CPLUS_NDEBUG@
+	-I$(top_srcdir)/include \
+	-I$(top_builddir)/include \
+	@LOG4CPLUS_NDEBUG@
 
 AM_CXXFLAGS = -no-suppress @LOG4CPLUS_PROFILING_CXXFLAGS@
 AM_LDFLAGS = @LOG4CPLUS_PROFILING_LDFLAGS@
@@ -351,6 +352,7 @@ APPENDERS_SRC = \
 	asyncappender.cxx \
 	consoleappender.cxx \
 	fileappender.cxx \
+	init.cxx \
 	nteventlogappender.cxx \
 	socketappender.cxx \
 	syslogappender.cxx \
@@ -360,7 +362,7 @@ APPENDERS_SRC = \
 liblog4cplus_appenders_la_SOURCES = $(APPENDERS_SRC)
 liblog4cplus_appenders_la_LIBADD = $(top_builddir)/src/core/liblog4cplus.la 
 liblog4cplus_appenders_la_LDFLAGS = -no-undefined -version-info @LT_VERSION@ \
-		-release 1.1
+	-release 1.1
 
 all: all-am
 
@@ -440,6 +442,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asyncappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/consoleappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileappender.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nteventlogappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/socketappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/syslogappender.Plo@am__quote@

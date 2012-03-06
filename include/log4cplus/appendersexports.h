@@ -49,4 +49,13 @@
 
 #endif // !_WIN32
 
+
+namespace log4cplus
+{
+
+LOG4CPLUS_APPENDERS_EXPORT void initializeLog4cplusAppenders();
+
+} // namespace log4cplus
+
+
 #endif // LOG4CPLUS_APPENDERSEXPORTS_H
