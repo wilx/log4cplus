@@ -362,7 +362,8 @@ LOG4CPLUS_EXPORT void initializeLog4cplus()
 
     internal::tls_storage_key = thread::impl::tls_init (ptd_cleanup_func);
 
-    get_dc (true);
+    DefaultContext * dc = get_dc (true);
+    dc->TTCCLayout_time_base = helpers::Time::gettimeofday ();
     Logger::getRoot();
     initializeFactoryRegistry();
 
