@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export AUTOMAKE_SUFFIX=-1.11.1
+export AUTOMAKE_SUFFIX=-1.11.3
 export AUTOCONF_SUFFIX=-2.68
 export LIBTOOL_SUFFIX=-2.4.2
 
