@@ -1,26 +1,26 @@
 // -*- C++ -*-
-//   Copyright (C) 2010, Vaclav Haisman. All rights reserved.
-//   
-//   Redistribution and use in source and binary forms, with or without modifica-
-//   tion, are permitted provided that the following conditions are met:
-//   
-//   1. Redistributions of  source code must  retain the above copyright  notice,
-//      this list of conditions and the following disclaimer.
-//   
-//   2. Redistributions in binary form must reproduce the above copyright notice,
-//      this list of conditions and the following disclaimer in the documentation
-//      and/or other materials provided with the distribution.
-//   
-//   THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-//   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-//   FITNESS  FOR A PARTICULAR  PURPOSE ARE  DISCLAIMED.  IN NO  EVENT SHALL  THE
-//   APACHE SOFTWARE  FOUNDATION  OR ITS CONTRIBUTORS  BE LIABLE FOR  ANY DIRECT,
-//   INDIRECT, INCIDENTAL, SPECIAL,  EXEMPLARY, OR CONSEQUENTIAL  DAMAGES (INCLU-
-//   DING, BUT NOT LIMITED TO, PROCUREMENT  OF SUBSTITUTE GOODS OR SERVICES; LOSS
-//   OF USE, DATA, OR  PROFITS; OR BUSINESS  INTERRUPTION)  HOWEVER CAUSED AND ON
-//   ANY  THEORY OF LIABILITY,  WHETHER  IN CONTRACT,  STRICT LIABILITY,  OR TORT
-//   (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
-//   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//  Copyright (C) 2010, Vaclav Haisman. All rights reserved.
+//  
+//  Redistribution and use in source and binary forms, with or without modifica-
+//  tion, are permitted provided that the following conditions are met:
+//  
+//  1. Redistributions of  source code must  retain the above copyright  notice,
+//     this list of conditions and the following disclaimer.
+//  
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//  
+//  THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
+//  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+//  FITNESS  FOR A PARTICULAR  PURPOSE ARE  DISCLAIMED.  IN NO  EVENT SHALL  THE
+//  APACHE SOFTWARE  FOUNDATION  OR ITS CONTRIBUTORS  BE LIABLE FOR  ANY DIRECT,
+//  INDIRECT, INCIDENTAL, SPECIAL,  EXEMPLARY, OR CONSEQUENTIAL  DAMAGES (INCLU-
+//  DING, BUT NOT LIMITED TO, PROCUREMENT  OF SUBSTITUTE GOODS OR SERVICES; LOSS
+//  OF USE, DATA, OR  PROFITS; OR BUSINESS  INTERRUPTION)  HOWEVER CAUSED AND ON
+//  ANY  THEORY OF LIABILITY,  WHETHER  IN CONTRACT,  STRICT LIABILITY,  OR TORT
+//  (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
+//  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef LOG4CPLUS_THREAD_SYNCPRIMS_H
 #define LOG4CPLUS_THREAD_SYNCPRIMS_H
@@ -35,12 +35,14 @@ template <typename SP>
 class SyncGuard
 {
 public:
+    SyncGuard ();
     SyncGuard (SP const &);
     ~SyncGuard ();
 
     void lock ();
     void unlock ();
     void attach (SP const &);
+    void attach_and_lock (SP const &);
     void detach ();
 
 private:
@@ -229,6 +231,13 @@ typedef SyncGuardFunc<SharedMutex, &SharedMutex::wrlock,
 
 template <typename SP>
 inline
+SyncGuard<SP>::SyncGuard ()
+    : sp (0)
+{ }
+
+
+template <typename SP>
+inline
 SyncGuard<SP>::SyncGuard (SP const & m)
     : sp (&m)
 {
@@ -269,6 +278,24 @@ void
 SyncGuard<SP>::attach (SP const & m)
 {
     sp = &m;
+}
+
+
+template <typename SP>
+inline
+void
+SyncGuard<SP>::attach_and_lock (SP const & m)
+{
+    attach (m);
+    try
+    {
+        lock();
+    }
+    catch (...)
+    {
+        detach ();
+        throw;
+    }
 }
 
 
