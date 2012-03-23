@@ -1,10 +1,17 @@
+if (UNICODE)
+  add_definitions (-DUNICODE -D_UNICODE -UMBCS -U_MBCS)
+endif (UNICODE)
+
+if (${BUILD_SHARED_LIBS})
+  add_definitions (-Dlog4cplus_EXPORTS)
+endif ()
 
 # a function to set up a test, since it's the same for each one:
 function(log4cplus_add_test _name)
   set(_srcs ${ARGN})
 #  message (STATUS "${_name} sources: ${_srcs}")
   add_executable (${_name} ${_srcs})
-  target_link_libraries (${_name} log4cplus_appenders log4cplus)
+  target_link_libraries (${_name} log4cplus_appenders ${log4cplus})
   add_test(${_name} ${_name})
 endfunction()
 
