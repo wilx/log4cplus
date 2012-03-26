@@ -25,10 +25,12 @@
 #include <cstring>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 #include <log4cplus/internal/socket.h>
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/thread/syncprims-pub-impl.h>
 #include <log4cplus/spi/loggingevent.h>
+#include <log4cplus/net/sockets/socket.h>
 
 #include <arpa/inet.h>
  
@@ -55,6 +57,234 @@
 #endif
 
 #include <unistd.h>
+
+
+namespace
+{
+
+
+//! Helper for accept_wrap().
+template <typename T, typename U>
+struct socklen_var
+{
+    typedef T type;
+};
+
+
+template <typename U>
+struct socklen_var<void, U>
+{
+    typedef U type;
+};
+
+
+} // namespace
+
+
+namespace log4cplus { namespace net { namespace socket {
+
+struct Socket::Data
+{
+    Data ();
+
+    int socket;
+    int eno;
+};
+
+
+Socket::Data::Data ()
+    : socket (-1)
+{ }
+
+
+//
+//
+//
+
+Socket::Socket ()
+    : data (new Data)
+{ }
+
+
+Socket::Socket (Socket const & other)
+    : data (new Data (*other.data))
+{ }
+
+
+Socket::~Socket ()
+{ }
+
+
+Socket &
+Socket::operator = (Socket const & other)
+{
+    Socket (other).swap (*this);
+    return *this;
+}
+
+
+void
+Socket::swap (Socket & other)
+{
+    Data * data_tmp = data.release ();
+    data = other.data;
+    other.data.reset (data_tmp);
+}
+
+
+Socket::Data &
+Socket::get_data ()
+{
+    return *data;
+}
+
+
+Socket::Data const &
+Socket::get_data () const
+{
+    return *data;
+}
+
+
+//
+//
+//
+
+
+namespace
+{
+
+static
+int
+af_to_int (AddressFamily af)
+{
+    static int const table[] = {
+#ifdef AF_UNSPEC
+        AF_UNSPEC
+#else
+        0
+#endif
+        , AF_UNIX
+        , AF_INET
+#ifdef AF_INET6
+        , AF_INET6
+#else
+        , -1
+#endif
+    };
+
+    if (+af >= sizeof (table) / sizeof (table[0]))
+        throw std::out_of_range ("address family out of range");
+
+    return table[af];
+}
+
+
+static
+int
+st_to_int (SocketType st)
+{
+    static int const table[] = {
+        SOCK_STREAM
+        , SOCK_DGRAM
+        , SOCK_RAW
+        , SOCK_RDM
+        , SOCK_SEQPACKET
+    };
+    
+    if (+st >= sizeof (table) / sizeof (table[0]))
+        throw std::out_of_range ("socket type out of range");
+    
+    return table[st];
+}
+
+
+static
+int
+sol_to_int (SocketLevel sl)
+{
+    static int const table[] = {
+        SOL_SOCKET
+        , IPPROTO_IP
+        , IPPROTO_IPV6
+        , IPPROTO_ICMP
+        , IPPROTO_RAW
+        , IPPROTO_TCP
+        , IPPROTO_UDP
+    };
+
+    if (+sl >= sizeof (table) / sizeof (table[0]))
+        throw std::out_of_range ("socket level out of range");
+    
+    return table[sl];
+}
+
+
+static
+int
+so_to_int (SocketOption so)
+{
+    static int const table[] = {
+        SO_KEEPALIVE
+        , SO_LINGER
+    };
+
+    if (+so >= sizeof (table) / sizeof (table[0]))
+        throw std::out_of_range ("socket level out of range");
+    
+    return table[so];
+}
+
+
+} // namespace
+
+
+Socket
+create_socket (AddressFamily af, SocketType st, int proto)
+{
+    Socket sock;
+    Socket::Data & sd = sock.get_data ();
+    
+    sd.socket = ::socket (af_to_int (af), st_to_int (st), proto);
+    if (sd.socket == -1)
+        sd.eno = errno;
+
+    return sock;
+}
+
+
+template <typename option_ptr_type, typename socklen_type>
+static
+int
+setsockopt_wrap (
+    int (* setsockopt_func) (int, int, int, option_ptr_type, socklen_type),
+    int socket, int level, int option, const void * option_value,
+    std::size_t option_len)
+{
+    return setsockopt_func (socket, level, option,
+        (option_ptr_type)(option_value),
+        static_cast<socklen_type>(option_len));
+}
+
+
+bool
+set_socket_opt (Socket & socket, SocketLevel level, SocketOption option,
+    const void * option_value, std::size_t option_len)
+{
+    Socket::Data & sd = socket.get_data ();
+    int ret = setsockopt_wrap (&setsockopt, sd.socket, sol_to_int (level),
+        so_to_int (option), option_value, option_len);
+    if (ret == -1)
+    {
+        sd.eno = errno;
+        return false;
+    }
+    else
+        return true;
+}
+
+
+} } } // namespace log4cplus { namespace net { namespace socket {
 
 
 namespace log4cplus { namespace helpers {
@@ -211,19 +441,7 @@ connectSocket(const tstring& hostn, unsigned short port, SocketState& state)
 namespace
 {
 
-//! Helper for accept_wrap().
-template <typename T, typename U>
-struct socklen_var
-{
-    typedef T type;
-};
 
-
-template <typename U>
-struct socklen_var<void, U>
-{
-    typedef U type;
-};
 
 
 // Some systems like HP-UX have socklen_t but accept() does not use it
