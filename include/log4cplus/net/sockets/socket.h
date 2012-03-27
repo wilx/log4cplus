@@ -37,7 +37,7 @@ namespace log4cplus { namespace net {
 enum ErrorSource
 {
     EsNone
-    , EsLog4cplus
+    , EsNotSupported
     , EsErrNo
     , EsWin32GetLastError
 };
@@ -47,7 +47,7 @@ class LOG4CPLUS_EXPORT Error
 {
 public:
     Error ();
-    Error (ErrorSource, long);
+    Error (tchar const *, ErrorSource, long);
     Error (Error const &);
     ~Error ();
     Error & operator = (Error const &);
@@ -56,12 +56,14 @@ public:
     bool noerror () const;
     ErrorSource get_source () const;
     long get_error () const;
-    tstring const & get_string () const;
+    tstring const & get_message () const;
+    tstring const & get_origin () const;
 
 private:
     ErrorSource error_source;
     long error_num;
-    std::auto_ptr<tstring> error_string;
+    mutable std::auto_ptr<tstring> error_message;
+    tstring error_origin;
 };
 
 

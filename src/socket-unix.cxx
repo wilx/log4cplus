@@ -30,7 +30,10 @@
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/thread/syncprims-pub-impl.h>
 #include <log4cplus/spi/loggingevent.h>
+
 #include <log4cplus/net/sockets/socket.h>
+#include <log4cplus/streams.h>
+#include <sstream>
 
 #include <arpa/inet.h>
  
@@ -95,9 +98,37 @@ swap_auto_ptrs (std::auto_ptr<T> & a, std::auto_ptr<T> & b)
 namespace log4cplus { namespace net {
 
 
-void
-fill_error_string (std::auto_ptr<tstring> & str, ErrorSource es, long eno)
+tstring
+format_errno_str (int eno)
 {
+    tostringstream oss;
+
+    oss << LOG4CPLUS_TEXT ("errno ") << eno << LOG4CPLUS_TEXT (": ")
+        << LOG4CPLUS_C_STR_TO_TSTRING (std::strerror (eno));
+    
+    return oss.str ();
+}
+
+
+static
+void
+fill_error_message (std::auto_ptr<tstring> & str, ErrorSource es, long eno)
+{
+    switch (es)
+    {
+    case EsNone:
+    default:
+        str.reset (new tstring);
+        break;
+
+    case EsNotSupported:
+        str.reset (new tstring (LOG4CPLUS_TEXT ("not supported")));
+        break;
+
+    case EsErrNo:
+        str.reset (new tstring (format_errno_str (static_cast<int>(eno))));
+        break;
+    }
 }
 
 
@@ -107,20 +138,22 @@ Error::Error ()
 { }
 
 
-Error::Error (ErrorSource es, long eno)
+Error::Error (tchar const * origin, ErrorSource es, long eno)
     : error_source (es)
     , error_num (eno)
+    , error_origin (origin)
 {
-    fill_error_string (error_string, error_source, error_num);
+    fill_error_message (error_message, error_source, error_num);
 }
 
 
 Error::Error (Error const & other)
     : error_source (other.error_source)
     , error_num (other.error_num)
-    , error_string (other.error_string.get ()
-        ? std::auto_ptr<tstring>(new tstring (*other.error_string))
+    , error_message (other.error_message.get ()
+        ? std::auto_ptr<tstring>(new tstring (*other.error_message))
         : std::auto_ptr<tstring> ())
+    , error_origin (other.error_origin)
 { }
 
 
@@ -142,7 +175,8 @@ Error::swap (Error & other)
     using std::swap;
     swap (error_source, other.error_source);
     swap (error_num, other.error_num);
-    swap_auto_ptrs (error_string, other.error_string);
+    swap_auto_ptrs (error_message, other.error_message);
+    swap (error_origin, other.error_origin);
 }
 
 
@@ -168,9 +202,19 @@ Error::get_error () const
 
 
 tstring const &
-Error::get_string () const
+Error::get_message () const
 {
-    return *error_string;
+    if (! error_message.get ())
+        fill_error_message (error_message, error_source, error_num);
+
+    return *error_message;
+}
+
+
+tstring const &
+Error::get_origin () const
+{
+    return error_origin;
 }
 
 
