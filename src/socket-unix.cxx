@@ -299,6 +299,56 @@ Socket::get_data () const
 //
 //
 
+struct SockAddr::Data
+{
+    Data ();
+
+    sockaddr addr;
+};
+
+
+SockAddr::Data::Data ()
+    : addr (sockaddr ())
+{ }
+
+
+//
+//
+//
+
+SockAddr::SockAddr ()
+    : data (new SockAddr::Data)
+{ }
+
+
+SockAddr::SockAddr (SockAddr const & other)
+    : data (clone_auto_ptr (other.data))
+{ }
+
+
+SockAddr::~SockAddr ()
+{ }
+
+
+SockAddr &
+SockAddr::operator = (SockAddr const & other)
+{
+    SockAddr (other).swap (*this);
+    return *this;
+}
+
+
+void
+SockAddr::swap (SockAddr & other)
+{
+    using std::swap;
+    swap (*data, *other.data);
+}
+
+
+//
+//
+//
 
 namespace
 {

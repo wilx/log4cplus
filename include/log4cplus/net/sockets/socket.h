@@ -135,6 +135,23 @@ enum SocketOption
 };
 
 
+class SockAddr
+{
+public:
+    SockAddr ();
+    SockAddr (SockAddr const &);
+    ~SockAddr ();
+    SockAddr & operator = (SockAddr const &);
+
+    void swap (SockAddr &);
+
+private:
+    struct Data;
+    
+    std::auto_ptr<Data> data;
+};
+
+
 LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
 LOG4CPLUS_EXPORT Error set_option (Socket const &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
