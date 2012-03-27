@@ -63,7 +63,7 @@ private:
     ErrorSource error_source;
     long error_num;
     mutable std::auto_ptr<tstring> error_message;
-    tstring error_origin;
+    std::auto_ptr<tstring> error_origin;
 };
 
 

@@ -92,6 +92,18 @@ swap_auto_ptrs (std::auto_ptr<T> & a, std::auto_ptr<T> & b)
 }
 
 
+template <typename T>
+static inline
+std::auto_ptr<T>
+clone_auto_ptr (std::auto_ptr<T> const & ptr)
+{
+    if (ptr.get ())
+        return std::auto_ptr<T> (new T (*ptr));
+    else
+        return std::auto_ptr<T> ();
+}
+
+
 } // namespace
 
 
@@ -141,7 +153,7 @@ Error::Error ()
 Error::Error (tchar const * origin, ErrorSource es, long eno)
     : error_source (es)
     , error_num (eno)
-    , error_origin (origin)
+    , error_origin (new tstring (origin))
 {
     fill_error_message (error_message, error_source, error_num);
 }
@@ -150,10 +162,8 @@ Error::Error (tchar const * origin, ErrorSource es, long eno)
 Error::Error (Error const & other)
     : error_source (other.error_source)
     , error_num (other.error_num)
-    , error_message (other.error_message.get ()
-        ? std::auto_ptr<tstring>(new tstring (*other.error_message))
-        : std::auto_ptr<tstring> ())
-    , error_origin (other.error_origin)
+    , error_message (clone_auto_ptr (other.error_message))
+    , error_origin (clone_auto_ptr (other.error_origin))
 { }
 
 
@@ -176,7 +186,7 @@ Error::swap (Error & other)
     swap (error_source, other.error_source);
     swap (error_num, other.error_num);
     swap_auto_ptrs (error_message, other.error_message);
-    swap (error_origin, other.error_origin);
+    swap_auto_ptrs (error_origin, other.error_origin);
 }
 
 
@@ -214,7 +224,7 @@ Error::get_message () const
 tstring const &
 Error::get_origin () const
 {
-    return error_origin;
+    return *error_origin;
 }
 
 
