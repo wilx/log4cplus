@@ -135,7 +135,11 @@ enum SocketOption
 };
 
 
-class SockAddr
+class SockAddr;
+class SockAddrIn;
+
+
+class LOG4CPLUS_EXPORT SockAddr
 {
 public:
     SockAddr ();
@@ -144,6 +148,27 @@ public:
     SockAddr & operator = (SockAddr const &);
 
     void swap (SockAddr &);
+
+    struct Data;
+
+    Data & get_data ();
+    Data const & get_data () const;
+
+private:
+    std::auto_ptr<Data> data;
+};
+
+
+class LOG4CPLUS_EXPORT SockAddrIn
+{
+public:
+    SockAddrIn ();
+    SockAddrIn (SockAddrIn const &);
+    explicit SockAddrIn (SockAddr const &);
+    ~SockAddrIn ();
+    SockAddrIn & operator = (SockAddrIn const &);
+
+    void swap (SockAddrIn &);
 
 private:
     struct Data;

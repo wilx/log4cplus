@@ -346,9 +346,82 @@ SockAddr::swap (SockAddr & other)
 }
 
 
+SockAddr::Data &
+SockAddr::get_data ()
+{
+    return *data;
+}
+
+
+SockAddr::Data const &
+SockAddr::get_data () const
+{
+    return *data;
+}
+
+
 //
 //
 //
+
+struct SockAddrIn::Data
+{
+    Data ();
+
+    sockaddr_in addr;
+};
+
+
+SockAddrIn::Data::Data ()
+    : addr (sockaddr_in ())
+{ }
+
+
+//
+//
+//
+
+SockAddrIn::SockAddrIn ()
+    : data (new SockAddrIn::Data)
+{ }
+
+
+SockAddrIn::SockAddrIn (SockAddrIn const & other)
+    : data (clone_auto_ptr (other.data))
+{ }
+
+
+SockAddrIn::SockAddrIn (SockAddr const & sa)
+    : data (new SockAddrIn::Data)
+{
+    std::memcpy (&data->addr, &sa.get_data ().addr, sizeof (sockaddr_in));
+}
+
+
+SockAddrIn::~SockAddrIn ()
+{ }
+
+
+SockAddrIn &
+SockAddrIn::operator = (SockAddrIn const & other)
+{
+    SockAddrIn (other).swap (*this);
+    return *this;
+}
+
+
+void
+SockAddrIn::swap (SockAddrIn & other)
+{
+    using std::swap;
+    swap (*data, *other.data);
+}
+
+
+//
+//
+//
+
 
 namespace
 {
