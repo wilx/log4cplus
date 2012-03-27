@@ -78,10 +78,105 @@ struct socklen_var<void, U>
 };
 
 
+template <typename T>
+static inline
+void
+swap_auto_ptrs (std::auto_ptr<T> & a, std::auto_ptr<T> & b)
+{ 
+    T * tmp = a.release ();
+    a = b;
+    b.reset (tmp);   
+}
+
+
 } // namespace
 
 
-namespace log4cplus { namespace net { namespace socket {
+namespace log4cplus { namespace net {
+
+
+void
+fill_error_string (std::auto_ptr<tstring> & str, ErrorSource es, long eno)
+{
+}
+
+
+Error::Error ()
+    : error_source (EsNone)
+    , error_num (0)
+{ }
+
+
+Error::Error (ErrorSource es, long eno)
+    : error_source (es)
+    , error_num (eno)
+{
+    fill_error_string (error_string, error_source, error_num);
+}
+
+
+Error::Error (Error const & other)
+    : error_source (other.error_source)
+    , error_num (other.error_num)
+    , error_string (other.error_string.get ()
+        ? std::auto_ptr<tstring>(new tstring (*other.error_string))
+        : std::auto_ptr<tstring> ())
+{ }
+
+
+Error::~Error ()
+{ }
+
+
+Error &
+Error::operator = (Error const & other)
+{
+    Error (other).swap (*this);
+    return *this;
+}
+
+
+void
+Error::swap (Error & other)
+{
+    using std::swap;
+    swap (error_source, other.error_source);
+    swap (error_num, other.error_num);
+    swap_auto_ptrs (error_string, other.error_string);
+}
+
+
+bool
+Error::noerror () const
+{
+    return error_source == EsNone;
+}
+
+
+ErrorSource
+Error::get_source () const
+{
+    return error_source;
+}
+
+
+long
+Error::get_error () const
+{
+    return error_num;
+}
+
+
+tstring const &
+Error::get_string () const
+{
+    return *error_string;
+}
+
+
+//
+//
+//
 
 struct Socket::Data
 {
@@ -126,9 +221,7 @@ Socket::operator = (Socket const & other)
 void
 Socket::swap (Socket & other)
 {
-    Data * data_tmp = data.release ();
-    data = other.data;
-    other.data.reset (data_tmp);
+    swap_auto_ptrs (data, other.data);
 }
 
 
@@ -174,7 +267,7 @@ af_to_int (AddressFamily af)
     };
 
     if (+af >= sizeof (table) / sizeof (table[0]))
-        throw std::out_of_range ("address family out of range");
+        return -1;
 
     return table[af];
 }
@@ -193,7 +286,7 @@ st_to_int (SocketType st)
     };
     
     if (+st >= sizeof (table) / sizeof (table[0]))
-        throw std::out_of_range ("socket type out of range");
+        return -1;
     
     return table[st];
 }
@@ -214,7 +307,7 @@ sol_to_int (SocketLevel sl)
     };
 
     if (+sl >= sizeof (table) / sizeof (table[0]))
-        throw std::out_of_range ("socket level out of range");
+        return -1;
     
     return table[sl];
 }
@@ -230,7 +323,7 @@ so_to_int (SocketOption so)
     };
 
     if (+so >= sizeof (table) / sizeof (table[0]))
-        throw std::out_of_range ("socket level out of range");
+        return -1;
     
     return table[so];
 }
@@ -284,7 +377,7 @@ set_socket_opt (Socket & socket, SocketLevel level, SocketOption option,
 }
 
 
-} } } // namespace log4cplus { namespace net { namespace socket {
+} } // namespace log4cplus { namespace net {
 
 
 namespace log4cplus { namespace helpers {

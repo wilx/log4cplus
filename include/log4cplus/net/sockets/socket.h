@@ -1,16 +1,16 @@
 // -*- C++ -*-
 //  Copyright (C) 2012, Vaclav Zeman. All rights reserved.
-//  
+//
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
-//  
+//
 //  1. Redistributions of  source code must  retain the above copyright  notice,
 //     this list of conditions and the following disclaimer.
-//  
+//
 //  2. Redistributions in binary form must reproduce the above copyright notice,
 //     this list of conditions and the following disclaimer in the documentation
 //     and/or other materials provided with the distribution.
-//  
+//
 //  THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
 //  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 //  FITNESS  FOR A PARTICULAR  PURPOSE ARE  DISCLAIMED.  IN NO  EVENT SHALL  THE
@@ -26,10 +26,44 @@
 #define LOG4CPLUS_NET_SOCKETS_SOCKET_H
 
 #include <log4cplus/config.hxx>
+#include <log4cplus/tstring.h>
 #include <memory>
+#include <string>
 
 
-namespace log4cplus { namespace net { namespace socket {
+namespace log4cplus { namespace net {
+
+
+enum ErrorSource
+{
+    EsNone
+    , EsLog4cplus
+    , EsErrNo
+    , EsWin32GetLastError
+};
+
+
+class LOG4CPLUS_EXPORT Error
+{
+public:
+    Error ();
+    Error (ErrorSource, long);
+    Error (Error const &);
+    ~Error ();
+    Error & operator = (Error const &);
+    void swap (Error &);
+
+    bool noerror () const;
+    ErrorSource get_source () const;
+    long get_error () const;
+    tstring const & get_string () const;
+
+private:
+    ErrorSource error_source;
+    long error_num;
+    std::auto_ptr<tstring> error_string;
+};
+
 
 class LOG4CPLUS_EXPORT Socket
 {
@@ -102,6 +136,6 @@ LOG4CPLUS_EXPORT bool set_socket_opt (Socket &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
 
 
-} } } // namespace log4cplus { namespace net { namespace socket {
+} } // namespace log4cplus { namespace net {
 
 #endif // LOG4CPLUS_NET_SOCKETS_SOCKET_H
