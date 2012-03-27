@@ -38,7 +38,7 @@ enum ErrorSource
 {
     EsNone
     , EsNotSupported
-    , EsErrNo
+    , EsErrno
     , EsWin32GetLastError
 };
 
@@ -63,7 +63,7 @@ private:
     ErrorSource error_source;
     long error_num;
     mutable std::auto_ptr<tstring> error_message;
-    std::auto_ptr<tstring> error_origin;
+    mutable std::auto_ptr<tstring> error_origin;
 };
 
 
@@ -130,12 +130,18 @@ enum SocketOption
 {
     SoKeepAlive
     , SoLinger
+    , SoReuseAddr
+    , SoNoDelay
 };
 
 
-LOG4CPLUS_EXPORT Socket create_socket (AddressFamily, SocketType, int);
-LOG4CPLUS_EXPORT bool set_socket_opt (Socket &, SocketLevel, SocketOption,
+LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
+LOG4CPLUS_EXPORT Error set_option (Socket const &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
+LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool);
+LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool);
+LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool);
+LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool);
 
 
 } } // namespace log4cplus { namespace net {

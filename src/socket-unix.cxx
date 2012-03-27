@@ -137,7 +137,7 @@ fill_error_message (std::auto_ptr<tstring> & str, ErrorSource es, long eno)
         str.reset (new tstring (LOG4CPLUS_TEXT ("not supported")));
         break;
 
-    case EsErrNo:
+    case EsErrno:
         str.reset (new tstring (format_errno_str (static_cast<int>(eno))));
         break;
     }
@@ -224,6 +224,9 @@ Error::get_message () const
 tstring const &
 Error::get_origin () const
 {
+    if (! error_origin.get ())
+        error_origin.reset (new tstring);
+
     return *error_origin;
 }
 
@@ -237,7 +240,6 @@ struct Socket::Data
     Data ();
 
     int socket;
-    int eno;
 };
 
 
@@ -352,12 +354,37 @@ sol_to_int (SocketLevel sl)
 {
     static int const table[] = {
         SOL_SOCKET
+#if defined (SOL_IP)
+        , SOL_IP
+#else
         , IPPROTO_IP
+#endif
+
+#if defined (SOL_IPV6)
+        , SOL_IPV6
+#else
         , IPPROTO_IPV6
+#endif
+
         , IPPROTO_ICMP
+
+#if defined (SOL_RAW)
+        , SOL_RAW
+#else
         , IPPROTO_RAW
+#endif
+
+#if defined (SOL_TCP)
+        , SOL_TCP
+#else
         , IPPROTO_TCP
+#endif
+
+#if defined (SOL_UDP)
+        , SOL_UDP
+#else
         , IPPROTO_UDP
+#endif
     };
 
     if (+sl >= sizeof (table) / sizeof (table[0]))
@@ -372,8 +399,29 @@ int
 so_to_int (SocketOption so)
 {
     static int const table[] = {
+#if defined (SO_KEEPALIVE)
         SO_KEEPALIVE
+#else
+        -1
+#endif
+
+#if defined (SO_LINGER)
         , SO_LINGER
+#else
+        , -1
+#endif
+
+#if defined (SO_REUSEADDR)
+        , SO_REUSEADDR
+#else
+        , -1
+#endif
+
+#if defined (SO_NODELAY)
+        , SO_NODELAY
+#else
+        , -1
+#endif       
     };
 
     if (+so >= sizeof (table) / sizeof (table[0]))
@@ -386,17 +434,16 @@ so_to_int (SocketOption so)
 } // namespace
 
 
-Socket
-create_socket (AddressFamily af, SocketType st, int proto)
+Error
+create_socket (Socket & sock, AddressFamily af, SocketType st, int proto)
 {
-    Socket sock;
     Socket::Data & sd = sock.get_data ();
     
-    sd.socket = ::socket (af_to_int (af), st_to_int (st), proto);
+    sd.socket = socket (af_to_int (af), st_to_int (st), proto);
     if (sd.socket == -1)
-        sd.eno = errno;
-
-    return sock;
+        return Error (LOG4CPLUS_TEXT ("socket"), EsErrno, errno);
+    
+    return Error ();
 }
 
 
@@ -414,20 +461,57 @@ setsockopt_wrap (
 }
 
 
-bool
-set_socket_opt (Socket & socket, SocketLevel level, SocketOption option,
-    const void * option_value, std::size_t option_len)
+Error
+set_option (Socket const & socket, SocketLevel level,
+    SocketOption option, const void * option_value, std::size_t option_len)
 {
-    Socket::Data & sd = socket.get_data ();
+    Socket::Data const & sd = socket.get_data ();
     int ret = setsockopt_wrap (&setsockopt, sd.socket, sol_to_int (level),
         so_to_int (option), option_value, option_len);
     if (ret == -1)
-    {
-        sd.eno = errno;
-        return false;
-    }
-    else
-        return true;
+        return Error (LOG4CPLUS_TEXT ("setsockopt"), EsErrno, errno);
+
+    return Error ();
+}
+
+
+static
+Error
+set_bool_option (Socket const & socket, SocketLevel level, SocketOption option,
+    bool val)
+{
+    int intval = static_cast<int>(val);
+    return set_option (socket, level, option, &intval,
+        sizeof (intval));
+
+}
+
+
+Error
+set_keep_alive (Socket const & socket, bool val)
+{
+    return set_bool_option (socket, SolSocket, SoKeepAlive, val);
+}
+
+
+Error
+set_linger (Socket const & socket, bool val)
+{
+    return set_bool_option (socket, SolSocket, SoLinger, val);
+}
+
+
+Error
+set_reuse_addr (Socket const & socket, bool val)
+{
+    return set_bool_option (socket, SolSocket, SoReuseAddr, val);
+}
+
+
+Error
+set_no_delay (Socket const & socket, bool val)
+{
+    return set_bool_option (socket, SolIpProtoTcp, SoNoDelay, val);
 }
 
 
