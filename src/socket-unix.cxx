@@ -150,8 +150,8 @@ Error::Error ()
 { }
 
 
-Error::Error (tchar const * origin, ErrorKind es, long eno)
-    : error_kind (es)
+Error::Error (tchar const * origin, ErrorKind ek, long eno)
+    : error_kind (ek)
     , error_num (eno)
     , error_origin (new tstring (origin))
 {
