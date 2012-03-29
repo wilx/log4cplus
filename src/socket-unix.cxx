@@ -594,6 +594,18 @@ bind_socket (Socket const & socket, SockAddr const & addr, std::size_t addr_len)
 }
 
 
+Error
+socket_listen (Socket const & socket, int backlog)
+{
+    Socket::Data const & sd = socket.get_data ();
+    int ret = listen (sd.socket, backlog);
+    if (ret == -1)
+        return Error (LOG4CPLUS_TEXT ("listen"), EkErrno, errno);
+
+    return Error ();
+}
+
+
 template <typename option_ptr_type, typename socklen_type>
 static
 int
