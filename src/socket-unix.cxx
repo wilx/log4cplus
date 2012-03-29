@@ -595,7 +595,7 @@ bind_socket (Socket const & socket, SockAddr const & addr, std::size_t addr_len)
 
 
 Error
-socket_listen (Socket const & socket, int backlog)
+listen_on_socket (Socket const & socket, int backlog)
 {
     Socket::Data const & sd = socket.get_data ();
     int ret = listen (sd.socket, backlog);
@@ -603,6 +603,40 @@ socket_listen (Socket const & socket, int backlog)
         return Error (LOG4CPLUS_TEXT ("listen"), EkErrno, errno);
 
     return Error ();
+}
+
+
+template <typename accept_sockaddr_ptr_type, typename accept_socklen_type>
+static
+int
+accept_wrap (
+    int (* accept_func) (int, accept_sockaddr_ptr_type, accept_socklen_type *),
+    int socket, sockaddr * sa, std::size_t * len)
+{
+    typedef typename socklen_var<accept_socklen_type, socklen_t>::type
+        socklen_var_type;
+    socklen_var_type l = static_cast<socklen_var_type>(*len);
+    int result = accept_func (socket,
+        reinterpret_cast<accept_sockaddr_ptr_type>(sa),
+        reinterpret_cast<accept_socklen_type *>(&l));
+    *len = static_cast<socklen_t>(l);
+    return result;
+}
+
+
+Error
+accept_on_socket (Socket & newsocket, Socket & socket, SockAddr & sa,
+    std::size_t & socklen)
+{
+    Socket::Data & sd = socket.get_data ();
+    int ret = accept_wrap (&accept, sd.socket, &sa.get_data ().addr, &socklen);
+    if (ret == -1)
+        return Error (LOG4CPLUS_TEXT ("accept"), EkErrno, errno);
+
+    Socket::Data & newsd = newsocket.get_data ();
+    newsd.socket = ret;
+
+    return Error ();    
 }
 
 

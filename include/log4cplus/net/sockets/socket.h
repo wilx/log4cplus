@@ -180,7 +180,9 @@ private:
 LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
 LOG4CPLUS_EXPORT Error bind_socket (Socket const &, SockAddr const &,
     std::size_t);
-LOG4CPLUS_EXPORT Error socket_listen (Socket const &, int);
+LOG4CPLUS_EXPORT Error listen_on_socket (Socket const &, int);
+LOG4CPLUS_EXPORT Error accept_on_socket (Socket &, SockAddr &, std::size_t &);
+
 LOG4CPLUS_EXPORT Error set_option (Socket const &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
 LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool);
