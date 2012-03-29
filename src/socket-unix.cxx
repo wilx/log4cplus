@@ -124,20 +124,20 @@ format_errno_str (int eno)
 
 static
 void
-fill_error_message (std::auto_ptr<tstring> & str, ErrorSource es, long eno)
+fill_error_message (std::auto_ptr<tstring> & str, ErrorKind ek, long eno)
 {
-    switch (es)
+    switch (ek)
     {
-    case EsNone:
+    case EkNone:
     default:
         str.reset (new tstring);
         break;
 
-    case EsNotSupported:
+    case EkNotSupported:
         str.reset (new tstring (LOG4CPLUS_TEXT ("not supported")));
         break;
 
-    case EsErrno:
+    case EkErrno:
         str.reset (new tstring (format_errno_str (static_cast<int>(eno))));
         break;
     }
@@ -145,22 +145,22 @@ fill_error_message (std::auto_ptr<tstring> & str, ErrorSource es, long eno)
 
 
 Error::Error ()
-    : error_source (EsNone)
+    : error_kind (EkNone)
     , error_num (0)
 { }
 
 
-Error::Error (tchar const * origin, ErrorSource es, long eno)
-    : error_source (es)
+Error::Error (tchar const * origin, ErrorKind es, long eno)
+    : error_kind (es)
     , error_num (eno)
     , error_origin (new tstring (origin))
 {
-    fill_error_message (error_message, error_source, error_num);
+    fill_error_message (error_message, error_kind, error_num);
 }
 
 
 Error::Error (Error const & other)
-    : error_source (other.error_source)
+    : error_kind (other.error_kind)
     , error_num (other.error_num)
     , error_message (clone_auto_ptr (other.error_message))
     , error_origin (clone_auto_ptr (other.error_origin))
@@ -183,7 +183,7 @@ void
 Error::swap (Error & other)
 {
     using std::swap;
-    swap (error_source, other.error_source);
+    swap (error_kind, other.error_kind);
     swap (error_num, other.error_num);
     swap_auto_ptrs (error_message, other.error_message);
     swap_auto_ptrs (error_origin, other.error_origin);
@@ -193,14 +193,14 @@ Error::swap (Error & other)
 bool
 Error::noerror () const
 {
-    return error_source == EsNone;
+    return error_kind == EkNone;
 }
 
 
-ErrorSource
+ErrorKind
 Error::get_source () const
 {
-    return error_source;
+    return error_kind;
 }
 
 
@@ -215,7 +215,7 @@ tstring const &
 Error::get_message () const
 {
     if (! error_message.get ())
-        fill_error_message (error_message, error_source, error_num);
+        fill_error_message (error_message, error_kind, error_num);
 
     return *error_message;
 }
@@ -564,7 +564,7 @@ create_socket (Socket & sock, AddressFamily af, SocketType st, int proto)
     
     sd.socket = socket (af_to_int (af), st_to_int (st), proto);
     if (sd.socket == -1)
-        return Error (LOG4CPLUS_TEXT ("socket"), EsErrno, errno);
+        return Error (LOG4CPLUS_TEXT ("socket"), EkErrno, errno);
     
     return Error ();
 }
@@ -588,7 +588,7 @@ bind_socket (Socket const & socket, SockAddr const & addr, std::size_t addr_len)
     Socket::Data const & sd = socket.get_data ();
     int ret = bind_wrap (&bind, sd.socket, &addr.get_data ().addr, addr_len);
     if (ret == 1)
-        return Error (LOG4CPLUS_TEXT ("bind"), EsErrno, errno);
+        return Error (LOG4CPLUS_TEXT ("bind"), EkErrno, errno);
 
     return Error ();
 }
@@ -616,7 +616,7 @@ set_option (Socket const & socket, SocketLevel level,
     int ret = setsockopt_wrap (&setsockopt, sd.socket, sol_to_int (level),
         so_to_int (option), option_value, option_len);
     if (ret == -1)
-        return Error (LOG4CPLUS_TEXT ("setsockopt"), EsErrno, errno);
+        return Error (LOG4CPLUS_TEXT ("setsockopt"), EkErrno, errno);
 
     return Error ();
 }

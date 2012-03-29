@@ -34,12 +34,12 @@
 namespace log4cplus { namespace net {
 
 
-enum ErrorSource
+enum ErrorKind
 {
-    EsNone
-    , EsNotSupported
-    , EsErrno
-    , EsWin32GetLastError
+    EkNone
+    , EkNotSupported
+    , EkErrno
+    , EkWin32GetLastError
 };
 
 
@@ -47,20 +47,20 @@ class LOG4CPLUS_EXPORT Error
 {
 public:
     Error ();
-    Error (tchar const *, ErrorSource, long);
+    Error (tchar const *, ErrorKind, long);
     Error (Error const &);
     ~Error ();
     Error & operator = (Error const &);
     void swap (Error &);
 
     bool noerror () const;
-    ErrorSource get_source () const;
+    ErrorKind get_source () const;
     long get_error () const;
     tstring const & get_message () const;
     tstring const & get_origin () const;
 
 private:
-    ErrorSource error_source;
+    ErrorKind error_kind;
     long error_num;
     mutable std::auto_ptr<tstring> error_message;
     mutable std::auto_ptr<tstring> error_origin;
