@@ -587,6 +587,15 @@ sf_to_int (SendFlags sf)
 }
 
 
+static
+int
+rf_to_int (ReceiveFlags)
+{
+    // TODO
+    return 0;
+}
+
+
 } // namespace
 
 
@@ -712,7 +721,7 @@ send_wrap (
 
 
 Error
-send_on_socket (Socket & socket, std::size_t & sent, void const * buf,
+send_on_socket (Socket const & socket, std::size_t & sent, void const * buf,
     std::size_t buf_size, SendFlags flags)
 {
     Socket::Data const & sd = socket.get_data ();
@@ -721,6 +730,35 @@ send_on_socket (Socket & socket, std::size_t & sent, void const * buf,
         return Error (LOG4CPLUS_TEXT ("send"), EkErrno, errno);
 
     sent = static_cast<std::size_t>(ret);
+
+    return Error ();
+}
+
+
+template <typename recv_ret_type, typename buffer_len_type>
+static
+long
+recv_wrap (
+    recv_ret_type (* recv_func) (int, void *, buffer_len_type, int),
+    int socket, void * buf, std::size_t len, int flags)
+{
+    return static_cast<long>(
+        recv_func (socket, buf, static_cast<buffer_len_type>(len),
+            flags));
+}
+
+
+Error
+receive_from_socket (Socket const & socket, void * buf, std::size_t buffer_len,
+    std::size_t & received, ReceiveFlags flags)
+{
+    Socket::Data const & sd = socket.get_data ();
+    long ret = recv_wrap (&recv, sd.socket, buf, buffer_len,
+        rf_to_int (flags));
+    if (ret == -1)
+        return Error (LOG4CPLUS_TEXT ("recv"), EkErrno, errno);
+
+    received = static_cast<std::size_t>(ret);
 
     return Error ();
 }
