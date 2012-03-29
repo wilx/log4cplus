@@ -554,6 +554,24 @@ so_to_int (SocketOption so)
 }
 
 
+static
+int
+sd_to_int (ShutdownDirection sd)
+{
+
+    static int const table[] = {
+        SHUT_RD
+        , SHUT_WR
+        , SHUT_RDWR
+    };
+
+    if (+sd >= sizeof (table) / sizeof (table[0]))
+        return -1;
+    
+    return table[sd];
+}
+
+
 } // namespace
 
 
@@ -569,6 +587,31 @@ create_socket (Socket & sock, AddressFamily af, SocketType st, int proto)
     return Error ();
 }
 
+
+Error
+close_socket (Socket const & socket)
+{
+    Socket::Data const & sd = socket.get_data ();
+
+    int ret = close (sd.socket);
+    if (ret == -1)
+        return Error (LOG4CPLUS_TEXT ("close"), EkErrno, errno);
+
+    return Error ();
+}
+
+
+Error
+shutdown_socket (Socket const & socket, ShutdownDirection dir)
+{
+    Socket::Data const & sd = socket.get_data ();
+
+    int ret = shutdown (sd.socket, dir);
+    if (ret == -1)
+        return Error (LOG4CPLUS_TEXT ("shutdown"), EkErrno, errno);
+
+    return Error ();
+}
 
 template <typename addr_ptr_type, typename socklen_type>
 static
