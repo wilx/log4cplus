@@ -572,6 +572,21 @@ sd_to_int (ShutdownDirection sd)
 }
 
 
+static
+int
+sf_to_int (SendFlags sf)
+{
+    static int const table[] = {
+        MSG_NOSIGNAL
+    };
+
+    if (+sf >= sizeof (table) / sizeof (table[0]))
+        return 0;
+
+    return table[sf];
+}
+
+
 } // namespace
 
 
@@ -606,7 +621,7 @@ shutdown_socket (Socket const & socket, ShutdownDirection dir)
 {
     Socket::Data const & sd = socket.get_data ();
 
-    int ret = shutdown (sd.socket, dir);
+    int ret = shutdown (sd.socket, sd_to_int (dir));
     if (ret == -1)
         return Error (LOG4CPLUS_TEXT ("shutdown"), EkErrno, errno);
 
@@ -680,6 +695,34 @@ accept_on_socket (Socket & newsocket, Socket & socket, SockAddr & sa,
     newsd.socket = ret;
 
     return Error ();    
+}
+
+
+template <typename send_ret_type, typename buffer_len_type>
+static
+long
+send_wrap (
+    send_ret_type (* send_func) (int, void const *, buffer_len_type, int),
+    int socket, void const * buf, std::size_t len, int flags)
+{
+    return static_cast<long>(
+        send_func (socket, buf, static_cast<buffer_len_type>(len),
+            flags));
+}
+
+
+Error
+send_on_socket (Socket & socket, std::size_t & sent, void const * buf,
+    std::size_t buf_size, SendFlags flags)
+{
+    Socket::Data const & sd = socket.get_data ();
+    long ret = send_wrap (&send, sd.socket, buf, buf_size, sf_to_int (flags));
+    if (ret == -1)
+        return Error (LOG4CPLUS_TEXT ("send"), EkErrno, errno);
+
+    sent = static_cast<std::size_t>(ret);
+
+    return Error ();
 }
 
 
