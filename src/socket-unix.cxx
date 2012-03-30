@@ -590,7 +590,9 @@ mf_to_int (MsgFlags mf)
 #if defined (MSG_EOR)
     mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
 #else
-    // TODO: Handle unimplemented flags by reporting error to caller.
+    // TODO: Handle unimplemented flags in callers.
+    if ((+mf & MsgEor) != 0)
+        return -1;
 #endif
     mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
     mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
