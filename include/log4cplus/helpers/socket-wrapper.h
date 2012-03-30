@@ -22,8 +22,8 @@
 //  (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
 //  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef LOG4CPLUS_NET_SOCKETS_SOCKET_H
-#define LOG4CPLUS_NET_SOCKETS_SOCKET_H
+#ifndef LOG4CPLUS_HELPERS_SOCKET_WRAPPER_H
+#define LOG4CPLUS_HELPERS_SOCKET_WRAPPER_H
 
 #include <log4cplus/config.hxx>
 #include <log4cplus/tstring.h>
@@ -31,7 +31,7 @@
 #include <string>
 
 
-namespace log4cplus { namespace net {
+namespace log4cplus { namespace helpers { namespace net {
 
 
 enum ErrorKind
@@ -215,6 +215,6 @@ LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool);
 LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool);
 
 
-} } // namespace log4cplus { namespace net {
+} } } // namespace log4cplus { namespace helpers { namespace net {
 
-#endif // LOG4CPLUS_NET_SOCKETS_SOCKET_H
+#endif // LOG4CPLUS_HELPERS_SOCKET_WRAPPER_H

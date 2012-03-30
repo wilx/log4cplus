@@ -107,7 +107,7 @@ clone_auto_ptr (std::auto_ptr<T> const & ptr)
 } // namespace
 
 
-namespace log4cplus { namespace net {
+namespace log4cplus { namespace helpers { namespace net {
 
 
 tstring
@@ -839,10 +839,7 @@ set_no_delay (Socket const & socket, bool val)
 }
 
 
-} } // namespace log4cplus { namespace net {
-
-
-namespace log4cplus { namespace helpers {
+} // namespace net
 
 
 namespace
