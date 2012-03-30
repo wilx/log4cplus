@@ -31,7 +31,7 @@
 #include <log4cplus/thread/syncprims-pub-impl.h>
 #include <log4cplus/spi/loggingevent.h>
 
-#include <log4cplus/net/sockets/socket.h>
+#include <log4cplus/helpers/socket-wrapper.h>
 #include <log4cplus/streams.h>
 #include <sstream>
 
