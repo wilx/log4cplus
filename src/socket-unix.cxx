@@ -191,7 +191,14 @@ Error::swap (Error & other)
 
 
 bool
-Error::noerror () const
+Error::error () const
+{
+    return error_kind != EkNone;
+}
+
+
+bool
+Error::no_error () const
 {
     return error_kind == EkNone;
 }
@@ -295,6 +302,13 @@ Socket::get_data () const
 }
 
 
+bool
+Socket::initialized () const
+{
+    return data->socket != -1;
+}
+
+
 //
 //
 //
@@ -373,8 +387,9 @@ struct SockAddrIn::Data
 
 
 SockAddrIn::Data::Data ()
-    : addr (sockaddr_in ())
-{ }
+{
+    std::memset (&addr, 0, sizeof (addr));
+}
 
 
 //
@@ -627,6 +642,8 @@ close_socket (Socket const & socket)
     int ret = close (sd.socket);
     if (ret == -1)
         return Error (LOG4CPLUS_TEXT ("close"), EkErrno, errno);
+
+    sd.socket = -1;
 
     return Error ();
 }

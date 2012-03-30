@@ -53,7 +53,8 @@ public:
     Error & operator = (Error const &);
     void swap (Error &);
 
-    bool noerror () const;
+    bool error () const;
+    bool no_error () const;
     ErrorKind get_source () const;
     long get_error () const;
     tstring const & get_message () const;
@@ -81,6 +82,7 @@ public:
 
     Data & get_data ();
     Data const & get_data () const;
+    bool initialized () const;
 
 private:
     std::auto_ptr<Data> data;
