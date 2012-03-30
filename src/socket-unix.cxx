@@ -572,27 +572,32 @@ sd_to_int (ShutdownDirection sd)
 }
 
 
-static
-int
-sf_to_int (SendFlags sf)
+static inline
+void
+mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
 {
-    static int const table[] = {
-        MSG_NOSIGNAL
-    };
-
-    if (+sf >= sizeof (table) / sizeof (table[0]))
-        return 0;
-
-    return table[sf];
+    if ((+mf & mf_flag) != 0)
+        dest |= dest_flag;
 }
 
 
 static
 int
-rf_to_int (ReceiveFlags)
+mf_to_int (MsgFlags mf)
 {
-    // TODO
-    return 0;
+    int ret = 0;
+
+#if defined (MSG_EOR)
+    mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
+#else
+    // TODO: Handle unimplemented flags by reporting error to caller.
+#endif
+    mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
+    mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
+    mf_set_if_set (ret, MSG_OOB, mf, MsgOob);
+    mf_set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
+
+    return ret;
 }
 
 
@@ -722,10 +727,10 @@ send_wrap (
 
 Error
 send_on_socket (Socket const & socket, std::size_t & sent, void const * buf,
-    std::size_t buf_size, SendFlags flags)
+    std::size_t buf_size, MsgFlags flags)
 {
     Socket::Data const & sd = socket.get_data ();
-    long ret = send_wrap (&send, sd.socket, buf, buf_size, sf_to_int (flags));
+    long ret = send_wrap (&send, sd.socket, buf, buf_size, mf_to_int (flags));
     if (ret == -1)
         return Error (LOG4CPLUS_TEXT ("send"), EkErrno, errno);
 
@@ -750,11 +755,11 @@ recv_wrap (
 
 Error
 receive_from_socket (Socket const & socket, void * buf, std::size_t buffer_len,
-    std::size_t & received, ReceiveFlags flags)
+    std::size_t & received, MsgFlags flags)
 {
     Socket::Data const & sd = socket.get_data ();
     long ret = recv_wrap (&recv, sd.socket, buf, buffer_len,
-        rf_to_int (flags));
+        mf_to_int (flags));
     if (ret == -1)
         return Error (LOG4CPLUS_TEXT ("recv"), EkErrno, errno);
 

@@ -185,14 +185,14 @@ enum ShutdownDirection
 };
 
 
-enum SendFlags
+enum MsgFlags
 {
-    MsgNoSignal
+    MsgEor        = 1 << 0
+    , MsgNoSignal = 1 << 1
+    , MsgPeek     = 1 << 2
+    , MsgOob      = 1 << 3
+    , MsgWaitAll  = 1 << 4
 };
-
-
-enum ReceiveFlags
-{ };
 
 
 LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
@@ -203,9 +203,9 @@ LOG4CPLUS_EXPORT Error bind_socket (Socket const &, SockAddr const &,
 LOG4CPLUS_EXPORT Error listen_on_socket (Socket const &, int);
 LOG4CPLUS_EXPORT Error accept_on_socket (Socket &, SockAddr &, std::size_t &);
 LOG4CPLUS_EXPORT Error send_on_socket (Socket const &, std::size_t &,
-    void const *, std::size_t, SendFlags);
+    void const *, std::size_t, MsgFlags);
 LOG4CPLUS_EXPORT Error receive_from_socket (Socket const &, void *,
-    std::size_t &, ReceiveFlags);
+    std::size_t &, MsgFlags);
 
 LOG4CPLUS_EXPORT Error set_option (Socket const &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
