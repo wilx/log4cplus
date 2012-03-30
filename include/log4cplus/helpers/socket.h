@@ -27,6 +27,7 @@
 #include <log4cplus/config.hxx>
 #include <log4cplus/tstring.h>
 #include <log4cplus/helpers/socketbuffer.h>
+#include <log4cplus/helpers/socket-wrapper.h>
 
 
 namespace log4cplus {
@@ -41,15 +42,12 @@ namespace log4cplus {
                            message_truncated
                          };
 
-        typedef std::ptrdiff_t SOCKET_TYPE;
-
-        extern LOG4CPLUS_EXPORT SOCKET_TYPE const INVALID_SOCKET_VALUE;
 
         class LOG4CPLUS_EXPORT AbstractSocket {
         public:
           // ctor and dtor
             AbstractSocket();
-            AbstractSocket(SOCKET_TYPE sock, SocketState state, int err);
+            AbstractSocket(net::Socket sock, SocketState state, int err);
             AbstractSocket(const AbstractSocket&);
             virtual ~AbstractSocket() = 0;
 
@@ -65,9 +63,9 @@ namespace log4cplus {
             virtual void copy(const AbstractSocket& rhs);
 
           // Data
-            SOCKET_TYPE sock;
+            net::Socket sock;
             SocketState state;
-            int err;
+            net::Error err;
         };
 
 
@@ -80,7 +78,7 @@ namespace log4cplus {
         public:
           // ctor and dtor
             Socket();
-            Socket(SOCKET_TYPE sock, SocketState state, int err);
+            Socket(net::Socket sock, SocketState state, int err);
             Socket(const tstring& address, unsigned short port);
             virtual ~Socket();
 
@@ -107,17 +105,17 @@ namespace log4cplus {
         };
 
 
-        LOG4CPLUS_EXPORT SOCKET_TYPE openSocket(unsigned short port, SocketState& state);
-        LOG4CPLUS_EXPORT SOCKET_TYPE connectSocket(const log4cplus::tstring& hostn,
+        LOG4CPLUS_EXPORT net::Socket openSocket(unsigned short port, SocketState& state);
+        LOG4CPLUS_EXPORT net::Socket connectSocket(const log4cplus::tstring& hostn,
                                                    unsigned short port, SocketState& state);
-        LOG4CPLUS_EXPORT SOCKET_TYPE acceptSocket(SOCKET_TYPE sock, SocketState& state);
-        LOG4CPLUS_EXPORT int closeSocket(SOCKET_TYPE sock);
+        LOG4CPLUS_EXPORT net::Socket acceptSocket(net::Socket sock, SocketState& state);
+        LOG4CPLUS_EXPORT int closeSocket(net::Socket sock);
 
-        LOG4CPLUS_EXPORT long read(SOCKET_TYPE sock, SocketBuffer& buffer);
-        LOG4CPLUS_EXPORT long write(SOCKET_TYPE sock, const SocketBuffer& buffer);
+        LOG4CPLUS_EXPORT long read(net::Socket sock, SocketBuffer& buffer);
+        LOG4CPLUS_EXPORT long write(net::Socket sock, const SocketBuffer& buffer);
 
         LOG4CPLUS_EXPORT tstring getHostname (bool fqdn);
-        LOG4CPLUS_EXPORT int setTCPNoDelay (SOCKET_TYPE, bool);
+        LOG4CPLUS_EXPORT int setTCPNoDelay (net::Socket, bool);
 
     } // end namespace helpers
 } // end namespace log4cplus

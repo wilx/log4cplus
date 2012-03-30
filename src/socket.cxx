@@ -25,20 +25,12 @@
 namespace log4cplus { namespace helpers {
 
 
-extern LOG4CPLUS_EXPORT SOCKET_TYPE const INVALID_SOCKET_VALUE
-#if defined(_WIN32)
-    = static_cast<SOCKET_TYPE>(INVALID_SOCKET);
-#else
-    = static_cast<SOCKET_TYPE>(-1);
-#endif
-
-
 //////////////////////////////////////////////////////////////////////////////
 // AbstractSocket ctors and dtor
 //////////////////////////////////////////////////////////////////////////////
 
 AbstractSocket::AbstractSocket()
-: sock(INVALID_SOCKET_VALUE),
+: sock(),
   state(not_opened),
   err(0)
 {
@@ -46,7 +38,7 @@ AbstractSocket::AbstractSocket()
 
 
 
-AbstractSocket::AbstractSocket(SOCKET_TYPE sock_,
+AbstractSocket::AbstractSocket(net::Socket sock_,
     SocketState state_, int err_)
 : sock(sock_),
   state(state_),
@@ -76,10 +68,8 @@ AbstractSocket::~AbstractSocket()
 void
 AbstractSocket::close()
 {
-    if(sock != INVALID_SOCKET_VALUE) {
-        closeSocket(sock);
-        sock = INVALID_SOCKET_VALUE;
-    }
+    if (sock.initialized ())
+        close_socket (sock);
 }
 
 
@@ -87,7 +77,7 @@ AbstractSocket::close()
 bool
 AbstractSocket::isOpen() const
 {
-    return sock != INVALID_SOCKET_VALUE;
+    return sock.initialized ();
 }
 
 
@@ -113,7 +103,7 @@ AbstractSocket::copy(const AbstractSocket& r)
     sock = rhs.sock;
     state = rhs.state;
     err = rhs.err;
-    rhs.sock = INVALID_SOCKET_VALUE;
+    rhs.sock = net::Socket ();
     rhs.state = not_opened;
     rhs.err = 0;
 }
@@ -132,10 +122,56 @@ Socket::Socket()
 Socket::Socket(const tstring& address, unsigned short port)
     : AbstractSocket()
 {
+    // 
+
+    net::SocketAddrIn server;
+    net::Socket sock;
+    net::Error retval;
+
+    //
+
+    //    struct sockaddr_in server;
+    //int sock;
+    //int retval;
+
+    //std::memset (&server, 0, sizeof (server));
+    retval = get_host_by_name (LOG4CPLUS_TSTRING_TO_STRING(hostn).c_str(),
+        0, &server);
+    if (retval != 0)
+        return INVALID_SOCKET_VALUE;
+
+    server.sin_port = htons(port);
+    server.sin_family = AF_INET;
+
+    sock = ::socket(AF_INET, SOCK_STREAM, 0);
+    if(sock < 0) {
+        return INVALID_SOCKET_VALUE;
+    }
+
+    socklen_t namelen = sizeof (server);
+    while (
+        (retval = ::connect(sock, reinterpret_cast<struct sockaddr*>(&server),
+            namelen))
+        == -1
+        && (errno == EINTR))
+        ;
+    if (retval == INVALID_OS_SOCKET_VALUE) 
+    {
+        ::close(sock);
+        return INVALID_SOCKET_VALUE;
+    }
+
+    state = ok;
+    return to_log4cplus_socket (sock);
+    
+
+    // orig code
+
     sock = connectSocket(address, port, state);
-    if (sock == INVALID_SOCKET_VALUE)
+    if (! sock.initialized ())
         goto error;
 
+    net::set_no_delay (sock, true);
     if (setTCPNoDelay (sock, true) != 0)
         goto error;
 
@@ -146,7 +182,7 @@ error:
 }
 
 
-Socket::Socket(SOCKET_TYPE sock_, SocketState state_, int err_)
+Socket::Socket(net::Socket sock_, SocketState state_, int err_)
     : AbstractSocket(sock_, state_, err_)
 { }
 
@@ -218,7 +254,7 @@ Socket
 ServerSocket::accept()
 {
     SocketState st = not_opened;
-    SOCKET_TYPE clientSock = acceptSocket(sock, st);
+    net::Socket clientSock = acceptSocket(sock, st);
     return Socket(clientSock, st, 0);
 }
 
