@@ -211,10 +211,10 @@ LOG4CPLUS_EXPORT Error receive_from_socket (Socket const &, void *,
 
 LOG4CPLUS_EXPORT Error set_option (Socket const &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
-LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool);
-LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool);
-LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool);
-LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool);
+LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool = true);
+LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool = true);
+LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool = true);
+LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool = true);
 
 
 } } } // namespace log4cplus { namespace helpers { namespace net {
