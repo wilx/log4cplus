@@ -246,7 +246,7 @@ struct Socket::Data
 {
     Data ();
 
-    int socket;
+    mutable int socket;
 };
 
 
