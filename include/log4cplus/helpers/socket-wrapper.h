@@ -43,52 +43,6 @@ enum ErrorKind
 };
 
 
-class LOG4CPLUS_EXPORT Error
-{
-public:
-    Error ();
-    Error (tchar const *, ErrorKind, long);
-    Error (Error const &);
-    ~Error ();
-    Error & operator = (Error const &);
-    void swap (Error &);
-
-    bool error () const;
-    bool no_error () const;
-    ErrorKind get_source () const;
-    long get_error () const;
-    tstring const & get_message () const;
-    tstring const & get_origin () const;
-
-private:
-    ErrorKind error_kind;
-    long error_num;
-    mutable std::auto_ptr<tstring> error_message;
-    mutable std::auto_ptr<tstring> error_origin;
-};
-
-
-class LOG4CPLUS_EXPORT Socket
-{
-public:
-    Socket ();
-    Socket (const Socket &);
-    virtual ~Socket ();
-    Socket & operator = (Socket const &);
-
-    void swap (Socket &);
-
-    struct Data;
-
-    Data & get_data ();
-    Data const & get_data () const;
-    bool initialized () const;
-
-private:
-    std::auto_ptr<Data> data;
-};
-
-
 enum AddressFamily
 {
     AfUnspec
@@ -137,6 +91,71 @@ enum SocketOption
 };
 
 
+
+enum ShutdownDirection
+{
+    ShutRd
+    , ShutWr
+    , ShutRdWr
+};
+
+
+enum MsgFlags
+{
+    MsgEor        = 1 << 0
+    , MsgNoSignal = 1 << 1
+    , MsgPeek     = 1 << 2
+    , MsgOob      = 1 << 3
+    , MsgWaitAll  = 1 << 4
+};
+
+
+class LOG4CPLUS_EXPORT Error
+{
+public:
+    Error ();
+    Error (tchar const *, ErrorKind, long);
+    Error (Error const &);
+    ~Error ();
+    Error & operator = (Error const &);
+    void swap (Error &);
+
+    bool error () const;
+    bool no_error () const;
+    ErrorKind get_source () const;
+    long get_error () const;
+    tstring const & get_message () const;
+    tstring const & get_origin () const;
+
+private:
+    ErrorKind error_kind;
+    long error_num;
+    mutable std::auto_ptr<tstring> error_message;
+    mutable std::auto_ptr<tstring> error_origin;
+};
+
+
+class LOG4CPLUS_EXPORT Socket
+{
+public:
+    Socket ();
+    Socket (const Socket &);
+    virtual ~Socket ();
+    Socket & operator = (Socket const &);
+
+    void swap (Socket &);
+
+    struct Data;
+
+    Data & get_data ();
+    Data const & get_data () const;
+    bool initialized () const;
+
+private:
+    std::auto_ptr<Data> data;
+};
+
+
 class SockAddr;
 class SockAddrIn;
 
@@ -176,24 +195,6 @@ private:
     struct Data;
     
     std::auto_ptr<Data> data;
-};
-
-
-enum ShutdownDirection
-{
-    ShutRd
-    , ShutWr
-    , ShutRdWr
-};
-
-
-enum MsgFlags
-{
-    MsgEor        = 1 << 0
-    , MsgNoSignal = 1 << 1
-    , MsgPeek     = 1 << 2
-    , MsgOob      = 1 << 3
-    , MsgWaitAll  = 1 << 4
 };
 
 
