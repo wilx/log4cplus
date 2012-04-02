@@ -437,6 +437,56 @@ SockAddrIn::swap (SockAddrIn & other)
 //
 //
 
+struct AddrInfo::Data
+{
+    Data ();
+
+    addrinfo info;
+};
+
+
+AddrInfo::Data::Data ()
+{
+    std::memset (&info, 0, sizeof (info));
+}
+
+
+//
+//
+//
+
+AddrInfo::AddrInfo ()
+    : data (new AddrInfo::Data)
+{ }
+
+
+AddrInfo::AddrInfo (AddrInfo const & other)
+    : data (clone_auto_ptr (other.data))
+{ }
+
+
+AddrInfo::~AddrInfo ()
+{ }
+
+
+AddrInfo &
+AddrInfo::operator = (AddrInfo const & other)
+{
+    AddrInfo (other).swap (*this);
+    return *this;
+}
+
+
+void
+AddrInfo::swap (AddrInfo & other)
+{
+    swap_auto_ptrs (data, other.data);
+}
+
+
+//
+//
+//
 
 namespace
 {
@@ -587,13 +637,21 @@ sd_to_int (ShutdownDirection sd)
 }
 
 
+template <typename FlagsType>
 static inline
 void
-mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
+set_if_set (int & dest, int dest_flag, FlagsType f, FlagsType flag)
 {
-    if ((+mf & mf_flag) != 0)
+    if ((+f & flag) != 0)
         dest |= dest_flag;
 }
+
+
+#define LOG4CPLUS_UNHANDLED_FLAG(var, f)  \
+do {                                      \
+    if ((+mf & MsgEor) != 0)              \
+        return -1;                        \
+} while (0)
 
 
 static
@@ -603,16 +661,61 @@ mf_to_int (MsgFlags mf)
     int ret = 0;
 
 #if defined (MSG_EOR)
-    mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
+    set_if_set (ret, MSG_EOR, mf, MsgEor);
 #else
     // TODO: Handle unimplemented flags in callers.
-    if ((+mf & MsgEor) != 0)
-        return -1;
+    LOG4CPLUS_UNHANDLED_FLAG (mf, MsgEor);
 #endif
-    mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
-    mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
-    mf_set_if_set (ret, MSG_OOB, mf, MsgOob);
-    mf_set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
+    set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
+    set_if_set (ret, MSG_PEEK, mf, MsgPeek);
+    set_if_set (ret, MSG_OOB, mf, MsgOob);
+    set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
+
+    return ret;
+}
+
+
+static
+int
+aif_to_int (AiFlags aif)
+{
+    int ret = 0;
+
+#if defined (AI_PASSIVE)
+    set_if_set (ret, AI_PASSIVE, aif, AiPassive);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AI_PASSIVE);
+#endif
+
+#if defined (AI_CANONNAME)
+    set_if_set (ret, AI_CANONNAME, aif, AiCanonName);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AI_CANONNAME);
+#endif
+
+#if defined (AI_NUMERICHOST)
+    set_if_set (ret, AI_NUMERICHOST, aif, AiNumericHost);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AI_NUMERICHOST);
+#endif
+
+#if defined (AI_V4MAPPED)
+    set_if_set (ret, AI_V4MAPPED, aif, AiV4Mapped);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AI_V4MAPPED);
+#endif
+
+#if defined (AI_ALL)
+    set_if_set (ret, AI_ALL, aif, AiV4Mapped);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AI_V4MAPPED);
+#endif
+
+#if defined (AI_ADDRCONFIG)
+    set_if_set (ret, AI_ADDRCONFIG, aif, AiAddrConfig);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AI_ADDRCONFIG);
+#endif
 
     return ret;
 }

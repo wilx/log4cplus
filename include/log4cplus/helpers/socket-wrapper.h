@@ -82,6 +82,20 @@ enum SocketLevel
 };
 
 
+//! This enum is nearly identical to SocketLevel enum but it is used
+//! by class AddrInfo instead of set_option().
+enum Protocol
+{
+    ProtoUnspec
+    , IpProtoIp
+    , IpProtoIpv6
+    , IpProtoIcmp
+    , IpProtoRaw
+    , IpProtoTcp
+    , IpProtoUdp
+};
+
+
 enum SocketOption
 {
     SoKeepAlive
@@ -107,6 +121,18 @@ enum MsgFlags
     , MsgPeek     = 1 << 2
     , MsgOob      = 1 << 3
     , MsgWaitAll  = 1 << 4
+};
+
+
+enum AiFlags
+{
+    AiPassive       = 1 << 0
+    , AiCanonName   = 1 << 1
+    , AiNumericHost = 1 << 2
+    , AiNumericServ = 1 << 3
+    , AiV4Mapped    = 1 << 4
+    , AiAll         = 1 << 5
+    , AiAddrConfig  = 1 << 6
 };
 
 
@@ -194,6 +220,26 @@ public:
 private:
     struct Data;
     
+    std::auto_ptr<Data> data;
+};
+
+
+class LOG4CPLUS_EXPORT AddrInfo
+{
+public:
+    AddrInfo ();
+    AddrInfo (AddrInfo const &);
+    ~AddrInfo ();
+    AddrInfo & operator = (AddrInfo const &);
+    
+    void swap (AddrInfo &);
+    AddressFamily get_family () const;
+    SocketType get_socktype () const;
+    ProtocolFamily get_proto () const;
+
+private:
+    struct Data;
+
     std::auto_ptr<Data> data;
 };
 
