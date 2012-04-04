@@ -109,6 +109,184 @@ clone_auto_ptr (std::auto_ptr<T> const & ptr)
 
 namespace log4cplus { namespace helpers { namespace net {
 
+//
+//
+//
+
+int
+af_to_int (AddressFamily af)
+{
+    static int const table[] = {
+#ifdef AF_UNSPEC
+        AF_UNSPEC
+#else
+        0
+#endif
+        , AF_UNIX
+        , AF_INET
+#ifdef AF_INET6
+        , AF_INET6
+#else
+        , -1
+#endif
+    };
+
+    if (+af >= sizeof (table) / sizeof (table[0]))
+        return -1;
+
+    return table[af];
+}
+
+
+int
+st_to_int (SocketType st)
+{
+    static int const table[] = {
+        SOCK_STREAM
+        , SOCK_DGRAM
+        , SOCK_RAW
+        , SOCK_RDM
+        , SOCK_SEQPACKET
+    };
+    
+    if (+st >= sizeof (table) / sizeof (table[0]))
+        return -1;
+    
+    return table[st];
+}
+
+
+int
+sol_to_int (SocketLevel sl)
+{
+    static int const table[] = {
+        SOL_SOCKET
+#if defined (SOL_IP)
+        , SOL_IP
+#else
+        , IPPROTO_IP
+#endif
+
+#if defined (SOL_IPV6)
+        , SOL_IPV6
+#else
+        , IPPROTO_IPV6
+#endif
+
+        , IPPROTO_ICMP
+
+#if defined (SOL_RAW)
+        , SOL_RAW
+#else
+        , IPPROTO_RAW
+#endif
+
+#if defined (SOL_TCP)
+        , SOL_TCP
+#else
+        , IPPROTO_TCP
+#endif
+
+#if defined (SOL_UDP)
+        , SOL_UDP
+#else
+        , IPPROTO_UDP
+#endif
+    };
+
+    if (+sl >= sizeof (table) / sizeof (table[0]))
+        return -1;
+    
+    return table[sl];
+}
+
+
+int
+so_to_int (SocketOption so)
+{
+    static int const table[] = {
+#if defined (SO_KEEPALIVE)
+        SO_KEEPALIVE
+#else
+        -1
+#endif
+
+#if defined (SO_LINGER)
+        , SO_LINGER
+#else
+        , -1
+#endif
+
+#if defined (SO_REUSEADDR)
+        , SO_REUSEADDR
+#else
+        , -1
+#endif
+
+#if defined (SO_NODELAY)
+        , SO_NODELAY
+#else
+        , -1
+#endif       
+    };
+
+    if (+so >= sizeof (table) / sizeof (table[0]))
+        return -1;
+    
+    return table[so];
+}
+
+
+int
+sd_to_int (ShutdownDirection sd)
+{
+
+    static int const table[] = {
+        SHUT_RD
+        , SHUT_WR
+        , SHUT_RDWR
+    };
+
+    if (+sd >= sizeof (table) / sizeof (table[0]))
+        return -1;
+    
+    return table[sd];
+}
+
+
+static inline
+void
+mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
+{
+    if ((+mf & mf_flag) != 0)
+        dest |= dest_flag;
+}
+
+
+int
+mf_to_int (MsgFlags mf)
+{
+    int ret = 0;
+
+#if defined (MSG_EOR)
+    mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
+#else
+    // TODO: Handle unimplemented flags in callers.
+    if ((+mf & MsgEor) != 0)
+        return -1;
+#endif
+    mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
+    mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
+    mf_set_if_set (ret, MSG_OOB, mf, MsgOob);
+    mf_set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
+
+    return ret;
+}
+
+
+//
+//
+//
 
 tstring
 format_errno_str (int eno)
@@ -436,178 +614,6 @@ SockAddrIn::swap (SockAddrIn & other)
 //
 //
 //
-
-
-int
-af_to_int (AddressFamily af)
-{
-    static int const table[] = {
-#ifdef AF_UNSPEC
-        AF_UNSPEC
-#else
-        0
-#endif
-        , AF_UNIX
-        , AF_INET
-#ifdef AF_INET6
-        , AF_INET6
-#else
-        , -1
-#endif
-    };
-
-    if (+af >= sizeof (table) / sizeof (table[0]))
-        return -1;
-
-    return table[af];
-}
-
-
-int
-st_to_int (SocketType st)
-{
-    static int const table[] = {
-        SOCK_STREAM
-        , SOCK_DGRAM
-        , SOCK_RAW
-        , SOCK_RDM
-        , SOCK_SEQPACKET
-    };
-    
-    if (+st >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[st];
-}
-
-
-int
-sol_to_int (SocketLevel sl)
-{
-    static int const table[] = {
-        SOL_SOCKET
-#if defined (SOL_IP)
-        , SOL_IP
-#else
-        , IPPROTO_IP
-#endif
-
-#if defined (SOL_IPV6)
-        , SOL_IPV6
-#else
-        , IPPROTO_IPV6
-#endif
-
-        , IPPROTO_ICMP
-
-#if defined (SOL_RAW)
-        , SOL_RAW
-#else
-        , IPPROTO_RAW
-#endif
-
-#if defined (SOL_TCP)
-        , SOL_TCP
-#else
-        , IPPROTO_TCP
-#endif
-
-#if defined (SOL_UDP)
-        , SOL_UDP
-#else
-        , IPPROTO_UDP
-#endif
-    };
-
-    if (+sl >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[sl];
-}
-
-
-int
-so_to_int (SocketOption so)
-{
-    static int const table[] = {
-#if defined (SO_KEEPALIVE)
-        SO_KEEPALIVE
-#else
-        -1
-#endif
-
-#if defined (SO_LINGER)
-        , SO_LINGER
-#else
-        , -1
-#endif
-
-#if defined (SO_REUSEADDR)
-        , SO_REUSEADDR
-#else
-        , -1
-#endif
-
-#if defined (SO_NODELAY)
-        , SO_NODELAY
-#else
-        , -1
-#endif       
-    };
-
-    if (+so >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[so];
-}
-
-
-int
-sd_to_int (ShutdownDirection sd)
-{
-
-    static int const table[] = {
-        SHUT_RD
-        , SHUT_WR
-        , SHUT_RDWR
-    };
-
-    if (+sd >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[sd];
-}
-
-
-static inline
-void
-mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
-{
-    if ((+mf & mf_flag) != 0)
-        dest |= dest_flag;
-}
-
-
-int
-mf_to_int (MsgFlags mf)
-{
-    int ret = 0;
-
-#if defined (MSG_EOR)
-    mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
-#else
-    // TODO: Handle unimplemented flags in callers.
-    if ((+mf & MsgEor) != 0)
-        return -1;
-#endif
-    mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
-    mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
-    mf_set_if_set (ret, MSG_OOB, mf, MsgOob);
-    mf_set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
-
-    return ret;
-}
-
 
 Error
 create_socket (Socket & sock, AddressFamily af, SocketType st, int proto)
