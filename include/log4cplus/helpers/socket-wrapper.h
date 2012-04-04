@@ -87,11 +87,11 @@ enum SocketLevel
 LOG4CPLUS_EXPORT int sol_to_int (SocketLevel);
 
 
-//! This enum is nearly identical to SocketLevel enum but it is used
-//! by class AddrInfo instead of set_option().
+//! This enum specifies protocol information. It is used by, e.g.,
+//! create_socket(), AddrInfo::get_proto(), etc.
 enum Protocol
 {
-    ProtoUnspec
+    ProtoUnspec = -1
     , IpProtoIp
     , IpProtoIpv6
     , IpProtoIcmp
@@ -144,6 +144,8 @@ enum AiFlags
     , AiAll         = 1 << 5
     , AiAddrConfig  = 1 << 6
 };
+
+LOG4CPLUS_EXPORT int aif_to_int (AiFlags);
 
 
 class LOG4CPLUS_EXPORT Error
@@ -243,9 +245,10 @@ public:
     AddrInfo & operator = (AddrInfo const &);
     
     void swap (AddrInfo &);
+    AiFlags get_flags () const;
     AddressFamily get_family () const;
     SocketType get_socktype () const;
-    ProtocolFamily get_proto () const;
+    Protocol get_proto () const;
 
 private:
     struct Data;

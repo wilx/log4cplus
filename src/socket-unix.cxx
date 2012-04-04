@@ -138,6 +138,32 @@ af_to_int (AddressFamily af)
 }
 
 
+AddressFamily
+int_to_af (int af)
+{
+    switch (af)
+    {
+    default:
+        // TODO: Better handling of unknown values.
+#ifdef AF_UNSPEC
+    case AF_UNSPEC:
+#endif
+        return AfUnspec;
+
+    case AF_UNIX:
+        return AfUnix;
+
+    case AF_INET:
+        return AfInet;
+
+#ifdef AF_INET6:
+    case AF_INET6:
+        return AfInet6;
+#endif
+    }
+}
+
+
 int
 st_to_int (SocketType st)
 {
@@ -254,13 +280,22 @@ sd_to_int (ShutdownDirection sd)
 }
 
 
+template <typename FlagsDest, typename FlagDest, typename FlagsSrc
+    , typename FlagSrc>
 static inline
 void
-mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
+set_if_set (FlagsDest & dest, FlagDest dest_flag, FlagsSrc f, FlagSrc flag)
 {
-    if ((+mf & mf_flag) != 0)
+    if ((f & flag) != 0)
         dest |= dest_flag;
 }
+
+
+#define LOG4CPLUS_UNHANDLED_FLAG(var, f)  \
+do {                                      \
+    if (((var) & (f)) != 0)               \
+        return -1;                        \
+} while (0)
 
 
 int
@@ -269,19 +304,97 @@ mf_to_int (MsgFlags mf)
     int ret = 0;
 
 #if defined (MSG_EOR)
-    mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
+    set_if_set (ret, MSG_EOR, mf, MsgEor);
 #else
     // TODO: Handle unimplemented flags in callers.
-    if ((+mf & MsgEor) != 0)
-        return -1;
+    LOG4CPLUS_UNHANDLED_FLAG (mf, MsgEor);
 #endif
-    mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
-    mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
-    mf_set_if_set (ret, MSG_OOB, mf, MsgOob);
-    mf_set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
+    set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
+    set_if_set (ret, MSG_PEEK, mf, MsgPeek);
+    set_if_set (ret, MSG_OOB, mf, MsgOob);
+    set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
 
     return ret;
 }
+
+
+int
+aif_to_int (AiFlags aif)
+{
+    int ret = 0;
+
+#if defined (AI_PASSIVE)
+    set_if_set (ret, AI_PASSIVE, aif, AiPassive);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiPassive);
+#endif
+
+#if defined (AI_CANONNAME)
+    set_if_set (ret, AI_CANONNAME, aif, AiCanonName);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiCanonName);
+#endif
+
+#if defined (AI_NUMERICHOST)
+    set_if_set (ret, AI_NUMERICHOST, aif, AiNumericHost);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiNumericHost);
+#endif
+
+#if defined (AI_V4MAPPED)
+    set_if_set (ret, AI_V4MAPPED, aif, AiV4Mapped);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiV4Mapped);
+#endif
+
+#if defined (AI_ALL)
+    set_if_set (ret, AI_ALL, aif, AiAll);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiAll);
+#endif
+
+#if defined (AI_ADDRCONFIG)
+    set_if_set (ret, AI_ADDRCONFIG, aif, AiAddrConfig);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiAddrConfig);
+#endif
+
+    return ret;
+}
+
+
+AiFlags
+int_to_aif (int aif)
+{
+    int ret = 0;
+
+#if defined (AI_PASSIVE)
+    set_if_set (ret, AiPassive, aif, AI_PASSIVE);
+#endif
+
+#if defined (AI_CANONNAME)
+    set_if_set (ret, AiCanonName, aif, AI_CANONNAME);
+#endif
+
+#if defined (AI_NUMERICHOST)
+    set_if_set (ret, AiNumericHost, aif, AI_NUMERICHOST);
+#endif
+
+#if defined (AI_V4MAPPED)
+    set_if_set (ret, AiV4Mapped, aif, AI_V4MAPPED);
+#endif
+
+#if defined (AI_ALL)
+    set_if_set (ret, AiAll, aif, AI_ALL);
+#endif
+
+#if defined (AI_ADDRCONFIG)
+    set_if_set (ret, AiAddrConfig, aif, AI_ADDRCONFIG);
+#endif
+
+    return AiFlags (ret);
+}
+
 
 
 //
@@ -660,6 +773,41 @@ AddrInfo::swap (AddrInfo & other)
 {
     swap_auto_ptrs (data, other.data);
 }
+
+
+AiFlags
+AddrInfo::get_flags () const
+{
+    return int_to_aif (data->info.ai_flags);
+}
+
+
+AddressFamily
+AddrInfo::get_family () const
+{
+    return int_to_af (data->info.ai_family);
+}
+
+
+SocketType
+AddrInfo::get_socktype () const
+{
+}
+
+
+static inline
+Protocol
+int_to_protocol (int p)
+{
+    
+}
+
+
+Protocol
+AddrInfo::get_proto () const
+{
+}
+
 
 
 //
