@@ -488,10 +488,6 @@ AddrInfo::swap (AddrInfo & other)
 //
 //
 
-namespace
-{
-
-static
 int
 af_to_int (AddressFamily af)
 {
@@ -517,7 +513,6 @@ af_to_int (AddressFamily af)
 }
 
 
-static
 int
 st_to_int (SocketType st)
 {
@@ -536,7 +531,6 @@ st_to_int (SocketType st)
 }
 
 
-static
 int
 sol_to_int (SocketLevel sl)
 {
@@ -582,7 +576,6 @@ sol_to_int (SocketLevel sl)
 }
 
 
-static
 int
 so_to_int (SocketOption so)
 {
@@ -619,7 +612,6 @@ so_to_int (SocketOption so)
 }
 
 
-static
 int
 sd_to_int (ShutdownDirection sd)
 {
@@ -654,7 +646,6 @@ do {                                      \
 } while (0)
 
 
-static
 int
 mf_to_int (MsgFlags mf)
 {
@@ -719,9 +710,6 @@ aif_to_int (AiFlags aif)
 
     return ret;
 }
-
-
-} // namespace
 
 
 Error

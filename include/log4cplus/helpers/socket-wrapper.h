@@ -56,8 +56,9 @@ enum AddressFamily
     , PfInte6 = AfInet6
 };
 
-
 typedef AddressFamily ProtocolFamily;
+
+LOG4CPLUS_EXPORT int af_to_int (AddressFamily);
 
 
 enum SocketType
@@ -68,6 +69,8 @@ enum SocketType
     , StRdm
     , StSeqPacket
 };
+
+LOG4CPLUS_EXPORT int st_to_int (SocketType);
 
 
 enum SocketLevel
@@ -80,6 +83,8 @@ enum SocketLevel
     , SolIpProtoTcp
     , SolIpProtoUdp
 };
+
+LOG4CPLUS_EXPORT int sol_to_int (SocketLevel);
 
 
 //! This enum is nearly identical to SocketLevel enum but it is used
@@ -104,6 +109,7 @@ enum SocketOption
     , SoNoDelay
 };
 
+LOG4CPLUS_EXPORT int so_to_int (SocketOption);
 
 
 enum ShutdownDirection
@@ -112,6 +118,8 @@ enum ShutdownDirection
     , ShutWr
     , ShutRdWr
 };
+
+LOG4CPLUS_EXPORT int sd_to_int (ShutdownDirection);
 
 
 enum MsgFlags
@@ -122,6 +130,8 @@ enum MsgFlags
     , MsgOob      = 1 << 3
     , MsgWaitAll  = 1 << 4
 };
+
+LOG4CPLUS_EXPORT int mf_to_int (MsgFlags);
 
 
 enum AiFlags
