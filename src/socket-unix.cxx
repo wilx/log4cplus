@@ -438,10 +438,6 @@ SockAddrIn::swap (SockAddrIn & other)
 //
 
 
-namespace
-{
-
-static
 int
 af_to_int (AddressFamily af)
 {
@@ -467,7 +463,6 @@ af_to_int (AddressFamily af)
 }
 
 
-static
 int
 st_to_int (SocketType st)
 {
@@ -486,7 +481,6 @@ st_to_int (SocketType st)
 }
 
 
-static
 int
 sol_to_int (SocketLevel sl)
 {
@@ -532,7 +526,6 @@ sol_to_int (SocketLevel sl)
 }
 
 
-static
 int
 so_to_int (SocketOption so)
 {
@@ -569,7 +562,6 @@ so_to_int (SocketOption so)
 }
 
 
-static
 int
 sd_to_int (ShutdownDirection sd)
 {
@@ -596,7 +588,6 @@ mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
 }
 
 
-static
 int
 mf_to_int (MsgFlags mf)
 {
@@ -616,9 +607,6 @@ mf_to_int (MsgFlags mf)
 
     return ret;
 }
-
-
-} // namespace
 
 
 Error
