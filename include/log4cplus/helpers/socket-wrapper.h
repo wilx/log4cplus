@@ -93,8 +93,7 @@ LOG4CPLUS_EXPORT int sol_to_int (SocketLevel);
 //! create_socket(), AddrInfo::get_proto(), etc.
 enum Protocol
 {
-    ProtoUnspec = -1
-    , IpProtoIp
+    IpProtoIp
     , IpProtoIpv6
     , IpProtoIcmp
     , IpProtoRaw
@@ -215,8 +214,6 @@ public:
     SockAddr & operator = (SockAddr const &);
 
     void swap (SockAddr &);
-
-
 
     Data & get_data ();
     Data const & get_data () const;

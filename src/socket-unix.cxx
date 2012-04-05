@@ -302,7 +302,7 @@ so_to_int (SocketOption so)
         return SO_LINGER;
 #endif
 
-#ifdef SO_REUSEADDR:
+#ifdef SO_REUSEADDR
     case SoReuseAddr:
         return SO_REUSEADDR;
 #endif
@@ -458,9 +458,6 @@ proto_to_int (Protocol p)
     {
     default:
         throw Error ("proto_to_int", EkNotSupported, +p);
-
-    case ProtoUnspec:
-        return 0;
 
 #ifdef IPPROTO_IP
     case IpProtoIp:
