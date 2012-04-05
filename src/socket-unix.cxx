@@ -287,53 +287,51 @@ sol_to_int (SocketLevel sl)
 int
 so_to_int (SocketOption so)
 {
-    static int const table[] = {
-#if defined (SO_KEEPALIVE)
-        SO_KEEPALIVE
-#else
-        -1
+    switch (so)
+    {
+    default:
+        throw Error ("so_to_int", EkNotSupported, so);
+
+#ifdef SO_KEEPALIVE
+    case SoKeepAlive:
+        return SO_KEEPALIVE;
 #endif
 
-#if defined (SO_LINGER)
-        , SO_LINGER
-#else
-        , -1
+#ifdef SO_LINGER
+    case SoLinger:
+        return SO_LINGER;
 #endif
 
-#if defined (SO_REUSEADDR)
-        , SO_REUSEADDR
-#else
-        , -1
+#ifdef SO_REUSEADDR:
+    case SoReuseAddr:
+        return SO_REUSEADDR;
 #endif
 
-#if defined (SO_NODELAY)
-        , SO_NODELAY
-#else
-        , -1
+#ifdef SO_NODELAY
+    case SoNoDelay:
+        return SO_NODELAY;
 #endif       
-    };
-
-    if (+so >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[so];
+    }
 }
 
 
 int
 sd_to_int (ShutdownDirection sd)
 {
+    switch (sd)
+    {
+    default:
+        throw Error ("sd_to_int", EkNotSupported, sd);
 
-    static int const table[] = {
-        SHUT_RD
-        , SHUT_WR
-        , SHUT_RDWR
-    };
+    case ShutRd:
+        return SHUT_RD;
 
-    if (+sd >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[sd];
+    case ShutWr:
+        return SHUT_WR;
+
+    case ShutRdWr:
+        return SHUT_RDWR;
+    }
 }
 
 
