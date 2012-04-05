@@ -63,7 +63,8 @@ LOG4CPLUS_EXPORT int af_to_int (AddressFamily);
 
 enum SocketType
 {
-    StStream
+    StUnspec
+    , StStream
     , StDgram
     , StRaw
     , StRdm
@@ -71,6 +72,7 @@ enum SocketType
 };
 
 LOG4CPLUS_EXPORT int st_to_int (SocketType);
+LOG4CPLUS_EXPORT SocketType int_to_st (int);
 
 
 enum SocketLevel
@@ -99,6 +101,9 @@ enum Protocol
     , IpProtoTcp
     , IpProtoUdp
 };
+
+LOG4CPLUS_EXPORT int proto_to_int (Protocol p);
+LOG4CPLUS_EXPORT Protocol int_to_proto (int);
 
 
 enum SocketOption

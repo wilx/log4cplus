@@ -116,25 +116,31 @@ namespace log4cplus { namespace helpers { namespace net {
 int
 af_to_int (AddressFamily af)
 {
-    static int const table[] = {
+    switch (af)
+    {
+    default:
+        throw Error ("af_to_int", EkNotSupported, af);
+
+    case AfUnspec:
 #ifdef AF_UNSPEC
-        AF_UNSPEC
+        return AF_UNSPEC;
 #else
-        0
+        return 0;
 #endif
-        , AF_UNIX
-        , AF_INET
+
+#ifdef AF_UNIX
+    case AfUnix:
+        return AF_UNIX;
+#endif
+
+    case AfInet:
+        return AF_INET;
+
 #ifdef AF_INET6
-        , AF_INET6
-#else
-        , -1
+    case AfInet6:
+        return AF_INET6;
 #endif
-    };
-
-    if (+af >= sizeof (table) / sizeof (table[0]))
-        return -1;
-
-    return table[af];
+    }
 }
 
 
@@ -150,13 +156,15 @@ int_to_af (int af)
 #endif
         return AfUnspec;
 
+#ifdef AF_UNIX
     case AF_UNIX:
         return AfUnix;
+#endif
 
     case AF_INET:
         return AfInet;
 
-#ifdef AF_INET6:
+#ifdef AF_INET6
     case AF_INET6:
         return AfInet6;
 #endif
@@ -167,18 +175,67 @@ int_to_af (int af)
 int
 st_to_int (SocketType st)
 {
-    static int const table[] = {
-        SOCK_STREAM
-        , SOCK_DGRAM
-        , SOCK_RAW
-        , SOCK_RDM
-        , SOCK_SEQPACKET
-    };
-    
-    if (+st >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[st];
+    switch (st)
+    {
+    default:
+        throw Error ("st_to_int", EkNotSupported, st);
+
+    case StUnspec:
+        return 0;
+
+    case StStream:
+        return SOCK_STREAM;
+        
+    case StDgram:
+        return SOCK_DGRAM;
+
+#ifdef SOCK_RAW
+    case StRaw:
+        return SOCK_RAW;
+#endif
+     
+#ifdef SOCK_RDM   
+    case StRdm:
+        return SOCK_RDM;
+#endif
+      
+#ifdef SOCK_SEQPACKET  
+    case StSeqPacket:
+        return SOCK_SEQPACKET;
+#endif
+    }
+}
+
+
+SocketType
+int_to_st (int st)
+{
+    switch (st)
+    {
+    default:
+        throw Error ("int_to_st", EkNotSupported, st);
+
+    case SOCK_STREAM:
+        return StStream;
+
+    case SOCK_DGRAM:
+        return StDgram;
+
+#ifdef SOCK_RAW
+    case SOCK_RAW:
+        return StRaw;
+#endif
+
+#ifdef SOCK_RDM
+    case SOCK_RDM:
+        return StRdm;
+#endif
+
+#ifdef SOCK_SEQPACKET
+    case SOCK_SEQPACKET:
+        return StSeqPacket;
+#endif
+    }
 }
 
 
@@ -395,6 +452,90 @@ int_to_aif (int aif)
     return AiFlags (ret);
 }
 
+
+int
+proto_to_int (Protocol p)
+{
+    switch (p)
+    {
+    default:
+        throw Error ("proto_to_int", EkNotSupported, +p);
+
+    case ProtoUnspec:
+        return 0;
+
+#ifdef IPPROTO_IP
+    case IpProtoIp:
+        return IPPROTO_IP;
+#endif
+
+#ifdef IPPROTO_IPV6
+    case IpProtoIpv6:
+        return IPPROTO_IPV6;
+#endif
+
+#ifdef IPPROTO_ICMP
+    case IpProtoIcmp:
+        return IPPROTO_ICMP;
+#endif
+
+#ifdef IPPROTO_RAW
+    case IpProtoRaw:
+        return IPPROTO_RAW;
+#endif
+
+#ifdef IPPROTO_TCP
+    case IpProtoTcp:
+        return IPPROTO_TCP;
+#endif
+
+#ifdef IPPROTO_UDP
+    case IpProtoUdp:
+        return IPPROTO_UDP;
+#endif
+    }
+}
+
+
+Protocol
+int_to_proto (int p)
+{
+    switch (p)
+    {
+    default:
+        throw Error ("int_to_proto", EkNotSupported, p);
+
+#ifdef IPPROTO_IP
+    case IPPROTO_IP:
+        return IpProtoIp;
+#endif
+
+#ifdef IPPROTO_IPV6
+    case IPPROTO_IPV6:
+        return IpProtoIpv6;
+#endif
+
+#ifdef IPPROTO_ICMP
+    case IPPROTO_ICMP:
+        return IpProtoIcmp;
+#endif
+
+#ifdef IPPROTO_RAW
+    case IPPROTO_RAW:
+        return IpProtoRaw;
+#endif
+
+#ifdef IPPROTO_TCP
+    case IPPROTO_TCP:
+        return IpProtoTcp;
+#endif
+
+#ifdef IPPROTO_UDP
+    case IPPROTO_UDP:
+        return IpProtoUdp;
+#endif
+    }
+}
 
 
 //
@@ -792,20 +933,14 @@ AddrInfo::get_family () const
 SocketType
 AddrInfo::get_socktype () const
 {
-}
-
-
-static inline
-Protocol
-int_to_protocol (int p)
-{
-    
+    return int_to_st (data->info.ai_socktype);
 }
 
 
 Protocol
 AddrInfo::get_proto () const
 {
+    return int_to_proto (data->info.ai_protocol);
 }
 
 
