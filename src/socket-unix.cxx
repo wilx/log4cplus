@@ -980,11 +980,11 @@ AddrInfo::get_addr () const
 //
 
 Error
-create_socket (Socket & sock, AddressFamily af, SocketType st, int proto)
+create_socket (Socket & sock, AddressFamily af, SocketType st, Protocol proto)
 {
     Socket::Data & sd = sock.get_data ();
     
-    sd.socket = socket (af_to_int (af), st_to_int (st), proto);
+    sd.socket = socket (af_to_int (af), st_to_int (st), proto_to_int (proto));
     if (sd.socket == -1)
         return Error (LOG4CPLUS_TEXT ("socket"), EkErrno, errno);
     

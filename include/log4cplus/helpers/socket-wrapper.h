@@ -265,7 +265,8 @@ private:
 };
 
 
-LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
+LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType,
+    Protocol);
 LOG4CPLUS_EXPORT Error close_socket (Socket const &);
 LOG4CPLUS_EXPORT Error shutdown_socket (Socket const &, ShutdownDirection);
 LOG4CPLUS_EXPORT Error bind_socket (Socket const &, SockAddr const &,
