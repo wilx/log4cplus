@@ -206,14 +206,17 @@ class SockAddrIn;
 class LOG4CPLUS_EXPORT SockAddr
 {
 public:
+    struct Data;
+
     SockAddr ();
+    SockAddr (Data const &);
     SockAddr (SockAddr const &);
     ~SockAddr ();
     SockAddr & operator = (SockAddr const &);
 
     void swap (SockAddr &);
 
-    struct Data;
+
 
     Data & get_data ();
     Data const & get_data () const;
@@ -226,6 +229,8 @@ private:
 class LOG4CPLUS_EXPORT SockAddrIn
 {
 public:
+    struct Data;
+
     SockAddrIn ();
     SockAddrIn (SockAddrIn const &);
     explicit SockAddrIn (SockAddr const &);
@@ -235,8 +240,6 @@ public:
     void swap (SockAddrIn &);
 
 private:
-    struct Data;
-    
     std::auto_ptr<Data> data;
 };
 
@@ -244,9 +247,12 @@ private:
 class LOG4CPLUS_EXPORT AddrInfo
 {
 public:
+    struct Data;
+
     AddrInfo ();
-    AddrInfo (AddrInfo const &);
+    AddrInfo (Data const &);
     ~AddrInfo ();
+    AddrInfo (AddrInfo const &);
     AddrInfo & operator = (AddrInfo const &);
     
     void swap (AddrInfo &);
@@ -254,10 +260,10 @@ public:
     AddressFamily get_family () const;
     SocketType get_socktype () const;
     Protocol get_proto () const;
+    std::size_t get_socklen () const;
+    SockAddr get_addr () const;
 
 private:
-    struct Data;
-
     std::auto_ptr<Data> data;
 };
 

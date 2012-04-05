@@ -748,6 +748,7 @@ Socket::initialized () const
 struct SockAddr::Data
 {
     Data ();
+    Data (sockaddr const &);
 
     sockaddr addr;
 };
@@ -758,12 +759,22 @@ SockAddr::Data::Data ()
 { }
 
 
+SockAddr::Data::Data (sockaddr const & sa)
+    : addr (sa)
+{ }
+
+
 //
 //
 //
 
 SockAddr::SockAddr ()
     : data (new SockAddr::Data)
+{ }
+
+
+SockAddr::SockAddr (SockAddr::Data const & d)
+    : data (new SockAddr::Data (d))
 { }
 
 
@@ -872,6 +883,7 @@ SockAddrIn::swap (SockAddrIn & other)
 struct AddrInfo::Data
 {
     Data ();
+    Data (addrinfo const &);
 
     addrinfo info;
 };
@@ -883,12 +895,22 @@ AddrInfo::Data::Data ()
 }
 
 
+AddrInfo::Data::Data (addrinfo const & ai)
+    : info (ai)
+{ }
+
+
 //
 //
 //
 
 AddrInfo::AddrInfo ()
     : data (new AddrInfo::Data)
+{ }
+
+
+AddrInfo::AddrInfo (AddrInfo::Data const & d)
+    : data (new AddrInfo::Data (d))
 { }
 
 
@@ -943,6 +965,19 @@ AddrInfo::get_proto () const
     return int_to_proto (data->info.ai_protocol);
 }
 
+
+std::size_t
+AddrInfo::get_socklen () const
+{
+    return static_cast<std::size_t>(data->info.ai_protocol);
+}
+
+
+SockAddr
+AddrInfo::get_addr () const
+{
+    return SockAddr (SockAddr::Data (*data->info.ai_addr));
+}
 
 
 //
