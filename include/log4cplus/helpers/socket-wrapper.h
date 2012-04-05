@@ -285,6 +285,10 @@ LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool = true);
 LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool = true);
 LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool = true);
 
+LOG4CPLUS_EXPORT Error get_addr_info (AddrInfo &, tstring const &,
+    tstring const &, AddrInfo const &);
+    
+
 
 } } } // namespace log4cplus { namespace helpers { namespace net {
 

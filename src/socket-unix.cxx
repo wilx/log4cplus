@@ -1214,6 +1214,16 @@ set_no_delay (Socket const & socket, bool val)
 }
 
 
+Error
+get_addr_info (AddrInfo & dest, tstring const & nodename,
+    tstring const & servname, AddrInfo const & hints)
+{
+    
+
+    return Error ();
+}
+
+
 } // namespace net
 
 
