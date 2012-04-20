@@ -40,6 +40,7 @@ enum ErrorKind
     , EkNotSupported
     , EkErrno
     , EkWin32GetLastError
+    , EkGai
 };
 
 
@@ -260,6 +261,9 @@ public:
     std::size_t get_socklen () const;
     SockAddr get_addr () const;
 
+    Data & get_data ();
+    Data const & get_data () const;
+
 private:
     std::auto_ptr<Data> data;
 };
@@ -287,6 +291,7 @@ LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool = true);
 
 LOG4CPLUS_EXPORT Error get_addr_info (AddrInfo &, tstring const &,
     tstring const &, AddrInfo const &);
+LOG4CPLUS_EXPORT Error free_addr_info (AddrInfo &);
     
 
 

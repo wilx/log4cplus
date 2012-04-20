@@ -119,7 +119,7 @@ af_to_int (AddressFamily af)
     switch (af)
     {
     default:
-        throw Error ("af_to_int", EkNotSupported, af);
+        throw Error (LOG4CPLUS_TEXT ("af_to_int"), EkNotSupported, af);
 
     case AfUnspec:
 #ifdef AF_UNSPEC
@@ -178,7 +178,7 @@ st_to_int (SocketType st)
     switch (st)
     {
     default:
-        throw Error ("st_to_int", EkNotSupported, st);
+        throw Error (LOG4CPLUS_TEXT ("st_to_int"), EkNotSupported, st);
 
     case StUnspec:
         return 0;
@@ -213,7 +213,7 @@ int_to_st (int st)
     switch (st)
     {
     default:
-        throw Error ("int_to_st", EkNotSupported, st);
+        throw Error (LOG4CPLUS_TEXT ("int_to_st"), EkNotSupported, st);
 
     case SOCK_STREAM:
         return StStream;
@@ -290,7 +290,7 @@ so_to_int (SocketOption so)
     switch (so)
     {
     default:
-        throw Error ("so_to_int", EkNotSupported, so);
+        throw Error (LOG4CPLUS_TEXT ("so_to_int"), EkNotSupported, so);
 
 #ifdef SO_KEEPALIVE
     case SoKeepAlive:
@@ -321,7 +321,7 @@ sd_to_int (ShutdownDirection sd)
     switch (sd)
     {
     default:
-        throw Error ("sd_to_int", EkNotSupported, sd);
+        throw Error (LOG4CPLUS_TEXT ("sd_to_int"), EkNotSupported, sd);
 
     case ShutRd:
         return SHUT_RD;
@@ -335,15 +335,11 @@ sd_to_int (ShutdownDirection sd)
 }
 
 
-template <typename FlagsDest, typename FlagDest, typename FlagsSrc
-    , typename FlagSrc>
-static inline
-void
-set_if_set (FlagsDest & dest, FlagDest dest_flag, FlagsSrc f, FlagSrc flag)
-{
-    if ((f & flag) != 0)
-        dest |= dest_flag;
-}
+#define set_if_set(dest, dest_flag, f, flag) \
+do {                                         \
+    if (((f) & (flag)) != 0)                 \
+        (dest) |= (dest_flag);               \
+} while (0)
 
 
 #define LOG4CPLUS_UNHANDLED_FLAG(var, f)  \
@@ -457,7 +453,7 @@ proto_to_int (Protocol p)
     switch (p)
     {
     default:
-        throw Error ("proto_to_int", EkNotSupported, +p);
+        throw Error (LOG4CPLUS_TEXT ("proto_to_int"), EkNotSupported, +p);
 
 #ifdef IPPROTO_IP
     case IpProtoIp:
@@ -498,7 +494,7 @@ int_to_proto (int p)
     switch (p)
     {
     default:
-        throw Error ("int_to_proto", EkNotSupported, p);
+        throw Error (LOG4CPLUS_TEXT ("int_to_proto"), EkNotSupported, p);
 
 #ifdef IPPROTO_IP
     case IPPROTO_IP:
@@ -548,6 +544,17 @@ format_errno_str (int eno)
     return oss.str ();
 }
 
+tstring
+format_gai_str (int eno)
+{
+    tostringstream oss;
+
+    oss << LOG4CPLUS_TEXT ("getaddrinfo ") << eno << LOG4CPLUS_TEXT (": ")
+        << LOG4CPLUS_C_STR_TO_TSTRING (gai_strerror (eno));
+    
+    return oss.str ();
+}
+
 
 static
 void
@@ -566,6 +573,10 @@ fill_error_message (std::auto_ptr<tstring> & str, ErrorKind ek, long eno)
 
     case EkErrno:
         str.reset (new tstring (format_errno_str (static_cast<int>(eno))));
+        break;
+
+    case EkGai:
+        str.reset (new tstring (format_gai_str (static_cast<int>(eno))));
         break;
     }
 }
@@ -975,6 +986,20 @@ AddrInfo::get_addr () const
 }
 
 
+AddrInfo::Data &
+AddrInfo::get_data ()
+{
+    return *data;
+}
+
+
+AddrInfo::Data const &
+AddrInfo::get_data () const
+{
+    return *data;
+}
+
+
 //
 //
 //
@@ -1215,12 +1240,32 @@ set_no_delay (Socket const & socket, bool val)
 
 
 Error
-get_addr_info (AddrInfo & dest, tstring const & nodename,
+get_addr_info (AddrInfo & res, tstring const & nodename,
     tstring const & servname, AddrInfo const & hints)
 {
-    
+    addrinfo * info;
+
+    int ret = getaddrinfo (LOG4CPLUS_TSTRING_TO_STRING (nodename).c_str (),
+        servname.empty () ? 0 : LOG4CPLUS_TSTRING_TO_STRING (servname).c_str (),
+        &hints.get_data ().info, &info);
+    if (ret != 0)
+    {
+        if (ret == EAI_SYSTEM)
+            return Error (LOG4CPLUS_TEXT ("getaddrinfo"), EkErrno, errno);
+        else
+            return Error (LOG4CPLUS_TEXT ("getaddrinfo"), EkGai, ret);
+    }
+
+    res = AddrInfo (AddrInfo::Data (*info));
 
     return Error ();
+}
+
+
+Error
+free_addr_info (AddrInfo & info)
+{
+    freeaddrinfo (&info.get_data ().info);
 }
 
 
