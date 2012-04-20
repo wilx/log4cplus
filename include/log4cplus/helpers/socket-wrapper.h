@@ -43,6 +43,115 @@ enum ErrorKind
 };
 
 
+enum AddressFamily
+{
+    AfUnspec
+    , AfUnix
+    , AfInet
+    , AfInet6
+
+    , PfUnspec = AfUnspec
+    , PfUnix = AfUnix
+    , PfInet = AfInet
+    , PfInte6 = AfInet6
+};
+
+typedef AddressFamily ProtocolFamily;
+
+LOG4CPLUS_EXPORT int af_to_int (AddressFamily);
+
+
+enum SocketType
+{
+    StUnspec
+    , StStream
+    , StDgram
+    , StRaw
+    , StRdm
+    , StSeqPacket
+};
+
+LOG4CPLUS_EXPORT int st_to_int (SocketType);
+LOG4CPLUS_EXPORT SocketType int_to_st (int);
+
+
+enum SocketLevel
+{
+    SolSocket
+    , SolIpProtoIp
+    , SolIpProtoIpv6
+    , SolIpProtoIcmp
+    , SolIpProtoRaw
+    , SolIpProtoTcp
+    , SolIpProtoUdp
+};
+
+LOG4CPLUS_EXPORT int sol_to_int (SocketLevel);
+
+
+//! This enum specifies protocol information. It is used by, e.g.,
+//! create_socket(), AddrInfo::get_proto(), etc.
+enum Protocol
+{
+    IpProtoIp
+    , IpProtoIpv6
+    , IpProtoIcmp
+    , IpProtoRaw
+    , IpProtoTcp
+    , IpProtoUdp
+};
+
+LOG4CPLUS_EXPORT int proto_to_int (Protocol p);
+LOG4CPLUS_EXPORT Protocol int_to_proto (int);
+
+
+enum SocketOption
+{
+    SoKeepAlive
+    , SoLinger
+    , SoReuseAddr
+    , SoNoDelay
+};
+
+LOG4CPLUS_EXPORT int so_to_int (SocketOption);
+
+
+enum ShutdownDirection
+{
+    ShutRd
+    , ShutWr
+    , ShutRdWr
+};
+
+LOG4CPLUS_EXPORT int sd_to_int (ShutdownDirection);
+
+
+enum MsgFlags
+{
+    MsgEor        = 1 << 0
+    , MsgNoSignal = 1 << 1
+    , MsgPeek     = 1 << 2
+    , MsgOob      = 1 << 3
+    , MsgWaitAll  = 1 << 4
+};
+
+LOG4CPLUS_EXPORT int mf_to_int (MsgFlags);
+
+
+enum AiFlags
+{
+    AiPassive       = 1 << 0
+    , AiCanonName   = 1 << 1
+    , AiNumericHost = 1 << 2
+    , AiNumericServ = 1 << 3
+    , AiV4Mapped    = 1 << 4
+    , AiAll         = 1 << 5
+    , AiAddrConfig  = 1 << 6
+};
+
+LOG4CPLUS_EXPORT int aif_to_int (AiFlags);
+
+
 class LOG4CPLUS_EXPORT Error
 {
 public:
@@ -89,54 +198,6 @@ private:
 };
 
 
-enum AddressFamily
-{
-    AfUnspec
-    , AfUnix
-    , AfInet
-    , AfInet6
-
-    , PfUnspec = AfUnspec
-    , PfUnix = AfUnix
-    , PfInet = AfInet
-    , PfInte6 = AfInet6
-};
-
-
-typedef AddressFamily ProtocolFamily;
-
-
-enum SocketType
-{
-    StStream
-    , StDgram
-    , StRaw
-    , StRdm
-    , StSeqPacket
-};
-
-
-enum SocketLevel
-{
-    SolSocket
-    , SolIpProtoIp
-    , SolIpProtoIpv6
-    , SolIpProtoIcmp
-    , SolIpProtoRaw
-    , SolIpProtoTcp
-    , SolIpProtoUdp
-};
-
-
-enum SocketOption
-{
-    SoKeepAlive
-    , SoLinger
-    , SoReuseAddr
-    , SoNoDelay
-};
-
-
 class SockAddr;
 class SockAddrIn;
 
@@ -144,14 +205,15 @@ class SockAddrIn;
 class LOG4CPLUS_EXPORT SockAddr
 {
 public:
+    struct Data;
+
     SockAddr ();
+    SockAddr (Data const &);
     SockAddr (SockAddr const &);
     ~SockAddr ();
     SockAddr & operator = (SockAddr const &);
 
     void swap (SockAddr &);
-
-    struct Data;
 
     Data & get_data ();
     Data const & get_data () const;
@@ -164,6 +226,8 @@ private:
 class LOG4CPLUS_EXPORT SockAddrIn
 {
 public:
+    struct Data;
+
     SockAddrIn ();
     SockAddrIn (SockAddrIn const &);
     explicit SockAddrIn (SockAddr const &);
@@ -173,31 +237,36 @@ public:
     void swap (SockAddrIn &);
 
 private:
-    struct Data;
-    
     std::auto_ptr<Data> data;
 };
 
 
-enum ShutdownDirection
+class LOG4CPLUS_EXPORT AddrInfo
 {
-    ShutRd
-    , ShutWr
-    , ShutRdWr
+public:
+    struct Data;
+
+    AddrInfo ();
+    AddrInfo (Data const &);
+    ~AddrInfo ();
+    AddrInfo (AddrInfo const &);
+    AddrInfo & operator = (AddrInfo const &);
+    
+    void swap (AddrInfo &);
+    AiFlags get_flags () const;
+    AddressFamily get_family () const;
+    SocketType get_socktype () const;
+    Protocol get_proto () const;
+    std::size_t get_socklen () const;
+    SockAddr get_addr () const;
+
+private:
+    std::auto_ptr<Data> data;
 };
 
 
-enum MsgFlags
-{
-    MsgEor        = 1 << 0
-    , MsgNoSignal = 1 << 1
-    , MsgPeek     = 1 << 2
-    , MsgOob      = 1 << 3
-    , MsgWaitAll  = 1 << 4
-};
-
-
-LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
+LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType,
+    Protocol);
 LOG4CPLUS_EXPORT Error close_socket (Socket const &);
 LOG4CPLUS_EXPORT Error shutdown_socket (Socket const &, ShutdownDirection);
 LOG4CPLUS_EXPORT Error bind_socket (Socket const &, SockAddr const &,
@@ -211,10 +280,14 @@ LOG4CPLUS_EXPORT Error receive_from_socket (Socket const &, void *,
 
 LOG4CPLUS_EXPORT Error set_option (Socket const &, SocketLevel, SocketOption,
     const void * option_value, std::size_t option_len);
-LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool);
-LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool);
-LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool);
-LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool);
+LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool = true);
+LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool = true);
+LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool = true);
+LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool = true);
+
+LOG4CPLUS_EXPORT Error get_addr_info (AddrInfo &, tstring const &,
+    tstring const &, AddrInfo const &);
+    
 
 
 } } } // namespace log4cplus { namespace helpers { namespace net {

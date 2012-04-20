@@ -109,6 +109,433 @@ clone_auto_ptr (std::auto_ptr<T> const & ptr)
 
 namespace log4cplus { namespace helpers { namespace net {
 
+//
+//
+//
+
+int
+af_to_int (AddressFamily af)
+{
+    switch (af)
+    {
+    default:
+        throw Error ("af_to_int", EkNotSupported, af);
+
+    case AfUnspec:
+#ifdef AF_UNSPEC
+        return AF_UNSPEC;
+#else
+        return 0;
+#endif
+
+#ifdef AF_UNIX
+    case AfUnix:
+        return AF_UNIX;
+#endif
+
+    case AfInet:
+        return AF_INET;
+
+#ifdef AF_INET6
+    case AfInet6:
+        return AF_INET6;
+#endif
+    }
+}
+
+
+AddressFamily
+int_to_af (int af)
+{
+    switch (af)
+    {
+    default:
+        // TODO: Better handling of unknown values.
+#ifdef AF_UNSPEC
+    case AF_UNSPEC:
+#endif
+        return AfUnspec;
+
+#ifdef AF_UNIX
+    case AF_UNIX:
+        return AfUnix;
+#endif
+
+    case AF_INET:
+        return AfInet;
+
+#ifdef AF_INET6
+    case AF_INET6:
+        return AfInet6;
+#endif
+    }
+}
+
+
+int
+st_to_int (SocketType st)
+{
+    switch (st)
+    {
+    default:
+        throw Error ("st_to_int", EkNotSupported, st);
+
+    case StUnspec:
+        return 0;
+
+    case StStream:
+        return SOCK_STREAM;
+        
+    case StDgram:
+        return SOCK_DGRAM;
+
+#ifdef SOCK_RAW
+    case StRaw:
+        return SOCK_RAW;
+#endif
+     
+#ifdef SOCK_RDM   
+    case StRdm:
+        return SOCK_RDM;
+#endif
+      
+#ifdef SOCK_SEQPACKET  
+    case StSeqPacket:
+        return SOCK_SEQPACKET;
+#endif
+    }
+}
+
+
+SocketType
+int_to_st (int st)
+{
+    switch (st)
+    {
+    default:
+        throw Error ("int_to_st", EkNotSupported, st);
+
+    case SOCK_STREAM:
+        return StStream;
+
+    case SOCK_DGRAM:
+        return StDgram;
+
+#ifdef SOCK_RAW
+    case SOCK_RAW:
+        return StRaw;
+#endif
+
+#ifdef SOCK_RDM
+    case SOCK_RDM:
+        return StRdm;
+#endif
+
+#ifdef SOCK_SEQPACKET
+    case SOCK_SEQPACKET:
+        return StSeqPacket;
+#endif
+    }
+}
+
+
+int
+sol_to_int (SocketLevel sl)
+{
+    static int const table[] = {
+        SOL_SOCKET
+#if defined (SOL_IP)
+        , SOL_IP
+#else
+        , IPPROTO_IP
+#endif
+
+#if defined (SOL_IPV6)
+        , SOL_IPV6
+#else
+        , IPPROTO_IPV6
+#endif
+
+        , IPPROTO_ICMP
+
+#if defined (SOL_RAW)
+        , SOL_RAW
+#else
+        , IPPROTO_RAW
+#endif
+
+#if defined (SOL_TCP)
+        , SOL_TCP
+#else
+        , IPPROTO_TCP
+#endif
+
+#if defined (SOL_UDP)
+        , SOL_UDP
+#else
+        , IPPROTO_UDP
+#endif
+    };
+
+    if (+sl >= sizeof (table) / sizeof (table[0]))
+        return -1;
+    
+    return table[sl];
+}
+
+
+int
+so_to_int (SocketOption so)
+{
+    switch (so)
+    {
+    default:
+        throw Error ("so_to_int", EkNotSupported, so);
+
+#ifdef SO_KEEPALIVE
+    case SoKeepAlive:
+        return SO_KEEPALIVE;
+#endif
+
+#ifdef SO_LINGER
+    case SoLinger:
+        return SO_LINGER;
+#endif
+
+#ifdef SO_REUSEADDR
+    case SoReuseAddr:
+        return SO_REUSEADDR;
+#endif
+
+#ifdef SO_NODELAY
+    case SoNoDelay:
+        return SO_NODELAY;
+#endif       
+    }
+}
+
+
+int
+sd_to_int (ShutdownDirection sd)
+{
+    switch (sd)
+    {
+    default:
+        throw Error ("sd_to_int", EkNotSupported, sd);
+
+    case ShutRd:
+        return SHUT_RD;
+
+    case ShutWr:
+        return SHUT_WR;
+
+    case ShutRdWr:
+        return SHUT_RDWR;
+    }
+}
+
+
+template <typename FlagsDest, typename FlagDest, typename FlagsSrc
+    , typename FlagSrc>
+static inline
+void
+set_if_set (FlagsDest & dest, FlagDest dest_flag, FlagsSrc f, FlagSrc flag)
+{
+    if ((f & flag) != 0)
+        dest |= dest_flag;
+}
+
+
+#define LOG4CPLUS_UNHANDLED_FLAG(var, f)  \
+do {                                      \
+    if (((var) & (f)) != 0)               \
+        return -1;                        \
+} while (0)
+
+
+int
+mf_to_int (MsgFlags mf)
+{
+    int ret = 0;
+
+#if defined (MSG_EOR)
+    set_if_set (ret, MSG_EOR, mf, MsgEor);
+#else
+    // TODO: Handle unimplemented flags in callers.
+    LOG4CPLUS_UNHANDLED_FLAG (mf, MsgEor);
+#endif
+    set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
+    set_if_set (ret, MSG_PEEK, mf, MsgPeek);
+    set_if_set (ret, MSG_OOB, mf, MsgOob);
+    set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
+
+    return ret;
+}
+
+
+int
+aif_to_int (AiFlags aif)
+{
+    int ret = 0;
+
+#if defined (AI_PASSIVE)
+    set_if_set (ret, AI_PASSIVE, aif, AiPassive);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiPassive);
+#endif
+
+#if defined (AI_CANONNAME)
+    set_if_set (ret, AI_CANONNAME, aif, AiCanonName);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiCanonName);
+#endif
+
+#if defined (AI_NUMERICHOST)
+    set_if_set (ret, AI_NUMERICHOST, aif, AiNumericHost);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiNumericHost);
+#endif
+
+#if defined (AI_V4MAPPED)
+    set_if_set (ret, AI_V4MAPPED, aif, AiV4Mapped);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiV4Mapped);
+#endif
+
+#if defined (AI_ALL)
+    set_if_set (ret, AI_ALL, aif, AiAll);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiAll);
+#endif
+
+#if defined (AI_ADDRCONFIG)
+    set_if_set (ret, AI_ADDRCONFIG, aif, AiAddrConfig);
+#else
+    LOG4CPLUS_UNHANDLED_FLAG (aif, AiAddrConfig);
+#endif
+
+    return ret;
+}
+
+
+AiFlags
+int_to_aif (int aif)
+{
+    int ret = 0;
+
+#if defined (AI_PASSIVE)
+    set_if_set (ret, AiPassive, aif, AI_PASSIVE);
+#endif
+
+#if defined (AI_CANONNAME)
+    set_if_set (ret, AiCanonName, aif, AI_CANONNAME);
+#endif
+
+#if defined (AI_NUMERICHOST)
+    set_if_set (ret, AiNumericHost, aif, AI_NUMERICHOST);
+#endif
+
+#if defined (AI_V4MAPPED)
+    set_if_set (ret, AiV4Mapped, aif, AI_V4MAPPED);
+#endif
+
+#if defined (AI_ALL)
+    set_if_set (ret, AiAll, aif, AI_ALL);
+#endif
+
+#if defined (AI_ADDRCONFIG)
+    set_if_set (ret, AiAddrConfig, aif, AI_ADDRCONFIG);
+#endif
+
+    return AiFlags (ret);
+}
+
+
+int
+proto_to_int (Protocol p)
+{
+    switch (p)
+    {
+    default:
+        throw Error ("proto_to_int", EkNotSupported, +p);
+
+#ifdef IPPROTO_IP
+    case IpProtoIp:
+        return IPPROTO_IP;
+#endif
+
+#ifdef IPPROTO_IPV6
+    case IpProtoIpv6:
+        return IPPROTO_IPV6;
+#endif
+
+#ifdef IPPROTO_ICMP
+    case IpProtoIcmp:
+        return IPPROTO_ICMP;
+#endif
+
+#ifdef IPPROTO_RAW
+    case IpProtoRaw:
+        return IPPROTO_RAW;
+#endif
+
+#ifdef IPPROTO_TCP
+    case IpProtoTcp:
+        return IPPROTO_TCP;
+#endif
+
+#ifdef IPPROTO_UDP
+    case IpProtoUdp:
+        return IPPROTO_UDP;
+#endif
+    }
+}
+
+
+Protocol
+int_to_proto (int p)
+{
+    switch (p)
+    {
+    default:
+        throw Error ("int_to_proto", EkNotSupported, p);
+
+#ifdef IPPROTO_IP
+    case IPPROTO_IP:
+        return IpProtoIp;
+#endif
+
+#ifdef IPPROTO_IPV6
+    case IPPROTO_IPV6:
+        return IpProtoIpv6;
+#endif
+
+#ifdef IPPROTO_ICMP
+    case IPPROTO_ICMP:
+        return IpProtoIcmp;
+#endif
+
+#ifdef IPPROTO_RAW
+    case IPPROTO_RAW:
+        return IpProtoRaw;
+#endif
+
+#ifdef IPPROTO_TCP
+    case IPPROTO_TCP:
+        return IpProtoTcp;
+#endif
+
+#ifdef IPPROTO_UDP
+    case IPPROTO_UDP:
+        return IpProtoUdp;
+#endif
+    }
+}
+
+
+//
+//
+//
 
 tstring
 format_errno_str (int eno)
@@ -246,7 +673,7 @@ struct Socket::Data
 {
     Data ();
 
-    int socket;
+    mutable int socket;
 };
 
 
@@ -316,6 +743,7 @@ Socket::initialized () const
 struct SockAddr::Data
 {
     Data ();
+    Data (sockaddr const &);
 
     sockaddr addr;
 };
@@ -326,12 +754,22 @@ SockAddr::Data::Data ()
 { }
 
 
+SockAddr::Data::Data (sockaddr const & sa)
+    : addr (sa)
+{ }
+
+
 //
 //
 //
 
 SockAddr::SockAddr ()
     : data (new SockAddr::Data)
+{ }
+
+
+SockAddr::SockAddr (SockAddr::Data const & d)
+    : data (new SockAddr::Data (d))
 { }
 
 
@@ -437,196 +875,116 @@ SockAddrIn::swap (SockAddrIn & other)
 //
 //
 
-
-namespace
+struct AddrInfo::Data
 {
+    Data ();
+    Data (addrinfo const &);
 
-static
-int
-af_to_int (AddressFamily af)
+    addrinfo info;
+};
+
+
+AddrInfo::Data::Data ()
 {
-    static int const table[] = {
-#ifdef AF_UNSPEC
-        AF_UNSPEC
-#else
-        0
-#endif
-        , AF_UNIX
-        , AF_INET
-#ifdef AF_INET6
-        , AF_INET6
-#else
-        , -1
-#endif
-    };
-
-    if (+af >= sizeof (table) / sizeof (table[0]))
-        return -1;
-
-    return table[af];
+    std::memset (&info, 0, sizeof (info));
 }
 
 
-static
-int
-st_to_int (SocketType st)
+AddrInfo::Data::Data (addrinfo const & ai)
+    : info (ai)
+{ }
+
+
+//
+//
+//
+
+AddrInfo::AddrInfo ()
+    : data (new AddrInfo::Data)
+{ }
+
+
+AddrInfo::AddrInfo (AddrInfo::Data const & d)
+    : data (new AddrInfo::Data (d))
+{ }
+
+
+AddrInfo::AddrInfo (AddrInfo const & other)
+    : data (clone_auto_ptr (other.data))
+{ }
+
+
+AddrInfo::~AddrInfo ()
+{ }
+
+
+AddrInfo &
+AddrInfo::operator = (AddrInfo const & other)
 {
-    static int const table[] = {
-        SOCK_STREAM
-        , SOCK_DGRAM
-        , SOCK_RAW
-        , SOCK_RDM
-        , SOCK_SEQPACKET
-    };
-    
-    if (+st >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[st];
+    AddrInfo (other).swap (*this);
+    return *this;
 }
 
 
-static
-int
-sol_to_int (SocketLevel sl)
-{
-    static int const table[] = {
-        SOL_SOCKET
-#if defined (SOL_IP)
-        , SOL_IP
-#else
-        , IPPROTO_IP
-#endif
-
-#if defined (SOL_IPV6)
-        , SOL_IPV6
-#else
-        , IPPROTO_IPV6
-#endif
-
-        , IPPROTO_ICMP
-
-#if defined (SOL_RAW)
-        , SOL_RAW
-#else
-        , IPPROTO_RAW
-#endif
-
-#if defined (SOL_TCP)
-        , SOL_TCP
-#else
-        , IPPROTO_TCP
-#endif
-
-#if defined (SOL_UDP)
-        , SOL_UDP
-#else
-        , IPPROTO_UDP
-#endif
-    };
-
-    if (+sl >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[sl];
-}
-
-
-static
-int
-so_to_int (SocketOption so)
-{
-    static int const table[] = {
-#if defined (SO_KEEPALIVE)
-        SO_KEEPALIVE
-#else
-        -1
-#endif
-
-#if defined (SO_LINGER)
-        , SO_LINGER
-#else
-        , -1
-#endif
-
-#if defined (SO_REUSEADDR)
-        , SO_REUSEADDR
-#else
-        , -1
-#endif
-
-#if defined (SO_NODELAY)
-        , SO_NODELAY
-#else
-        , -1
-#endif       
-    };
-
-    if (+so >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[so];
-}
-
-
-static
-int
-sd_to_int (ShutdownDirection sd)
-{
-
-    static int const table[] = {
-        SHUT_RD
-        , SHUT_WR
-        , SHUT_RDWR
-    };
-
-    if (+sd >= sizeof (table) / sizeof (table[0]))
-        return -1;
-    
-    return table[sd];
-}
-
-
-static inline
 void
-mf_set_if_set (int & dest, int dest_flag, MsgFlags mf, MsgFlags mf_flag)
+AddrInfo::swap (AddrInfo & other)
 {
-    if ((+mf & mf_flag) != 0)
-        dest |= dest_flag;
+    swap_auto_ptrs (data, other.data);
 }
 
 
-static
-int
-mf_to_int (MsgFlags mf)
+AiFlags
+AddrInfo::get_flags () const
 {
-    int ret = 0;
-
-#if defined (MSG_EOR)
-    mf_set_if_set (ret, MSG_EOR, mf, MsgEor);
-#else
-    // TODO: Handle unimplemented flags in callers.
-    if ((+mf & MsgEor) != 0)
-        return -1;
-#endif
-    mf_set_if_set (ret, MSG_NOSIGNAL, mf, MsgNoSignal);
-    mf_set_if_set (ret, MSG_PEEK, mf, MsgPeek);
-    mf_set_if_set (ret, MSG_OOB, mf, MsgOob);
-    mf_set_if_set (ret, MSG_WAITALL, mf, MsgWaitAll);
-
-    return ret;
+    return int_to_aif (data->info.ai_flags);
 }
 
 
-} // namespace
+AddressFamily
+AddrInfo::get_family () const
+{
+    return int_to_af (data->info.ai_family);
+}
 
+
+SocketType
+AddrInfo::get_socktype () const
+{
+    return int_to_st (data->info.ai_socktype);
+}
+
+
+Protocol
+AddrInfo::get_proto () const
+{
+    return int_to_proto (data->info.ai_protocol);
+}
+
+
+std::size_t
+AddrInfo::get_socklen () const
+{
+    return static_cast<std::size_t>(data->info.ai_protocol);
+}
+
+
+SockAddr
+AddrInfo::get_addr () const
+{
+    return SockAddr (SockAddr::Data (*data->info.ai_addr));
+}
+
+
+//
+//
+//
 
 Error
-create_socket (Socket & sock, AddressFamily af, SocketType st, int proto)
+create_socket (Socket & sock, AddressFamily af, SocketType st, Protocol proto)
 {
     Socket::Data & sd = sock.get_data ();
     
-    sd.socket = socket (af_to_int (af), st_to_int (st), proto);
+    sd.socket = socket (af_to_int (af), st_to_int (st), proto_to_int (proto));
     if (sd.socket == -1)
         return Error (LOG4CPLUS_TEXT ("socket"), EkErrno, errno);
     
@@ -853,6 +1211,16 @@ Error
 set_no_delay (Socket const & socket, bool val)
 {
     return set_bool_option (socket, SolIpProtoTcp, SoNoDelay, val);
+}
+
+
+Error
+get_addr_info (AddrInfo & dest, tstring const & nodename,
+    tstring const & servname, AddrInfo const & hints)
+{
+    
+
+    return Error ();
 }
 
 
