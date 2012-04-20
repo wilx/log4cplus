@@ -40,6 +40,7 @@ enum ErrorKind
     , EkNotSupported
     , EkErrno
     , EkWin32GetLastError
+    , EkGai
 };
 
 
@@ -63,7 +64,8 @@ LOG4CPLUS_EXPORT int af_to_int (AddressFamily);
 
 enum SocketType
 {
-    StStream
+    StUnspec
+    , StStream
     , StDgram
     , StRaw
     , StRdm
@@ -71,6 +73,7 @@ enum SocketType
 };
 
 LOG4CPLUS_EXPORT int st_to_int (SocketType);
+LOG4CPLUS_EXPORT SocketType int_to_st (int);
 
 
 enum SocketLevel
@@ -85,6 +88,22 @@ enum SocketLevel
 };
 
 LOG4CPLUS_EXPORT int sol_to_int (SocketLevel);
+
+
+//! This enum specifies protocol information. It is used by, e.g.,
+//! create_socket(), AddrInfo::get_proto(), etc.
+enum Protocol
+{
+    IpProtoIp
+    , IpProtoIpv6
+    , IpProtoIcmp
+    , IpProtoRaw
+    , IpProtoTcp
+    , IpProtoUdp
+};
+
+LOG4CPLUS_EXPORT int proto_to_int (Protocol p);
+LOG4CPLUS_EXPORT Protocol int_to_proto (int);
 
 
 enum SocketOption
@@ -118,6 +137,20 @@ enum MsgFlags
 };
 
 LOG4CPLUS_EXPORT int mf_to_int (MsgFlags);
+
+
+enum AiFlags
+{
+    AiPassive       = 1 << 0
+    , AiCanonName   = 1 << 1
+    , AiNumericHost = 1 << 2
+    , AiNumericServ = 1 << 3
+    , AiV4Mapped    = 1 << 4
+    , AiAll         = 1 << 5
+    , AiAddrConfig  = 1 << 6
+};
+
+LOG4CPLUS_EXPORT int aif_to_int (AiFlags);
 
 
 class LOG4CPLUS_EXPORT Error
@@ -173,14 +206,15 @@ class SockAddrIn;
 class LOG4CPLUS_EXPORT SockAddr
 {
 public:
+    struct Data;
+
     SockAddr ();
+    SockAddr (Data const &);
     SockAddr (SockAddr const &);
     ~SockAddr ();
     SockAddr & operator = (SockAddr const &);
 
     void swap (SockAddr &);
-
-    struct Data;
 
     Data & get_data ();
     Data const & get_data () const;
@@ -193,6 +227,8 @@ private:
 class LOG4CPLUS_EXPORT SockAddrIn
 {
 public:
+    struct Data;
+
     SockAddrIn ();
     SockAddrIn (SockAddrIn const &);
     explicit SockAddrIn (SockAddr const &);
@@ -202,13 +238,39 @@ public:
     void swap (SockAddrIn &);
 
 private:
-    struct Data;
-    
     std::auto_ptr<Data> data;
 };
 
 
-LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType, int);
+class LOG4CPLUS_EXPORT AddrInfo
+{
+public:
+    struct Data;
+
+    AddrInfo ();
+    AddrInfo (Data const &);
+    ~AddrInfo ();
+    AddrInfo (AddrInfo const &);
+    AddrInfo & operator = (AddrInfo const &);
+    
+    void swap (AddrInfo &);
+    AiFlags get_flags () const;
+    AddressFamily get_family () const;
+    SocketType get_socktype () const;
+    Protocol get_proto () const;
+    std::size_t get_socklen () const;
+    SockAddr get_addr () const;
+
+    Data & get_data ();
+    Data const & get_data () const;
+
+private:
+    std::auto_ptr<Data> data;
+};
+
+
+LOG4CPLUS_EXPORT Error create_socket (Socket &, AddressFamily, SocketType,
+    Protocol);
 LOG4CPLUS_EXPORT Error close_socket (Socket const &);
 LOG4CPLUS_EXPORT Error shutdown_socket (Socket const &, ShutdownDirection);
 LOG4CPLUS_EXPORT Error bind_socket (Socket const &, SockAddr const &,
@@ -226,6 +288,11 @@ LOG4CPLUS_EXPORT Error set_keep_alive (Socket const &, bool = true);
 LOG4CPLUS_EXPORT Error set_linger (Socket const &, bool = true);
 LOG4CPLUS_EXPORT Error set_reuse_addr (Socket const &, bool = true);
 LOG4CPLUS_EXPORT Error set_no_delay (Socket const &, bool = true);
+
+LOG4CPLUS_EXPORT Error get_addr_info (AddrInfo &, tstring const &,
+    tstring const &, AddrInfo const &);
+LOG4CPLUS_EXPORT Error free_addr_info (AddrInfo &);
+    
 
 
 } } } // namespace log4cplus { namespace helpers { namespace net {
