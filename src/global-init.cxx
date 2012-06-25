@@ -25,6 +25,7 @@
 #include <log4cplus/mdc.h>
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/internal/internal.h>
+#include <log4cplus/internal/win32.h>
 #include <log4cplus/thread/impl/tls.h>
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/spi/factory.h>
@@ -324,6 +325,7 @@ void initializeLog4cplus()
     threadSetup ();
 
     DefaultContext * dc = get_dc (true);
+    internal::initializeWin32 ();
     dc->TTCCLayout_time_base = helpers::Time::gettimeofday ();
     Logger::getRoot();
     initializeFactoryRegistry();

@@ -731,6 +731,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\src\win32.cxx" />
     <ClCompile Include="..\src\win32consoleappender.cxx" />
     <ClCompile Include="..\src\win32debugappender.cxx" />
     <ClCompile Include="..\src\env.cxx" />
@@ -1085,6 +1086,7 @@
     <ClInclude Include="..\include\log4cplus\helpers\lockfile.h" />
     <ClInclude Include="..\include\log4cplus\hierarchy.h" />
     <ClInclude Include="..\include\log4cplus\hierarchylocker.h" />
+    <ClInclude Include="..\include\log4cplus\internal\win32.h" />
     <ClInclude Include="..\include\log4cplus\layout.h" />
     <ClInclude Include="..\include\log4cplus\logger.h" />
     <ClInclude Include="..\include\log4cplus\spi\loggingevent.h" />

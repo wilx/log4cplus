@@ -181,6 +181,9 @@
     <ClCompile Include="..\src\lockfile.cxx">
       <Filter>helpers</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\win32.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\log4cplus\appender.h">
@@ -371,6 +374,9 @@
     </ClInclude>
     <ClInclude Include="..\include\log4cplus\helpers\lockfile.h">
       <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\internal\win32.h">
+      <Filter>internal</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
