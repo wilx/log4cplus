@@ -23,6 +23,7 @@
 #include <log4cplus/streams.h>
 #include <log4cplus/helpers/stringhelper.h>
 #include <log4cplus/internal/internal.h>
+#include <log4cplus/internal/win32.h>
 
 #include <algorithm>
 #include <vector>
@@ -133,19 +134,7 @@ Time::gettimeofday()
 #elif defined (_WIN32)
     FILETIME ft;
     GetSystemTimeAsFileTime (&ft);
-
-    typedef unsigned __int64 uint64_type;
-    uint64_type st100ns
-        = uint64_type (ft.dwHighDateTime) << 32
-        | ft.dwLowDateTime;
-
-    // Number of 100-ns intervals between UNIX epoch and Windows system time
-    // is 116444736000000000.
-    uint64_type const offset = uint64_type (116444736) * 1000 * 1000 * 1000;
-    uint64_type fixed_time = st100ns - offset;
-
-    return Time (fixed_time / (10 * 1000 * 1000),
-        fixed_time % (10 * 1000 * 1000) / 10);
+    return internal::FILETIME_to_Time (ft);
 
 #elif defined(LOG4CPLUS_HAVE_FTIME)
     struct timeb tp;
