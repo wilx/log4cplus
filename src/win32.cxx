@@ -103,11 +103,11 @@ tstring
 win32_GetSystemDirectory ()
 {
     std::vector<tchar> buf (MAX_PATH + 1);
-    UINT ret = GetSystemDirectory (&buf[0], buf.size ());
+    UINT ret = GetSystemDirectory (&buf[0], static_cast<UINT>(buf.size ()));
     if (ret > buf.size ())
     {
         buf.resize (ret);
-        ret = GetSystemDirectory (&buf[0], buf.size ());
+        ret = GetSystemDirectory (&buf[0], static_cast<UINT>(buf.size ()));
         if (! ret)
             win32_throw_exception ("GetSystemDirectory()");
     }
