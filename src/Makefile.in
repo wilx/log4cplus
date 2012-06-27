@@ -126,7 +126,7 @@ am__objects_2 = $(am__objects_1) appenderattachableimpl.lo appender.lo \
 	socket.lo socket-unix.lo socket-win32.lo stringhelper.lo \
 	stringhelper-clocale.lo stringhelper-cxxlocale.lo \
 	stringhelper-iconv.lo syncprims.lo syslogappender.lo \
-	threads.lo timehelper.lo tls.lo version.lo \
+	threads.lo timehelper.lo tls.lo version.lo win32.lo \
 	win32consoleappender.lo win32debugappender.lo
 am__objects_3 = $(am__objects_2)
 am_liblog4cplus_la_OBJECTS = $(am__objects_3)
@@ -344,6 +344,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/internal/env.h \
 	$(INCLUDES_SRC_PATH)/internal/internal.h \
 	$(INCLUDES_SRC_PATH)/internal/socket.h \
+	$(INCLUDES_SRC_PATH)/internal/win32.h \
 	$(INCLUDES_SRC_PATH)/layout.h \
 	$(INCLUDES_SRC_PATH)/logger.h \
 	$(INCLUDES_SRC_PATH)/loggingmacros.h \
@@ -433,6 +434,7 @@ SINGLE_THREADED_SRC = \
 	timehelper.cxx \
 	tls.cxx \
 	version.cxx \
+	win32.cxx \
 	win32consoleappender.cxx \
 	win32debugappender.cxx
 
@@ -569,6 +571,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timehelper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tls.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32consoleappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32debugappender.Plo@am__quote@
 

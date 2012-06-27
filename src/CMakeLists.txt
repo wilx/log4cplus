@@ -57,6 +57,7 @@ elseif (WIN32)
   set (log4cplus_sources ${log4cplus_sources}
     nteventlogappender.cxx
     socket-win32.cxx
+    win32.cxx
     win32consoleappender.cxx
     win32debugappender.cxx)
 
@@ -139,6 +140,7 @@ install(FILES ../include/log4cplus/helpers/appenderattachableimpl.h
 install(FILES ../include/log4cplus/internal/env.h
               ../include/log4cplus/internal/internal.h
               ../include/log4cplus/internal/socket.h
+              ../include/log4cplus/internal/win32.h
         DESTINATION include/log4cplus/internal )
 
 install(FILES ../include/log4cplus/spi/appenderattachable.h

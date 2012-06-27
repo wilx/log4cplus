@@ -44,6 +44,7 @@ INCLUDES_SRC = \
 	$(INCLUDES_SRC_PATH)/internal/env.h \
 	$(INCLUDES_SRC_PATH)/internal/internal.h \
 	$(INCLUDES_SRC_PATH)/internal/socket.h \
+	$(INCLUDES_SRC_PATH)/internal/win32.h \
 	$(INCLUDES_SRC_PATH)/layout.h \
 	$(INCLUDES_SRC_PATH)/logger.h \
 	$(INCLUDES_SRC_PATH)/loggingmacros.h \
@@ -133,6 +134,7 @@ SINGLE_THREADED_SRC = \
 	timehelper.cxx \
 	tls.cxx \
 	version.cxx \
+	win32.cxx \
 	win32consoleappender.cxx \
 	win32debugappender.cxx
 
