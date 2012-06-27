@@ -31,7 +31,7 @@
 namespace log4cplus { namespace internal {
 
 
-Win32Support win32_;
+static Win32Support win32_;
 Win32Support const & win32 = win32_;
 
 

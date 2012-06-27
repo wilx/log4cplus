@@ -60,7 +60,7 @@ void initializeWin32 ();
 tstring win32_GetSystemDirectory ();
 helpers::Time FILETIME_to_Time (FILETIME const &);
 helpers::Time FILETIME_to_Time (LARGE_INTEGER const &);
-void win32_throw_exception(char const *);
+void win32_throw_exception(char const *) LOG4CPLUS_ATTRIBUTE_NORETURN;
 
 
 struct Handle
@@ -102,7 +102,7 @@ LOG4CPLUS_WIN32_FUNC_DECL (BOOL, WINAPI, GetFileInformationByHandleEx,
 #endif
 
 LOG4CPLUS_WIN32_FUNC_DECL (BOOL, WINAPI, GetFileInformationByHandle,
-  (HANDLE, LPBY_HANDLE_FILE_INFORMATION));
+    (HANDLE, LPBY_HANDLE_FILE_INFORMATION));
 
 LOG4CPLUS_WIN32_FUNC_DECL (BOOL, WINAPI, GetFileSizeEx,
     (HANDLE, PLARGE_INTEGER));
