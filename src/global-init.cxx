@@ -325,7 +325,9 @@ void initializeLog4cplus()
     threadSetup ();
 
     DefaultContext * dc = get_dc (true);
+#if defined (_WIN32)
     internal::initializeWin32 ();
+#endif
     dc->TTCCLayout_time_base = helpers::Time::gettimeofday ();
     Logger::getRoot();
     initializeFactoryRegistry();
