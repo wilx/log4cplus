@@ -182,7 +182,7 @@
       <Filter>helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\src\win32.cxx">
-      <Filter>Source Files</Filter>
+      <Filter>internal</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
