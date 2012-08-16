@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -183,6 +183,9 @@
     </ClCompile>
     <ClCompile Include="..\src\win32.cxx">
       <Filter>internal</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\log4judpappender.cxx">
+      <Filter>Appenders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -377,6 +380,9 @@
     </ClInclude>
     <ClInclude Include="..\include\log4cplus\internal\win32.h">
       <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\log4cplus\log4judpappender.h">
+      <Filter>Appenders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -21,8 +21,8 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_LAYOUT_HEADER_
-#define _LOG4CPLUS_LAYOUT_HEADER_
+#ifndef LOG4CPLUS_LAYOUT_HEADER_
+#define LOG4CPLUS_LAYOUT_HEADER_
 
 #include <log4cplus/config.hxx>
 
@@ -384,7 +384,7 @@ namespace log4cplus {
      *   standard but it is common extension provided by all compilers
      *   (as of 2010). In case it is missing or in case this feature
      *   is disabled using the
-     *   <code>LOG4CPLUS_DISABLE_FUNCTION_MACRO</code> macro, %%M
+     *   <code>LOG4CPLUS_DISABLE_FUNCTION_MACRO</code> macro, %M
      *   expands to an empty string.</td>
      * </tr>
      * 
@@ -399,11 +399,24 @@ namespace log4cplus {
      *   <td align=center><b>p</b></td>
      *   <td>Used to output the LogLevel of the logging event.</td>
      * </tr>
+     *
+     * <tr>
+     *   <td align=center><b>r</b></td>
+     *   <td>Used to output miliseconds since program start
+     *   of the logging event.</td>
+     * </tr>
      * 
      * <tr>
      *   <td align=center><b>t</b></td>
      * 
      *   <td>Used to output the name of the thread that generated the
+     *   logging event.</td>
+     * </tr>
+     *
+     * <tr>
+     *   <td align=center><b>T</b></td>
+     * 
+     *   <td>Used to output alternative name of the thread that generated the
      *   logging event.</td>
      * </tr>
      *
@@ -571,5 +584,5 @@ namespace log4cplus {
 
 } // end namespace log4cplus
 
-#endif // _LOG4CPLUS_LAYOUT_HEADER_
+#endif // LOG4CPLUS_LAYOUT_HEADER_
 

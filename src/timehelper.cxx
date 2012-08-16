@@ -29,9 +29,7 @@
 #include <vector>
 #include <iomanip>
 #include <cassert>
-#if ! defined (_WIN32_WCE)
 #include <cerrno>
-#endif
 #if defined (UNICODE)
 #include <cwchar>
 #endif
@@ -61,18 +59,6 @@ namespace log4cplus { namespace helpers {
 
 const int ONE_SEC_IN_USEC = 1000000;
 
-
-#if defined (_WIN32_WCE)
-using ::mktime;
-using ::gmtime;
-using ::localtime;
-#if defined (UNICODE)
-using ::wcsftime;
-#else
-using ::strftime;
-#endif
-
-#else
 using std::mktime;
 using std::gmtime;
 using std::localtime;
@@ -81,9 +67,6 @@ using std::wcsftime;
 #else
 using std::strftime;
 #endif
-
-#endif
-
 
 
 //////////////////////////////////////////////////////////////////////////////

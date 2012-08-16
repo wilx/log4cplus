@@ -21,8 +21,8 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_HELPERS_LOGLOG
-#define _LOG4CPLUS_HELPERS_LOGLOG
+#ifndef LOG4CPLUS_HELPERS_LOGLOG
+#define LOG4CPLUS_HELPERS_LOGLOG
 
 #include <log4cplus/config.hxx>
 
@@ -54,11 +54,13 @@ namespace log4cplus {
         class LOG4CPLUS_EXPORT LogLog
         {
         public:
-          // Static methods
+            //! Return type of getLogLog().
+            typedef LogLog * Ptr;
+
             /**
              * Returns a reference to the <code>LogLog</code> singleton.
              */
-            static LogLog * getLogLog();
+            static Ptr getLogLog();
 
 
             /**
@@ -139,5 +141,5 @@ namespace log4cplus {
 } // end namespace log4cplus
 
 
-#endif // _LOG4CPLUS_HELPERS_LOGLOG
+#endif // LOG4CPLUS_HELPERS_LOGLOG
 

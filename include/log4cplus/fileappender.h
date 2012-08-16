@@ -21,8 +21,8 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_FILE_APPENDER_HEADER_
-#define _LOG4CPLUS_FILE_APPENDER_HEADER_
+#ifndef LOG4CPLUS_FILE_APPENDER_HEADER_
+#define LOG4CPLUS_FILE_APPENDER_HEADER_
 
 #include <log4cplus/config.hxx>
 
@@ -74,6 +74,7 @@ namespace log4cplus
      * property is set to true then log4cplus uses OS specific
      * facilities (e.g., <code>lockf()</code>) to provide
      * inter-process file locking.
+     * \sa Appender
      * </dd>
      *
      * <dt><tt>LockFile</tt></dt>
@@ -82,6 +83,7 @@ namespace log4cplus
      * property is not specified, the value is derived from
      * <tt>File</tt> property by addition of ".lock" suffix. The
      * property is only used when <tt>UseLockFile</tt> is set to true.
+     * \sa Appender
      * </dd>
      *
      * </dl>
@@ -105,7 +107,7 @@ namespace log4cplus
       //! provide UTF-8 locale in case UNICODE macro is defined.
         virtual std::locale imbue(std::locale const& loc);
 
-      //! \Return Locale imbued in fstream. 
+      //! \returns Locale imbued in fstream. 
         virtual std::locale getloc () const;
 
     protected:
@@ -261,5 +263,5 @@ namespace log4cplus
 
 } // end namespace log4cplus
 
-#endif // _LOG4CPLUS_FILE_APPENDER_HEADER_
+#endif // LOG4CPLUS_FILE_APPENDER_HEADER_
 

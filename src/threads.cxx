@@ -22,6 +22,7 @@
 
 #include <exception>
 #include <ostream>
+#include <cerrno>
 
 #ifdef LOG4CPLUS_HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -43,7 +44,7 @@
 #  include <pthread.h>
 #  include <sched.h>
 #  include <signal.h>
-#elif defined (LOG4CPLUS_USE_WIN32_THREADS) && ! defined (_WIN32_WCE)
+#elif defined (LOG4CPLUS_USE_WIN32_THREADS)
 #  include <process.h> 
 #endif
 #include <log4cplus/config/windowsh-inc.h>
@@ -88,7 +89,8 @@ yield()
 #if defined(LOG4CPLUS_USE_PTHREADS)
     sched_yield();
 #elif defined(_WIN32)
-    ::Sleep(0);
+    if (! SwitchToThread ())
+        Sleep (0);
 #endif
 }
 
@@ -126,10 +128,6 @@ get_current_thread_name_alt (log4cplus::tostream * s)
 #if defined (LOG4CPLUS_USE_PTHREADS) && defined (__linux__) \
     && defined (LOG4CPLUS_HAVE_GETTID)
     pid_t tid = syscall (SYS_gettid);
-    os << tid;
-
-#elif defined(LOG4CPLUS_USE_WIN32_THREADS)
-    DWORD tid = GetCurrentThreadId ();
     os << tid;
 
 #elif defined (__CYGWIN__)
@@ -180,8 +178,6 @@ namespace
 
 #  ifdef LOG4CPLUS_USE_PTHREADS
 extern "C" void* threadStartFunc(void * param)
-#  elif defined(LOG4CPLUS_USE_WIN32_THREADS) && defined (_WIN32_WCE)
-static DWORD threadStartFuncWorker(void * param)
 #  elif defined(LOG4CPLUS_USE_WIN32_THREADS)
 static unsigned WINAPI threadStartFunc(void * param)
 #  endif
@@ -197,9 +193,6 @@ namespace log4cplus { namespace thread { namespace impl {
 
 #if defined(LOG4CPLUS_USE_PTHREADS)
 void* 
-ThreadStart::threadStartFuncWorker(void * arg)
-#elif defined(LOG4CPLUS_USE_WIN32_THREADS) && defined (_WIN32_WCE)
-DWORD
 ThreadStart::threadStartFuncWorker(void * arg)
 #elif defined(LOG4CPLUS_USE_WIN32_THREADS)
 unsigned
@@ -232,6 +225,8 @@ ThreadStart::threadStartFuncWorker(void * arg)
         {
             loglog->warn(LOG4CPLUS_TEXT("threadStartFunc()- run() terminated with an exception."));
         }
+
+        thread::MutexGuard guard (thread->access_mutex);
         thread->flags &= ~Thread::fRUNNING;
     }
 
@@ -286,12 +281,8 @@ Thread::start()
     if (h != INVALID_HANDLE_VALUE)
         ::CloseHandle (h);
 
-#if defined (_WIN32_WCE)
-    h = ::CreateThread  (0, 0, threadStartFunc, this, 0, &thread_id);
-#else
     h = reinterpret_cast<HANDLE>(
         ::_beginthreadex (0, 0, threadStartFunc, this, 0, &thread_id));
-#endif
     if (! h)
     {
         removeReference ();
@@ -308,6 +299,7 @@ Thread::start()
 bool
 Thread::isRunning() const
 {
+    thread::MutexGuard guard (access_mutex);
     return (flags & fRUNNING) != 0;
 }
 

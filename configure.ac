@@ -18,7 +18,7 @@ AM_PROG_AR
 #  ? :+1 : ?   == just some internal changes, nothing breaks but might work
 #                 better
 # CURRENT : REVISION : AGE
-LT_VERSION=2:0:0
+LT_VERSION=3:0:0
 LT_RELEASE=1.1
 AC_SUBST([LT_VERSION])
 AC_SUBST([LT_RELEASE])
@@ -102,19 +102,23 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_LANG([C++])
 
+AS_VAR_APPEND([CPPFLAGS], [" -D_GNU_SOURCE=1"])
+
 AS_CASE(["$target_os"],
   [mingw*],
   [dnl Undefining __STRICT_ANSI__ is a workaround for MinGW
    dnl compilation problem.  C++ <cwchar> header does not compile in
    dnl GCC 4.4.0 because some functions like swprintf() are not
    dnl visible.
-   CPPFLAGS="$CPPFLAGS -U__STRICT_ANSI__"
-   CPPFLAGS="$CPPFLAGS -DWIN32 -D_WIN32"],
+   AS_VAR_APPEND([CPPFLAGS], [" -U__STRICT_ANSI__"])
+   AS_VAR_APPEND([CPPFLAGS], [" -DWIN32"])
+   AS_VAR_APPEND([CPPFLAGS], [" -D_WIN32"])
+   AS_VAR_APPEND([CPPFLAGS], [" -DMINGW_HAS_SECURE_API=1"])],
   [cygwin*],
   [dnl Undefining __STRICT_ANSI__ is a workaround for compilation
    dnl problem.  C <stdio.h> header does not define vsnprintf() or
    dnl _vsnprintf().
-   CPPFLAGS="$CPPFLAGS -U__STRICT_ANSI__"])
+   AS_VAR_APPEND([CPPFLAGS], [" -U__STRICT_ANSI__"])])
 
 AC_ARG_ENABLE([profiling],
   [AS_HELP_STRING([--enable-profiling],
@@ -163,7 +167,8 @@ AS_CASE([$ax_cv_cxx_compiler_vendor],
 
    AS_IF([test "x$enable_debugging" = "xyes"],
      [AX_CXXFLAGS_GCC_OPTION([-g3])
-      AX_CXXFLAGS_GCC_OPTION([-fkeep-inline-functions])],
+      AX_CXXFLAGS_GCC_OPTION([-fkeep-inline-functions])
+      AX_CXXFLAGS_GCC_OPTION([-fstack-check])],
      [AX_CXXFLAGS_GCC_OPTION([-O2])])
 
    dnl Try -pg profiling option.
@@ -187,6 +192,30 @@ AS_CASE([$ax_cv_cxx_compiler_vendor],
       dnl AX_CXXFLAGS_WARN_ALL invocation.
       dnl AX_CXXFLAGS_SUN_OPTION([-v])
       AX_CXXFLAGS_SUN_OPTION([+w])])
+
+   dnl Sun CC does support -g flag.
+   AS_IF([test "x$enable_debugging" = "xyes"],
+     [AX_CXXFLAGS_SUN_OPTION([-g])])
+ 
+   dnl Try -pg profiling option.
+   AS_IF([test "x$enable_profiling" = "xyes"],
+     [AX_CXXFLAGS_SUN_OPTION([-pg],[],
+        [LOG4CPLUS_PROFILING_LDFLAGS="-pg"
+         LOG4CPLUS_PROFILING_CXXFLAGS="-pg"])
+      AX_CXXFLAGS_SUN_OPTION([-g])])
+
+   dnl This is here for compilation with _GNU_SOURCE=1 on Linux. Their
+   dnl headers then use zero length arrays which are not supported by
+   dnl C++ itself.
+   AX_CXXFLAGS_SUN_OPTION([-features=zla])
+
+   dnl This is for __func__ symbol. However it is disabled as it would
+   dnl force user code to use the switch as well.
+   dnl AX_CXXFLAGS_SUN_OPTION([-features=extensions])
+
+   dnl log4cplus does not work with the default C++ library
+   dnl implementation from Sun, it needs better C++ support, thus we
+   dnl use the available STLport they also ship.
    AX_CXXFLAGS_SUN_OPTION([-library=stlport4])
    AX_CXXFLAGS_SUN_OPTION([-library=Crun])])
 
@@ -217,11 +246,21 @@ AH_TEMPLATE([LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO])
 AS_IF([test "x$ac_cv_have___pretty_function___macro" = "xyes"],
   [AC_DEFINE([LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO])])
 
+AX___FUNC___SYMBOL
+AH_TEMPLATE([LOG4CPLUS_HAVE_FUNC_SYMBOL])
+AS_IF([test "x$ac_cv_have___func___symbol" = "xyes"],
+  [AC_DEFINE([LOG4CPLUS_HAVE_FUNC_SYMBOL])])
+
+
 dnl Checks for libraries.
 
 AC_SEARCH_LIBS([strerror], [cposix])
 AC_SEARCH_LIBS([nanosleep], [rt])
+AC_SEARCH_LIBS([clock_nanosleep], [rt posix4])
 AC_SEARCH_LIBS([clock_gettime], [rt posix4])
+dnl On some systems libcompat exists only as a static library which
+dnl breaks compilation of shared library log4cplus.
+dnl AC_SEARCH_LIBS([ftime], [compat])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_SEARCH_LIBS([setsockopt], [socket])
 AC_SEARCH_LIBS([iconv_open], [iconv], [],
@@ -247,6 +286,7 @@ LOG4CPLUS_CHECK_HEADER([sys/stat.h], [LOG4CPLUS_HAVE_SYS_STAT_H])
 LOG4CPLUS_CHECK_HEADER([sys/syscall.h], [LOG4CPLUS_HAVE_SYS_SYSCALL_H])
 LOG4CPLUS_CHECK_HEADER([sys/file.h], [LOG4CPLUS_HAVE_SYS_FILE_H])
 LOG4CPLUS_CHECK_HEADER([syslog.h], [LOG4CPLUS_HAVE_SYSLOG_H])
+LOG4CPLUS_CHECK_HEADER([arpa/inet.h], [LOG4CPLUS_HAVE_ARPA_INET_H])
 LOG4CPLUS_CHECK_HEADER([netinet/in.h], [LOG4CPLUS_HAVE_NETINET_IN_H])
 LOG4CPLUS_CHECK_HEADER([netinet/tcp.h], [LOG4CPLUS_HAVE_NETINET_TCP_H])
 LOG4CPLUS_CHECK_HEADER([netdb.h], [LOG4CPLUS_HAVE_NETDB_H])
@@ -279,16 +319,15 @@ dnl Multi threaded library.
   [AC_MSG_NOTICE([Creating a multi-threaded library.])
    AC_MSG_NOTICE([Threads support:])
 
-   CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+   AS_VAR_APPEND([CPPFLAGS], [" -D_REENTRANT"])
 
    AS_CASE(["$target_os"],
      [mingw*], [],
-     [ACX_PTHREAD([],
+     [AX_PTHREAD_CXX([],
        [AC_MSG_ERROR([Requested threads support but no threads were found.])])])
 
-   CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
-   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
-   LIBS="$PTHREAD_LIBS $LIBS"
+   AS_VAR_APPEND([CXXFLAGS], [" $PTHREAD_CXXFLAGS"])
+   AS_VAR_APPEND([LIBS], [" $PTHREAD_LIBS"])
 
    dnl required on HP-UX
    AC_SEARCH_LIBS([sem_init], [rt])
@@ -300,8 +339,8 @@ dnl Multi threaded library.
      [sun],
      [dnl Check for Sun's compiler's TLS option.
       AX_CXXFLAGS_SUN_OPTION([-xthreadvar])],
-     [dnl Default case.
-      dnl Check for IBM's compiler's TLS option.
+     [ibm],
+     [dnl Check for IBM's compiler's TLS option.
       AX_CXXFLAGS_AIX_OPTION([-qtls])])
 
    AX__SYNC
@@ -340,6 +379,8 @@ dnl Checks for library functions.
 LOG4CPLUS_CHECK_FUNCS([gmtime_r], [LOG4CPLUS_HAVE_GMTIME_R])
 LOG4CPLUS_CHECK_FUNCS([localtime_r], [LOG4CPLUS_HAVE_LOCALTIME_R])
 LOG4CPLUS_CHECK_FUNCS([gettimeofday], [LOG4CPLUS_HAVE_GETTIMEOFDAY])
+LOG4CPLUS_CHECK_FUNCS([nanosleep], [LOG4CPLUS_HAVE_NANOSLEEP])
+LOG4CPLUS_CHECK_FUNCS([clock_nanosleep], [LOG4CPLUS_HAVE_CLOCK_NANOSLEEP])
 LOG4CPLUS_CHECK_FUNCS([clock_gettime], [LOG4CPLUS_HAVE_CLOCK_GETTIME])
 LOG4CPLUS_CHECK_FUNCS([getpid], [LOG4CPLUS_HAVE_GETPID])
 LOG4CPLUS_CHECK_FUNCS([ftime], [LOG4CPLUS_HAVE_FTIME])
