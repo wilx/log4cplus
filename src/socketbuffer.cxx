@@ -272,4 +272,112 @@ SocketBuffer::appendBuffer(const SocketBuffer& buf)
 }
 
 
+//
+//
+//
+
+BinaryBuffer::BinaryBuffer (std::size_t reserve)
+    : pos (0)
+{
+    data.reserve (reserve);
+}
+
+
+BinaryBuffer::BinaryBuffer (void const * d, std::size_t sz)
+    : data (static_cast<char const *>(d), static_cast<char const *>(d) + sz)
+    , pos (0)
+{ }
+
+
+unsigned char
+BinaryBuffer::readByte ()
+{
+    return readWorker<unsigned char> ();
+}
+
+
+unsigned short
+BinaryBuffer::readShort()
+{
+    return readWorker<unsigned short> ();
+}
+
+
+unsigned int
+BinaryBuffer::readInt()
+{
+    return readWorker<unsigned int> ();
+}
+
+
+void
+BinaryBuffer::appendByte (unsigned char val)
+{
+    data.push_back (val);
+}
+
+
+void
+BinaryBuffer::appendShort (unsigned short val)
+{
+    appendWorker (val);
+}
+
+
+void
+BinaryBuffer::appendInt (unsigned int val)
+{
+    appendWorker (val);
+}
+
+
+void
+BinaryBuffer::appendBuffer (BinaryBuffer const & buffer)
+{
+    data.insert (data.end (), buffer.data.begin (), buffer.data.end ());
+}
+
+
+void
+BinaryBuffer::appendData (void const * d, std::size_t sz)
+{
+    std::size_t end_pos = data.size ();
+    data.resize (end_pos + sz);
+    std::memcpy (&data[end_pos], &d, sz);    
+}
+
+
+template <typename T>
+void
+BinaryBuffer::appendWorker (T val)
+{
+    std::size_t end_pos = data.size ();
+    data.resize (end_pos + sizeof (T));
+    std::memcpy (&data[end_pos], &val, sizeof (T));
+}
+
+
+template <typename T>
+T
+BinaryBuffer::readWorker ()
+{
+    std::size_t const data_size = data.size ();
+    if (LOG4CPLUS_UNLIKELY (pos >= data_size))
+        getLogLog ().error (
+            LOG4CPLUS_TEXT ("BinaryBuffer::readWorker()")
+            LOG4CPLUS_TEXT ("- end of buffer reached"),
+            true);
+    else if (LOG4CPLUS_UNLIKELY (pos + sizeof (T) > data_size))
+        getLogLog ().error (
+            LOG4CPLUS_TEXT ("BinaryBuffer::readWorker()")
+            LOG4CPLUS_TEXT ("- Attempt to read beyond end of buffer"),
+            true);
+
+    T val;
+    std::memcpy (&val, &data[pos], sizeof (T));
+    pos += sizeof (T);
+    return val;
+}
+
+
 } } // namespace log4cplus { namespace helpers {

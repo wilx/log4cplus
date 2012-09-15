@@ -30,6 +30,7 @@
 #pragma once
 #endif
 
+#include <vector>
 #include <log4cplus/tstring.h>
 
 
@@ -72,6 +73,41 @@ private:
     SocketBuffer(SocketBuffer const & rhs);
     SocketBuffer& operator= (SocketBuffer const& rhs);
 };
+
+
+class LOG4CPLUS_EXPORT BinaryBuffer
+{
+public:
+    explicit BinaryBuffer (std::size_t reserve = 64);
+    BinaryBuffer (void const *, std::size_t);
+
+    char const * getBuffer () const { return &data[0]; }
+    char * getBuffer () { return &data[0]; }
+    std::size_t getSize () const { return data.size (); }
+    std::size_t getPos () const { return pos; }
+    void clear () { data.clear (); }
+
+    unsigned char readByte ();
+    unsigned short readShort ();
+    unsigned int readInt ();
+
+    void appendByte (unsigned char val);
+    void appendShort (unsigned short val);
+    void appendInt (unsigned int val);
+    void appendBuffer (BinaryBuffer const & buffer);
+    void appendData (void const * x, std::size_t);
+    
+private:
+    template <typename T>
+    LOG4CPLUS_PRIVATE inline void appendWorker (T);
+
+    template <typename T>
+    LOG4CPLUS_PRIVATE inline T readWorker ();
+
+    std::vector<char> data;
+    std::size_t pos;
+};
+
 
 } // end namespace helpers
 } // end namespace log4cplus
