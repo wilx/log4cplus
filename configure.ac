@@ -510,6 +510,12 @@ AM_CONDITIONAL([QT], [test "x$with_qt" = "xyes"])
 AC_SUBST([QT_CFLAGS])
 AC_SUBST([QT_LIBS])
 
+AM_PATH_PYTHON([2.3])
+AX_PKG_SWIG([2.0.0], [], [AC_MSG_ERROR([SWIG is required to build.])])
+AX_SWIG_ENABLE_CXX
+AX_SWIG_MULTI_MODULE_SUPPORT
+AX_SWIG_PYTHON
+
 dnl Libtool setup.
 dnl Must be latest to catch rpath compiled in by changes made during
 dnl checks before.
@@ -526,6 +532,8 @@ AC_CONFIG_HEADERS([include/log4cplus/config/defines.hxx])
 AC_CONFIG_FILES([Makefile
            include/Makefile
            src/Makefile
+           swig/Makefile
+           swig/python/Makefile
            loggingserver/Makefile
            qt4debugappender/Makefile
            tests/atlocal

@@ -51,11 +51,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/depcomp $(top_srcdir)/mkinstalldirs \
-	$(top_srcdir)/tests/Makefile.am.tests
-noinst_PROGRAMS = loglog_test$(EXEEXT)
-subdir = tests/loglog_test
+subdir = swig/python
+DIST_COMMON = $(pkgpython_PYTHON) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(top_srcdir)/depcomp \
+	$(top_srcdir)/mkinstalldirs $(top_srcdir)/py-compile
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -89,10 +88,44 @@ CONFIG_HEADER = $(top_builddir)/include/log4cplus/config.h \
 	$(top_builddir)/include/log4cplus/config/defines.hxx
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-PROGRAMS = $(noinst_PROGRAMS)
-am_loglog_test_OBJECTS = main.$(OBJEXT)
-loglog_test_OBJECTS = $(am_loglog_test_OBJECTS)
-loglog_test_DEPENDENCIES = $(top_builddir)/src/liblog4cplus.la
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+am__installdirs = "$(DESTDIR)$(pkgpyexecdir)" \
+	"$(DESTDIR)$(pkgpythondir)"
+LTLIBRARIES = $(pkgpyexec_LTLIBRARIES)
+_log4cplus_la_DEPENDENCIES = $(top_builddir)/src/liblog4cplus.la
+am__objects_1 = _log4cplus_la-python_wrap.lo
+am__objects_2 =
+am__log4cplus_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+_log4cplus_la_OBJECTS = $(am__log4cplus_la_OBJECTS)
+_log4cplus_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(_log4cplus_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = 
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -106,13 +139,15 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(loglog_test_SOURCES)
-DIST_SOURCES = $(loglog_test_SOURCES)
+SOURCES = $(_log4cplus_la_SOURCES)
+DIST_SOURCES = $(_log4cplus_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__py_compile = PYTHON=$(PYTHON) $(SHELL) $(py_compile)
+py_compile = $(top_srcdir)/py-compile
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -270,16 +305,27 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
-AM_LDFLAGS = @LOG4CPLUS_PROFILING_LDFLAGS@
-AM_CXXFLAGS = @LOG4CPLUS_PROFILING_CXXFLAGS@
-loglog_test_SOURCES = main.cxx
-loglog_test_LDADD = $(top_builddir)/src/liblog4cplus.la 
-all: all-am
+WRAPPER_CXX = $(builddir)/python_wrap.cxx
+BUILT_SOURCES = $(WRAPPER_CXX)
+SWIG_SOURCES = \
+  $(srcdir)/../log4cplus.swg \
+  $(srcdir)/../logger.swg \
+  $(srcdir)/../loggingevent.swg
+
+pkgpython_PYTHON = log4cplus.py
+pkgpyexec_LTLIBRARIES = _log4cplus.la
+_log4cplus_la_SOURCES = $(WRAPPER_CXX) $(SWIG_SOURCES)
+_log4cplus_la_CPPFLAGS = $(SWIG_PYTHON_CPPFLAGS) $(PYTHON_CPPFLAGS) \
+  -I$(top_srcdir)/include -I$(top_builddir)/include
+
+_log4cplus_la_LDFLAGS = -module $(PYTHON_LDFLAGS)
+_log4cplus_la_LIBADD = $(top_builddir)/src/liblog4cplus.la
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .cxx .lo .o .obj
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/tests/Makefile.am.tests $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -288,9 +334,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/tests/Makefile.am.te
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/loglog_test/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu swig/python/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu tests/loglog_test/Makefile
+	  $(AUTOMAKE) --gnu swig/python/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -300,7 +346,6 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
-$(top_srcdir)/tests/Makefile.am.tests:
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -310,18 +355,42 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+install-pkgpyexecLTLIBRARIES: $(pkgpyexec_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(pkgpyexec_LTLIBRARIES)'; test -n "$(pkgpyexecdir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgpyexecdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(pkgpyexecdir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(pkgpyexecdir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(pkgpyexecdir)"; \
+	}
 
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-loglog_test$(EXEEXT): $(loglog_test_OBJECTS) $(loglog_test_DEPENDENCIES) $(EXTRA_loglog_test_DEPENDENCIES) 
-	@rm -f loglog_test$(EXEEXT)
-	$(CXXLINK) $(loglog_test_OBJECTS) $(loglog_test_LDADD) $(LIBS)
+uninstall-pkgpyexecLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgpyexec_LTLIBRARIES)'; test -n "$(pkgpyexecdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(pkgpyexecdir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(pkgpyexecdir)/$$f"; \
+	done
+
+clean-pkgpyexecLTLIBRARIES:
+	-test -z "$(pkgpyexec_LTLIBRARIES)" || rm -f $(pkgpyexec_LTLIBRARIES)
+	@list='$(pkgpyexec_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+_log4cplus.la: $(_log4cplus_la_OBJECTS) $(_log4cplus_la_DEPENDENCIES) $(EXTRA__log4cplus_la_DEPENDENCIES) 
+	$(_log4cplus_la_LINK) -rpath $(pkgpyexecdir) $(_log4cplus_la_OBJECTS) $(_log4cplus_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -329,7 +398,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_log4cplus_la-python_wrap.Plo@am__quote@
 
 .cxx.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -352,11 +421,56 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
+_log4cplus_la-python_wrap.lo: $(builddir)/python_wrap.cxx
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(_log4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT _log4cplus_la-python_wrap.lo -MD -MP -MF $(DEPDIR)/_log4cplus_la-python_wrap.Tpo -c -o _log4cplus_la-python_wrap.lo `test -f '$(builddir)/python_wrap.cxx' || echo '$(srcdir)/'`$(builddir)/python_wrap.cxx
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/_log4cplus_la-python_wrap.Tpo $(DEPDIR)/_log4cplus_la-python_wrap.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(builddir)/python_wrap.cxx' object='_log4cplus_la-python_wrap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(_log4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o _log4cplus_la-python_wrap.lo `test -f '$(builddir)/python_wrap.cxx' || echo '$(srcdir)/'`$(builddir)/python_wrap.cxx
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-pkgpythonPYTHON: $(pkgpython_PYTHON)
+	@$(NORMAL_INSTALL)
+	@list='$(pkgpython_PYTHON)'; dlist=; list2=; test -n "$(pkgpythondir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(pkgpythondir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(pkgpythondir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then b=; else b="$(srcdir)/"; fi; \
+	  if test -f $$b$$p; then \
+	    $(am__strip_dir) \
+	    dlist="$$dlist $$f"; \
+	    list2="$$list2 $$b$$p"; \
+	  else :; fi; \
+	done; \
+	for file in $$list2; do echo $$file; done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pkgpythondir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pkgpythondir)" || exit $$?; \
+	done || exit $$?; \
+	if test -n "$$dlist"; then \
+	  $(am__py_compile) --destdir "$(DESTDIR)" \
+	                    --basedir "$(pkgpythondir)" $$dlist; \
+	else :; fi
+
+uninstall-pkgpythonPYTHON:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgpython_PYTHON)'; test -n "$(pkgpythondir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	dir='$(DESTDIR)$(pkgpythondir)'; \
+	filesc=`echo "$$files" | sed 's|$$|c|'`; \
+	fileso=`echo "$$files" | sed 's|$$|o|'`; \
+	st=0; \
+	for files in "$$files" "$$filesc" "$$fileso"; do \
+	  $(am__uninstall_files_from_dir) || st=$$?; \
+	done; \
+	exit $$st
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -455,10 +569,15 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
-all-am: Makefile $(PROGRAMS)
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
-install: install-am
+	for dir in "$(DESTDIR)$(pkgpyexecdir)" "$(DESTDIR)$(pkgpythondir)"; do \
+	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+	done
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -488,9 +607,10 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
+clean-am: clean-generic clean-libtool clean-pkgpyexecLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -511,13 +631,13 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pkgpythonPYTHON
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-pkgpyexecLTLIBRARIES
 
 install-html: install-html-am
 
@@ -557,23 +677,31 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-pkgpyexecLTLIBRARIES uninstall-pkgpythonPYTHON
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstPROGRAMS cscopelist ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am
+	clean-libtool clean-pkgpyexecLTLIBRARIES cscopelist ctags \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-pkgpyexecLTLIBRARIES install-pkgpythonPYTHON \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-pkgpyexecLTLIBRARIES \
+	uninstall-pkgpythonPYTHON
 
+
+$(WRAPPER_CXX): $(SWIG_SOURCES)
+	$(SWIG) -c++ -python $(SWIG_PYTHON_OPT) -I$(top_srcdir)/include \
+	-I$(top_builddir)/include -I$(top_srcdir)/swig -o $(WRAPPER_CXX) \
+	$(srcdir)/../log4cplus.swg
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
