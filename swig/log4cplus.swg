@@ -1,10 +1,6 @@
 %module log4cplus
 
-%include "std/std_string.i"
-//%include "std/std_wstring.i"
-#ifdef SWIGPYTHON
-%include "python/std_basic_string.i"
-#endif
+%include "std_basic_string.i"
 
 %{
 #include "log4cplus/tchar.h"
