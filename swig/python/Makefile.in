@@ -118,9 +118,7 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(pkgpyexecdir)" \
 	"$(DESTDIR)$(pkgpythondir)"
 LTLIBRARIES = $(pkgpyexec_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-_log4cplus_la_DEPENDENCIES = $(top_builddir)/src/liblog4cplus.la \
-	$(am__DEPENDENCIES_1)
+_log4cplus_la_DEPENDENCIES = $(top_builddir)/src/liblog4cplus.la
 am__objects_1 = _log4cplus_la-python_wrap.lo
 am__objects_2 =
 am__log4cplus_la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -322,9 +320,9 @@ _log4cplus_la_CPPFLAGS = $(SWIG_PYTHON_CPPFLAGS) $(PYTHON_CPPFLAGS) \
   -DSWIG_TYPE_TABLE=log4cplus
 
 _log4cplus_la_LDFLAGS = -no-undefined -shared -module -avoid-version \
-  $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
+  $(PYTHON_LDFLAGS)
 
-_log4cplus_la_LIBADD = $(top_builddir)/src/liblog4cplus.la $(PYTHON_EXTRA_LIBS)
+_log4cplus_la_LIBADD = $(top_builddir)/src/liblog4cplus.la
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

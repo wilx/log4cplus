@@ -12,8 +12,8 @@ _log4cplus_la_CPPFLAGS = $(SWIG_PYTHON_CPPFLAGS) $(PYTHON_CPPFLAGS) \
   -I$(top_srcdir)/include -I$(top_builddir)/include \
   -DSWIG_TYPE_TABLE=log4cplus
 _log4cplus_la_LDFLAGS = -no-undefined -shared -module -avoid-version \
-  $(PYTHON_LDFLAGS) $(PYTHON_EXTRA_LDFLAGS)
-_log4cplus_la_LIBADD = $(top_builddir)/src/liblog4cplus.la $(PYTHON_EXTRA_LIBS)
+  $(PYTHON_LDFLAGS)
+_log4cplus_la_LIBADD = $(top_builddir)/src/liblog4cplus.la
 
 $(WRAPPER_CXX): $(SWIG_SOURCES)
 	$(SWIG) -c++ -python $(SWIG_PYTHON_OPT) -I$(top_srcdir)/include \
