@@ -1,3 +1,6 @@
+#ifndef LOG4CPLUS_LOG4CPLUS_SWG
+#define LOG4CPLUS_LOG4CPLUS_SWG
+
 %module log4cplus
 
 %include "std_basic_string.i"
@@ -22,6 +25,10 @@ typedef int LogLevel;
 
 } // namespace log4cplus
 
+%include "hierarchy.swg"
 %include "loggingevent.swg"
 %include "logger.swg"
+%include "configurator.swg"
+
+#endif // LOG4CPLUS_LOG4CPLUS_SWG
 

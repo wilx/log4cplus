@@ -1,3 +1,6 @@
+#ifndef LOG4CPLUS_LOGGER_SWG
+#define LOG4CPLUS_LOGGER_SWG
+
 %module log4cplus
 
 %{
@@ -5,6 +8,9 @@
 #include "log4cplus/logger.h"
 
 %}
+
+%include "hierarchy.swg"
+
 
 namespace log4cplus
 {
@@ -37,10 +43,13 @@ public:
   bool getAdditivity () const;
   void setAdditivity (bool additive);
 
+  static Hierarchy & getDefaultHierarchy ();
   static bool exists (log4cplus::tstring const & loggerName);
   static Logger getInstance (log4cplus::tstring const & loggerName);
   static Logger getRoot ();  
 };
 
 } // namespace Logger
+
+#endif // LOG4CPLUS_LOGGER_SWG
 

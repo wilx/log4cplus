@@ -1,4 +1,5 @@
-//
+#ifndef LOG4CPLUS_LOGGINGEVENT_SWG
+#define LOG4CPLUS_LOGGINGEVENT_SWG
 
 %{
 
@@ -40,3 +41,6 @@ public:
 };
   
 } } // namespace log4cplus { namespace spi {
+
+#endif // LOG4CPLUS_LOGGINGEVENT_SWG
+
