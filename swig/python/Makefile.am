@@ -1,9 +1,7 @@
+include $(srcdir)/../Makefile.common.am
+
 WRAPPER_CXX = $(builddir)/python_wrap.cxx
 BUILT_SOURCES = $(WRAPPER_CXX)
-SWIG_SOURCES = \
-  $(srcdir)/../log4cplus.swg \
-  $(srcdir)/../logger.swg \
-  $(srcdir)/../loggingevent.swg
 
 pkgpython_PYTHON = log4cplus.py
 pkgpyexec_LTLIBRARIES = _log4cplus.la
