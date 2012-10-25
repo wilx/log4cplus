@@ -21,10 +21,15 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
-#define _LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
+#ifndef LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
+#define LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/appender.h>
 #include <log4cplus/tstring.h>
 #include <log4cplus/helpers/pointer.h>
@@ -81,5 +86,5 @@ namespace log4cplus {
     } // end namespace spi
 } // end namespace log4cplus
 
-#endif // _LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
+#endif // LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
 

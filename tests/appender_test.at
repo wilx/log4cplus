@@ -1,0 +1,7 @@
+AT_SETUP([appender_test])
+AT_KEYWORDS([appenders])
+
+AT_CHECK([cp -f "${abs_srcdir}/appender_test/expout" .])
+AT_CHECK(["${abs_builddir}/appender_test/appender_test"], [0], [expout])
+
+AT_CLEANUP

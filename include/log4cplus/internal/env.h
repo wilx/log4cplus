@@ -32,7 +32,22 @@
 #define LOG4CPLUS_INTERNAL_ENV_H
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/tstring.h>
+
+#if defined (_WIN32)
+#include <log4cplus/config/windowsh-inc.h>
+#endif
+#ifdef LOG4CPLUS_HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef LOG4CPLUS_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 
 namespace log4cplus { namespace internal {
@@ -40,6 +55,30 @@ namespace log4cplus { namespace internal {
 
 bool get_env_var (tstring & value, tstring const & name);
 bool parse_bool (bool & val, tstring const & str);
+
+inline
+#if defined (_WIN32)
+DWORD
+get_process_id ()
+{
+    return GetCurrentProcessId ();
+}
+
+#elif defined (LOG4CPLUS_HAVE_GETPID)
+pid_t
+get_process_id ()
+{
+    return getpid ();
+}
+
+#else
+int
+get_process_id ()
+{
+    return 0; 
+}
+
+#endif
 
 
 } } // namespace log4cplus { namespace internal {

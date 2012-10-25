@@ -1,4 +1,4 @@
-/* include/log4cplus/config.h.in.  Generated from configure.in by autoheader.  */
+/* include/log4cplus/config.h.in.  Generated from configure.ac by autoheader.  */
 
 #ifndef LOG4CPLUS_CONFIG_H
 
@@ -13,6 +13,13 @@
 
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
+
+/* Define to 1 if you have the `clock_nanosleep' function. */
+#undef HAVE_CLOCK_NANOSLEEP
+
+/* Defined if the compiler provides C++11 <atomic> header and increment,
+   decrement operations. */
+#undef HAVE_CXX11_ATOMICS
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -92,6 +99,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if you have the `nanosleep' function. */
+#undef HAVE_NANOSLEEP
+
 /* Define to 1 if you have the `ntohl' function. */
 #undef HAVE_NTOHL
 
@@ -100,6 +110,9 @@
 
 /* Define if you have POSIX threads libraries and header files. */
 #undef HAVE_PTHREAD
+
+/* Have PTHREAD_PRIO_INHERIT. */
+#undef HAVE_PTHREAD_PRIO_INHERIT
 
 /* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
@@ -159,6 +172,9 @@
 /* Defined if the compiler supports __FUNCTION__ macro. */
 #undef HAVE___FUNCTION___MACRO
 
+/* Defined if the compiler supports __func__ symbol. */
+#undef HAVE___FUNC___SYMBOL
+
 /* Defined if the compiler supports __PRETTY_FUNCTION__ macro. */
 #undef HAVE___PRETTY_FUNCTION___MACRO
 
@@ -172,17 +188,31 @@
 #undef LOG4CPLUS_DEBUGGING
 
 /* Defined if the compiler understands __declspec(dllimport) or
-   __attribute__((visibility("default"))) construct. */
+   __attribute__((visibility("default"))) or __global construct. */
 #undef LOG4CPLUS_DECLSPEC_EXPORT
 
-/* Defined if the compiler understands __declspec(dllexport) or construct. */
+/* Defined if the compiler understands __declspec(dllimport) or
+   __attribute__((visibility("default"))) or __global construct. */
 #undef LOG4CPLUS_DECLSPEC_IMPORT
+
+/* Defined if the compiler understands __attribute__((visibility("hidden")))
+   or __hidden construct. */
+#undef LOG4CPLUS_DECLSPEC_PRIVATE
+
+/* */
+#undef LOG4CPLUS_HAVE_ARPA_INET_H
 
 /* */
 #undef LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
 
 /* */
 #undef LOG4CPLUS_HAVE_CLOCK_GETTIME
+
+/* */
+#undef LOG4CPLUS_HAVE_CLOCK_NANOSLEEP
+
+/* */
+#undef LOG4CPLUS_HAVE_CXX11_ATOMICS
 
 /* */
 #undef LOG4CPLUS_HAVE_ENAMETOOLONG
@@ -204,6 +234,9 @@
 
 /* */
 #undef LOG4CPLUS_HAVE_FUNCTION_MACRO
+
+/* */
+#undef LOG4CPLUS_HAVE_FUNC_SYMBOL
 
 /* */
 #undef LOG4CPLUS_HAVE_GETADDRINFO
@@ -258,6 +291,9 @@
 
 /* */
 #undef LOG4CPLUS_HAVE_MBSTOWCS
+
+/* */
+#undef LOG4CPLUS_HAVE_NANOSLEEP
 
 /* */
 #undef LOG4CPLUS_HAVE_NETDB_H
@@ -410,7 +446,7 @@
 /* Defined to the actual TLS support construct. */
 #undef TLS_SUPPORT_CONSTRUCT
 
-/* Define to int if undefined. */
+/* Substitute for socklen_t */
 #undef socklen_t
 
 #endif // LOG4CPLUS_CONFIG_H

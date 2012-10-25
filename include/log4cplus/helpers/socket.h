@@ -25,6 +25,11 @@
 #define LOG4CPLUS_HELPERS_SOCKET_HEADER_
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/tstring.h>
 #include <log4cplus/helpers/socketbuffer.h>
 
@@ -81,12 +86,13 @@ namespace log4cplus {
           // ctor and dtor
             Socket();
             Socket(SOCKET_TYPE sock, SocketState state, int err);
-            Socket(const tstring& address, unsigned short port);
+            Socket(const tstring& address, unsigned short port, bool udp = false);
             virtual ~Socket();
 
           // methods
             virtual bool read(SocketBuffer& buffer);
             virtual bool write(const SocketBuffer& buffer);
+            virtual bool write(const std::string & buffer);
         };
 
 
@@ -109,12 +115,16 @@ namespace log4cplus {
 
         LOG4CPLUS_EXPORT SOCKET_TYPE openSocket(unsigned short port, SocketState& state);
         LOG4CPLUS_EXPORT SOCKET_TYPE connectSocket(const log4cplus::tstring& hostn,
-                                                   unsigned short port, SocketState& state);
+                                                   unsigned short port, bool udp,
+                                                   SocketState& state);
         LOG4CPLUS_EXPORT SOCKET_TYPE acceptSocket(SOCKET_TYPE sock, SocketState& state);
         LOG4CPLUS_EXPORT int closeSocket(SOCKET_TYPE sock);
 
         LOG4CPLUS_EXPORT long read(SOCKET_TYPE sock, SocketBuffer& buffer);
-        LOG4CPLUS_EXPORT long write(SOCKET_TYPE sock, const SocketBuffer& buffer);
+        LOG4CPLUS_EXPORT long write(SOCKET_TYPE sock,
+            const SocketBuffer& buffer);
+        LOG4CPLUS_EXPORT long write(SOCKET_TYPE sock,
+            const std::string & buffer);
 
         LOG4CPLUS_EXPORT tstring getHostname (bool fqdn);
         LOG4CPLUS_EXPORT int setTCPNoDelay (SOCKET_TYPE, bool);

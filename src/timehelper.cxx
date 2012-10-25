@@ -28,9 +28,7 @@
 #include <vector>
 #include <iomanip>
 #include <cassert>
-#if ! defined (_WIN32_WCE)
 #include <cerrno>
-#endif
 #if defined (UNICODE)
 #include <cwchar>
 #endif
@@ -60,18 +58,6 @@ namespace log4cplus { namespace helpers {
 
 const int ONE_SEC_IN_USEC = 1000000;
 
-
-#if defined (_WIN32_WCE)
-using ::mktime;
-using ::gmtime;
-using ::localtime;
-#if defined (UNICODE)
-using ::wcsftime;
-#else
-using ::strftime;
-#endif
-
-#else
 using std::mktime;
 using std::gmtime;
 using std::localtime;
@@ -80,9 +66,6 @@ using std::wcsftime;
 #else
 using std::strftime;
 #endif
-
-#endif
-
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -123,16 +106,36 @@ Time::gettimeofday()
             LOG4CPLUS_TEXT("clock_gettime() has failed"), true);
 
     return Time (ts.tv_sec, ts.tv_nsec / 1000);
+
 #elif defined(LOG4CPLUS_HAVE_GETTIMEOFDAY)
     struct timeval tp;
     ::gettimeofday(&tp, 0);
 
     return Time(tp.tv_sec, tp.tv_usec);
+
+#elif defined (_WIN32)
+    FILETIME ft;
+    GetSystemTimeAsFileTime (&ft);
+
+    typedef unsigned __int64 uint64_type;
+    uint64_type st100ns
+        = uint64_type (ft.dwHighDateTime) << 32
+        | ft.dwLowDateTime;
+
+    // Number of 100-ns intervals between UNIX epoch and Windows system time
+    // is 116444736000000000.
+    uint64_type const offset = uint64_type (116444736) * 1000 * 1000 * 1000;
+    uint64_type fixed_time = st100ns - offset;
+
+    return Time (fixed_time / (10 * 1000 * 1000),
+        fixed_time % (10 * 1000 * 1000) / 10);
+
 #elif defined(LOG4CPLUS_HAVE_FTIME)
     struct timeb tp;
     ftime(&tp);
 
     return Time(tp.time, tp.millitm * 1000);
+
 #else
 #warning "Time::gettimeofday()- low resolution timer: gettimeofday and ftime unavailable"
     return Time(::time(0), 0);

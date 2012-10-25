@@ -29,6 +29,14 @@
 
 #include <log4cplus/config.hxx>
 
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
+#if defined (_WIN32)
+#include <cstddef>
+#endif
+
 
 #ifdef UNICODE
 #  define LOG4CPLUS_TEXT2(STRING) L##STRING

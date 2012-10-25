@@ -26,6 +26,7 @@
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/internal/internal.h>
 #include <log4cplus/thread/impl/tls.h>
+#include <log4cplus/thread/syncprims-pub-impl.h>
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/spi/factory.h>
 #include <log4cplus/hierarchy.h>
@@ -56,6 +57,7 @@ namespace
 //! Default context.
 struct DefaultContext
 {
+    log4cplus::thread::Mutex console_mutex;
     helpers::LogLog loglog;
     LogLevelManager log_level_manager;
     helpers::Time TTCCLayout_time_base;
@@ -65,6 +67,7 @@ struct DefaultContext
     spi::AppenderFactoryRegistry appender_factory_registry;
     spi::LayoutFactoryRegistry layout_factory_registry;
     spi::FilterFactoryRegistry filter_factory_registry;
+    spi::LocaleFactoryRegistry locale_factory_registry;
 };
 
 
@@ -121,7 +124,7 @@ static
 DefaultContext *
 get_dc (bool alloc = true)
 {
-    if (! default_context && alloc)
+    if (LOG4CPLUS_UNLIKELY (! default_context && alloc))
         alloc_dc ();
     return default_context;
 }
@@ -132,6 +135,13 @@ get_dc (bool alloc = true)
 
 namespace helpers
 {
+
+
+log4cplus::thread::Mutex const &
+getConsoleOutputMutex ()
+{
+    return get_dc ()->console_mutex;
+}
 
 
 LogLog &
@@ -201,6 +211,13 @@ FilterFactoryRegistry &
 getFilterFactoryRegistry ()
 {
     return get_dc ()->filter_factory_registry;
+}
+
+
+LocaleFactoryRegistry &
+getLocaleFactoryRegistry()
+{
+    return get_dc ()->locale_factory_registry;
 }
 
 
@@ -286,23 +303,57 @@ void initializeFactoryRegistry();
 
 
 //! Thread local storage clean up function for POSIX threads.
-static 
-void 
+static
+void
 ptd_cleanup_func (void * arg)
 {
+    internal::per_thread_data * const arg_ptd
+        = static_cast<internal::per_thread_data *>(arg);
+    internal::per_thread_data * const ptd = internal::get_ptd (false);
+    (void) ptd;
+
     // Either it is a dummy value or it should be the per thread data
     // pointer we get from internal::get_ptd().
     assert (arg == reinterpret_cast<void *>(1)
-        || arg == internal::get_ptd ());
-    (void)arg;
+        || arg_ptd == ptd
+        || (! ptd && arg_ptd));
+
+    if (arg == reinterpret_cast<void *>(1))
+        // Setting the value through the key here is necessary in case
+        // we are using TLS using __thread or __declspec(thread) or
+        // similar constructs with POSIX threads.  Otherwise POSIX
+        // calls this cleanup routine more than once if the value
+        // stays non-NULL after it returns.
+        thread::impl::tls_set_value (internal::tls_storage_key, 0);
+    else if (arg)
+    {
+        // Instead of using internal::get_ptd(false) here we are using
+        // the value passed to this function directly.  This is
+        // necessary because of the following (from SUSv4):
+        //
+        // A call to pthread_getspecific() for the thread-specific
+        // data key being destroyed shall return the value NULL,
+        // unless the value is changed (after the destructor starts)
+        // by a call to pthread_setspecific().
+        delete arg_ptd;
+        thread::impl::tls_set_value (internal::tls_storage_key, 0);
+    }
+    else
+    {
+        // In this case we fall through to threadCleanup() and it does
+        // all the necessary work itself.
+        ;
+    }
 
     threadCleanup ();
+}
 
-    // Setting the value through the key here is necessary in case we
-    // are using TLS using __thread or __declspec(thread) or similar
-    // constructs with POSIX threads. Otherwise POSIX calls this cleanup
-    // routine more than once if the value stays non-NULL after it returns.
-    thread::impl::tls_set_value (internal::tls_storage_key, 0);
+
+static
+void
+threadSetup ()
+{
+    internal::get_ptd (true);
 }
 
 
@@ -313,6 +364,7 @@ void initializeLog4cplus()
         return;
 
     internal::tls_storage_key = thread::impl::tls_init (ptd_cleanup_func);
+    threadSetup ();
 
     DefaultContext * dc = get_dc (true);
     dc->TTCCLayout_time_base = helpers::Time::gettimeofday ();
@@ -320,14 +372,6 @@ void initializeLog4cplus()
     initializeFactoryRegistry();
 
     initialized = true;
-}
-
-
-static
-void
-threadSetup ()
-{
-    internal::get_ptd (true);
 }
 
 
@@ -346,9 +390,11 @@ threadCleanup ()
 
 #if defined (_WIN32) && defined (LOG4CPLUS_BUILD_DLL)
 
-BOOL WINAPI DllMain(LOG4CPLUS_DLLMAIN_HINSTANCE hinstDLL,  // handle to DLL module
-                    DWORD fdwReason,     // reason for calling function
-                    LPVOID lpReserved )  // reserved
+extern "C"
+BOOL
+WINAPI
+DllMain (LOG4CPLUS_DLLMAIN_HINSTANCE /*hinstDLL*/, DWORD fdwReason,
+    LPVOID /*lpReserved*/)
 {
     // Perform actions based on the reason for calling.
     switch( fdwReason ) 

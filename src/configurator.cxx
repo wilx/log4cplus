@@ -46,14 +46,12 @@
 #if defined (_WIN32)
 #include <tchar.h>
 #endif
-#if defined (_WIN32_WCE)
-#include <log4cplus/config/windowsh-inc.h>
-#endif
 
 #include <algorithm>
 #include <cstdlib>
 #include <iterator>
 #include <sstream>
+#include <functional>
 
 
 namespace log4cplus
@@ -286,10 +284,21 @@ PropertyConfigurator::configure()
     if (properties.getBool (internal_debugging, LOG4CPLUS_TEXT ("configDebug")))
         helpers::getLogLog ().setInternalDebugging (internal_debugging);
 
+    bool quiet_mode = false;
+    if (properties.getBool (quiet_mode, LOG4CPLUS_TEXT ("quietMode")))
+        helpers::getLogLog ().setQuietMode (quiet_mode);
+
+    bool disable_override = false;
+    if (properties.getBool (disable_override,
+            LOG4CPLUS_TEXT ("disableOverride")))
+
     initializeLog4cplus();
     configureAppenders();
     configureLoggers();
     configureAdditivity();
+
+    if (disable_override)
+        h.disable (Hierarchy::DISABLE_OVERRIDE);
 
     // Erase the appenders so that we are not artificially keeping them "alive".
     appenders.clear ();
@@ -533,13 +542,19 @@ PropertyConfigurator::addAppender(Logger &logger, SharedAppenderPtr& appender)
 // BasicConfigurator ctor and dtor
 //////////////////////////////////////////////////////////////////////////////
 
-BasicConfigurator::BasicConfigurator(Hierarchy& hier)
+log4cplus::tstring DISABLE_OVERRIDE_KEY (
+    LOG4CPLUS_TEXT ("log4cplus.disableOverride"));
+
+BasicConfigurator::BasicConfigurator(Hierarchy& hier, bool logToStdErr)
     : PropertyConfigurator( LOG4CPLUS_TEXT(""), hier )
 {
     properties.setProperty(LOG4CPLUS_TEXT("rootLogger"),
                            LOG4CPLUS_TEXT("DEBUG, STDOUT"));
     properties.setProperty(LOG4CPLUS_TEXT("appender.STDOUT"),
                            LOG4CPLUS_TEXT("log4cplus::ConsoleAppender"));
+    properties.setProperty(LOG4CPLUS_TEXT("appender.STDOUT.logToStdErr"),
+                           logToStdErr ? LOG4CPLUS_TEXT("1")
+                           : LOG4CPLUS_TEXT("0"));
 }
 
 
@@ -555,9 +570,9 @@ BasicConfigurator::~BasicConfigurator()
 //////////////////////////////////////////////////////////////////////////////
 
 void
-BasicConfigurator::doConfigure(Hierarchy& h)
+BasicConfigurator::doConfigure(Hierarchy& h, bool logToStdErr)
 {
-    BasicConfigurator tmp(h);
+    BasicConfigurator tmp(h, logToStdErr);
     tmp.configure();
 }
 
@@ -578,8 +593,13 @@ public:
         , waitMillis(millis < 1000 ? 1000 : millis)
         , shouldTerminate(false)
         , lastModTime(helpers::Time::gettimeofday())
+        , lock(NULL)
     {
-        updateLastModTime();
+        lastFileInfo.mtime = helpers::Time::gettimeofday ();
+        lastFileInfo.size = 0;
+        lastFileInfo.is_link = false;
+
+        updateLastModInfo();
     }
 
     virtual ~ConfigurationWatchDogThread ()
@@ -595,7 +615,7 @@ protected:
     virtual void run();
 
     bool checkForFileModification();
-    void updateLastModTime();
+    void updateLastModInfo();
     
 private:
     ConfigurationWatchDogThread (ConfigurationWatchDogThread const &);
@@ -604,7 +624,8 @@ private:
 
     unsigned int const waitMillis;
     thread::ManualResetEvent shouldTerminate;
-    helpers::Time lastModTime;
+    helpers::FileInfo lastFileInfo;
+    HierarchyLocker* lock;
 };
 
 
@@ -622,7 +643,10 @@ ConfigurationWatchDogThread::run()
             }
 
             reconfigure();
-            updateLastModTime();
+            updateLastModInfo();
+
+            // release the lock
+            lock = NULL;
         }
     }
 }
@@ -636,7 +660,8 @@ ConfigurationWatchDogThread::checkForFileModification()
     if (helpers::getFileInfo (&fi, propertyFilename) != 0)
         return false;
 
-    bool modified = (fi.mtime > lastModTime);
+    bool modified = fi.mtime > lastFileInfo.mtime
+        || fi.size != lastFileInfo.size;
 
 #if defined(LOG4CPLUS_HAVE_LSTAT)
     if (!modified && fi.is_link)
@@ -647,7 +672,7 @@ ConfigurationWatchDogThread::checkForFileModification()
             return false;
 
         helpers::Time linkModTime(fileStatus.st_mtime);
-        modified = (linkModTime > lastModTime);
+        modified = (linkModTime > fi.mtime);
     }
 #endif
 
@@ -657,12 +682,12 @@ ConfigurationWatchDogThread::checkForFileModification()
 
 
 void
-ConfigurationWatchDogThread::updateLastModTime()
+ConfigurationWatchDogThread::updateLastModInfo()
 {
     helpers::FileInfo fi;
 
-    if (helpers::getFileInfo (&fi, propertyFilename))
-        lastModTime = fi.mtime;
+    if (helpers::getFileInfo (&fi, propertyFilename) == 0)
+        lastFileInfo = fi;
 }
 
 

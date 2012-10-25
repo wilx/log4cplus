@@ -33,6 +33,21 @@ namespace log4cplus
 {
 
 
+namespace helpers
+{
+
+extern log4cplus::thread::Mutex const & getConsoleOutputMutex ();
+
+} // namespace helpers
+
+
+log4cplus::thread::Mutex const &
+ConsoleAppender::getOutputMutex ()
+{
+    return helpers::getConsoleOutputMutex ();
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // ConsoleAppender ctors and dtor
 //////////////////////////////////////////////////////////////////////////////
@@ -46,7 +61,7 @@ ConsoleAppender::ConsoleAppender(bool logToStdErr_,
 
 
 
-ConsoleAppender::ConsoleAppender(const helpers::Properties properties)
+ConsoleAppender::ConsoleAppender(const helpers::Properties & properties)
 : Appender(properties),
   logToStdErr(false),
   immediateFlush(false)
@@ -82,14 +97,10 @@ ConsoleAppender::close()
 // ConsoleAppender protected methods
 //////////////////////////////////////////////////////////////////////////////
 
-// Normally, append() methods do not need to be locked since they are
-// called by doAppend() which performs the locking.  However, this locks
-// on the LogLog instance, so we don't have multiple threads writing to
-// tcout and tcerr
 void
 ConsoleAppender::append(const spi::InternalLoggingEvent& event)
 {
-    thread::MutexGuard guard (helpers::getLogLog().mutex);
+    thread::MutexGuard guard (getOutputMutex ());
 
     tostream& output = (logToStdErr ? tcerr : tcout);
     layout->formatAndAppend(output, event);

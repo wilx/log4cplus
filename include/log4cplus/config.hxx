@@ -1,25 +1,25 @@
-//   Copyright (C) 2009-2010, Vaclav Haisman. All rights reserved.
-//   
-//   Redistribution and use in source and binary forms, with or without modifica-
-//   tion, are permitted provided that the following conditions are met:
-//   
-//   1. Redistributions of  source code must  retain the above copyright  notice,
-//      this list of conditions and the following disclaimer.
-//   
-//   2. Redistributions in binary form must reproduce the above copyright notice,
-//      this list of conditions and the following disclaimer in the documentation
-//      and/or other materials provided with the distribution.
-//   
-//   THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
-//   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-//   FITNESS  FOR A PARTICULAR  PURPOSE ARE  DISCLAIMED.  IN NO  EVENT SHALL  THE
-//   APACHE SOFTWARE  FOUNDATION  OR ITS CONTRIBUTORS  BE LIABLE FOR  ANY DIRECT,
-//   INDIRECT, INCIDENTAL, SPECIAL,  EXEMPLARY, OR CONSEQUENTIAL  DAMAGES (INCLU-
-//   DING, BUT NOT LIMITED TO, PROCUREMENT  OF SUBSTITUTE GOODS OR SERVICES; LOSS
-//   OF USE, DATA, OR  PROFITS; OR BUSINESS  INTERRUPTION)  HOWEVER CAUSED AND ON
-//   ANY  THEORY OF LIABILITY,  WHETHER  IN CONTRACT,  STRICT LIABILITY,  OR TORT
-//   (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
-//   THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//  Copyright (C) 2009-2010, Vaclav Haisman. All rights reserved.
+//
+//  Redistribution and use in source and binary forms, with or without modifica-
+//  tion, are permitted provided that the following conditions are met:
+//
+//  1. Redistributions of  source code must  retain the above copyright  notice,
+//     this list of conditions and the following disclaimer.
+//
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//  THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
+//  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+//  FITNESS  FOR A PARTICULAR  PURPOSE ARE  DISCLAIMED.  IN NO  EVENT SHALL  THE
+//  APACHE SOFTWARE  FOUNDATION  OR ITS CONTRIBUTORS  BE LIABLE FOR  ANY DIRECT,
+//  INDIRECT, INCIDENTAL, SPECIAL,  EXEMPLARY, OR CONSEQUENTIAL  DAMAGES (INCLU-
+//  DING, BUT NOT LIMITED TO, PROCUREMENT  OF SUBSTITUTE GOODS OR SERVICES; LOSS
+//  OF USE, DATA, OR  PROFITS; OR BUSINESS  INTERRUPTION)  HOWEVER CAUSED AND ON
+//  ANY  THEORY OF LIABILITY,  WHETHER  IN CONTRACT,  STRICT LIABILITY,  OR TORT
+//  (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN  ANY WAY OUT OF THE  USE OF
+//  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef LOG4CPLUS_CONFIG_HXX
 #define LOG4CPLUS_CONFIG_HXX
@@ -46,6 +46,20 @@
 # define LOG4CPLUS_POOR_MANS_CHCONV
 #endif
 
+#ifndef LOG4CPLUS_DECLSPEC_EXPORT
+#define LOG4CPLUS_DECLSPEC_EXPORT /* empty */
+#endif
+
+#ifndef LOG4CPLUS_DECLSPEC_IMPORT
+#define LOG4CPLUS_DECLSPEC_IMPORT /* empty */
+#endif
+
+#ifndef LOG4CPLUS_DECLSPEC_PRIVATE
+#define LOG4CPLUS_DECLSPEC_PRIVATE /* empty */
+#endif
+
+#define LOG4CPLUS_PRIVATE LOG4CPLUS_DECLSPEC_PRIVATE
+
 #if !defined(_WIN32)
 #  define LOG4CPLUS_USE_BSD_SOCKETS
 #  if !defined(LOG4CPLUS_SINGLE_THREADED)
@@ -59,7 +73,8 @@
 
 #endif // !_WIN32
 
-#if defined (LOG4CPLUS_INLINES_ARE_EXPORTED)
+#if defined (LOG4CPLUS_INLINES_ARE_EXPORTED) \
+    && defined (LOG4CPLUS_BUILD_DLL)
 #  define LOG4CPLUS_INLINE_EXPORT inline
 #else
 #  define LOG4CPLUS_INLINE_EXPORT
@@ -91,6 +106,37 @@
 #if defined (LOG4CPLUS_HAVE_CXX11_SUPPORT) \
     || __has_feature (cxx_rvalue_references)
 #  define LOG4CPLUS_HAVE_RVALUE_REFS
+#endif
+
+#if ! defined (UNICODE) && defined (__GNUC__) && __GNUC__ >= 3
+#  define LOG4CPLUS_FORMAT_ATTRIBUTE(archetype, format_index, first_arg_index) \
+    __attribute__ ((format (archetype, format_index, first_arg_index)))
+#else
+#  define LOG4CPLUS_FORMAT_ATTRIBUTE(archetype, fmt_index, first_arg_index) \
+    /* empty */
+#endif
+
+#if defined (__GNUC__) && __GNUC__ >= 3
+#  define LOG4CPLUS_ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+#  define LOG4CPLUS_ATTRIBUTE_PURE __attribute__ ((__pure__))
+#  define LOG4CPLUS_BUILTIN_EXPECT(exp, c) __builtin_expect ((exp), (c))
+#else
+#  define LOG4CPLUS_ATTRIBUTE_NORETURN /* empty */
+#  define LOG4CPLUS_ATTRIBUTE_PURE /* empty */
+#  define LOG4CPLUS_BUILTIN_EXPECT(exp, c) (exp)
+#endif
+
+#define LOG4CPLUS_LIKELY(cond) LOG4CPLUS_BUILTIN_EXPECT(!! (cond), 1)
+#define LOG4CPLUS_UNLIKELY(cond) LOG4CPLUS_BUILTIN_EXPECT(!! (cond), 0)
+
+#if defined (_MSC_VER)                                             \
+    || (defined (__COMO__) && __COMO_VERSION__ >= 400) /* ??? */   \
+    || (defined (__DMC__) && __DMC__ >= 0x700) /* ??? */           \
+    || (defined (__clang__) && __clang_major__ >= 3)               \
+    || (defined (__GNUC__) && (__GNUC__ >= 4                       \
+            || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)))
+#  define LOG4CPLUS_HAVE_PRAGMA_ONCE
+#  pragma once
 #endif
 
 #include <log4cplus/helpers/thread-config.h>

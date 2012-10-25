@@ -22,10 +22,15 @@
 /** @file 
  * This header defines the Logger class and the logging macros. */
 
-#ifndef _LOG4CPLUS_LOGGERHEADER_
-#define _LOG4CPLUS_LOGGERHEADER_
+#ifndef LOG4CPLUS_LOGGERHEADER_
+#define LOG4CPLUS_LOGGERHEADER_
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/loglevel.h>
 #include <log4cplus/tstring.h>
 #include <log4cplus/spi/appenderattachable.h>
@@ -290,7 +295,7 @@ namespace log4cplus
          * @param ptr A pointer to the Logger implementation.  This value
          *            cannot be NULL.  
          */
-        Logger(spi::LoggerImpl * ptr);
+        LOG4CPLUS_PRIVATE Logger(spi::LoggerImpl * ptr);
 
       // Friends
         friend class log4cplus::spi::LoggerImpl;
@@ -313,4 +318,4 @@ namespace log4cplus
 } // end namespace log4cplus
 
 
-#endif // _LOG4CPLUS_LOGGERHEADER_
+#endif // LOG4CPLUS_LOGGERHEADER_

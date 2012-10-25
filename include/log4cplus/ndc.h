@@ -27,6 +27,11 @@
 #define _LO4CPLUS_NDC_HEADER_
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/tstring.h>
 
 #include <map>
@@ -84,13 +89,14 @@ namespace log4cplus {
      * and the context set in the NDC.  Use of the {@link NDCContextCreator}
      * class can automate this process and make your code exception-safe.
      *
-     * If configured to do so, {@link log4cplus::PatternLayout} and {@link
-     * log4cplus::TTCCLayout} instances automatically retrieve the nested diagnostic
-     * context for the current thread without any user intervention.
-     * Hence, even if a server is serving multiple clients
-     * simultaneously, the logs emanating from the same code (belonging to
-     * the same logger) can still be distinguished because each client
-     * request will have a different NDC tag.
+     * If configured to do so, {@link log4cplus::PatternLayout} and
+     * {@link log4cplus::TTCCLayout} instances automatically retrieve
+     * the nested diagnostic context for the current thread without
+     * any user intervention.  Hence, even if a server is serving
+     * multiple clients simultaneously, the logs emanating from the
+     * same code (belonging to the same logger) can still be
+     * distinguished because each client request will have a different
+     * NDC tag.
      *
      * Heavy duty systems should call the {@link #remove} method when
      * leaving the run method of a thread. This ensures that the memory
@@ -260,9 +266,10 @@ namespace log4cplus {
 
     private:
       // Methods
-        static DiagnosticContextStack* getPtr();
+        LOG4CPLUS_PRIVATE static DiagnosticContextStack* getPtr();
 
         template <typename StringType>
+        LOG4CPLUS_PRIVATE
         void push_worker (StringType const &);
 
       // Disallow construction (and copying) except by getNDC()
@@ -289,6 +296,8 @@ namespace log4cplus {
             DiagnosticContext const * parent);
         DiagnosticContext(const log4cplus::tstring& message);
         DiagnosticContext(tchar const * message);
+        DiagnosticContext(DiagnosticContext const &);
+        DiagnosticContext & operator = (DiagnosticContext const &);
 
 #if defined (LOG4CPLUS_HAVE_RVALUE_REFS)
         DiagnosticContext(DiagnosticContext &&);

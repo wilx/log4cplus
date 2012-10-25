@@ -25,13 +25,13 @@
 #include <cstring>
 #include <vector>
 #include <algorithm>
+#include <cerrno>
 #include <log4cplus/internal/socket.h>
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/thread/syncprims-pub-impl.h>
 #include <log4cplus/spi/loggingevent.h>
+#include <log4cplus/helpers/stringhelper.h>
 
-#include <arpa/inet.h>
- 
 #ifdef LOG4CPLUS_HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -48,13 +48,21 @@
 #include <netinet/tcp.h>
 #endif
 
+#if defined (LOG4CPLUS_HAVE_ARPA_INET_H)
+#include <arpa/inet.h>
+#endif
+ 
+#if defined (LOG4CPLUS_HAVE_ERRNO_H)
 #include <errno.h>
+#endif
 
 #ifdef LOG4CPLUS_HAVE_NETDB_H
 #include <netdb.h>
 #endif
 
+#ifdef LOG4CPLUS_HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 
 namespace log4cplus { namespace helpers {
@@ -147,30 +155,39 @@ openSocket(unsigned short port, SocketState& state)
         return INVALID_SOCKET_VALUE;
     }
 
-    struct sockaddr_in server;
+    struct sockaddr_in server = sockaddr_in ();
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(port);
 
     int optval = 1;
     socklen_t optlen = sizeof (optval);
-    setsockopt( sock, SOL_SOCKET, SO_REUSEADDR, &optval, optlen );
+    int ret = setsockopt( sock, SOL_SOCKET, SO_REUSEADDR, &optval, optlen );
+    if (ret != 0)
+    {
+        helpers::getLogLog ().warn (LOG4CPLUS_TEXT ("setsockopt() failed: ")
+            + helpers::convertIntegerToString (errno));
+    }
 
     int retval = bind(sock, reinterpret_cast<struct sockaddr*>(&server),
         sizeof(server));
     if (retval < 0)
-        return INVALID_SOCKET_VALUE;
+        goto error;
 
     if (::listen(sock, 10))
-        return INVALID_SOCKET_VALUE;
+        goto error;
 
     state = ok;
     return to_log4cplus_socket (sock);
+
+error:
+    close (sock);
+    return INVALID_SOCKET_VALUE;
 }
 
 
 SOCKET_TYPE
-connectSocket(const tstring& hostn, unsigned short port, SocketState& state)
+connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& state)
 {
     struct sockaddr_in server;
     int sock;
@@ -185,7 +202,7 @@ connectSocket(const tstring& hostn, unsigned short port, SocketState& state)
     server.sin_port = htons(port);
     server.sin_family = AF_INET;
 
-    sock = ::socket(AF_INET, SOCK_STREAM, 0);
+    sock = ::socket(AF_INET, (udp ? SOCK_DGRAM : SOCK_STREAM), 0);
     if(sock < 0) {
         return INVALID_SOCKET_VALUE;
     }
@@ -312,6 +329,19 @@ write(SOCKET_TYPE sock, const SocketBuffer& buffer)
 #endif
     return ::send( to_os_socket (sock), buffer.getBuffer(), buffer.getSize(),
         flags );
+}
+
+
+long
+write(SOCKET_TYPE sock, const std::string & buffer)
+{
+#if defined(MSG_NOSIGNAL)
+    int flags = MSG_NOSIGNAL;
+#else
+    int flags = 0;
+#endif
+    return ::send (to_os_socket (sock), buffer.c_str (), buffer.size (),
+        flags);
 }
 
 

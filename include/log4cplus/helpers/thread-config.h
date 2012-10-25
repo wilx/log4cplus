@@ -23,22 +23,27 @@
 #ifndef LOG4CPLUS_HELPERS_THREAD_CONFIG_HEADER_
 #define LOG4CPLUS_HELPERS_THREAD_CONFIG_HEADER_
 
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #if defined (LOG4CPLUS_USE_PTHREADS)
-// Nothing.
+#   if defined (__APPLE__)
+#     define LOG4CPLUS_USE_NAMED_POSIX_SEMAPHORE
+#   endif
 
 #elif defined(LOG4CPLUS_USE_WIN32_THREADS)
-#   if (_WIN32_WINNT + 0 >= 0x0600)
+#   if defined (_WIN32_WINNT) && _WIN32_WINNT >= 0x0600
 #     define LOG4CPLUS_USE_SRW_LOCK
 #   else
 #     define LOG4CPLUS_POOR_MANS_SHAREDMUTEX
 #   endif
-#   if defined (_MSC_VER)
-#     undef LOG4CPLUS_HAVE_TLS_SUPPORT
-#     undef LOG4CPLUS_THREAD_LOCAL_VAR
-// Comment out the following two lines if you do intend to use log4cplus.dll
-// for loading using LoadLibrary(). The __declspec(thread) functionality is not
-// compatible with such DLL use. For more information why is this necessary see
-// <http://msdn.microsoft.com/en-us/library/2s9wt68x(vs.80).aspx>.
+#   undef LOG4CPLUS_HAVE_TLS_SUPPORT
+#   undef LOG4CPLUS_THREAD_LOCAL_VAR
+#   if defined (_MSC_VER) && _WIN32_WINNT >= 0x0600
+// The __declspec(thread) functionality is not compatible with LoadLibrary().
+// For more information why see and "Windows and TLS" note in README.
+// <http://msdn.microsoft.com/en-us/library/2s9wt68x(v=vs.100).aspx>.
 #     define LOG4CPLUS_HAVE_TLS_SUPPORT 1
 #     define LOG4CPLUS_THREAD_LOCAL_VAR __declspec(thread)
 #   endif

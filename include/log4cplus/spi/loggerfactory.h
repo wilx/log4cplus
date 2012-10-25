@@ -21,10 +21,15 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_SPI_LOGGER_FACTORY_HEADER
-#define _LOG4CPLUS_SPI_LOGGER_FACTORY_HEADER
+#ifndef LOG4CPLUS_SPI_LOGGER_FACTORY_HEADER
+#define LOG4CPLUS_SPI_LOGGER_FACTORY_HEADER
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/tstring.h>
 
 
@@ -51,5 +56,5 @@ namespace log4cplus {
     } // end namespace spi
 } // end namespace log4cplus
 
-#endif // _LOG4CPLUS_SPI_LOGGER_FACTORY_HEADER
+#endif // LOG4CPLUS_SPI_LOGGER_FACTORY_HEADER
 

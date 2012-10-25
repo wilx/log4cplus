@@ -21,10 +21,15 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_SPI_ROOT_LOGGER_HEADER_
-#define _LOG4CPLUS_SPI_ROOT_LOGGER_HEADER_
+#ifndef LOG4CPLUS_SPI_ROOT_LOGGER_HEADER_
+#define LOG4CPLUS_SPI_ROOT_LOGGER_HEADER_
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/spi/loggerimpl.h>
 
 namespace log4cplus {
@@ -66,5 +71,5 @@ namespace log4cplus {
     } // end namespace spi
 } // end namespace log4cplus
 
-#endif // _LOG4CPLUS_SPI_ROOT_LOGGER_HEADER_
+#endif // LOG4CPLUS_SPI_ROOT_LOGGER_HEADER_
 

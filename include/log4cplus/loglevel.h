@@ -26,8 +26,13 @@
 #ifndef LOG4CPLUS_LOGLEVEL_HEADER_
 #define LOG4CPLUS_LOGLEVEL_HEADER_
 
-#include <vector>
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
+#include <vector>
 #include <log4cplus/tstring.h>
 
 
@@ -98,6 +103,10 @@ namespace log4cplus {
      */
     typedef log4cplus::tstring const & (*LogLevelToStringMethod)(LogLevel);
 
+    //! This function type is for log4cplus 1.0.x callbacks.
+    typedef log4cplus::tstring (*LogLevelToStringMethod_1_0) (LogLevel);
+
+
     /** 
      * This method type defined the signature of methods that convert strings
      * into LogLevels. 
@@ -153,6 +162,9 @@ namespace log4cplus {
          */
         void pushToStringMethod(LogLevelToStringMethod newToString);
 
+        //! For compatibility with log4cplus 1.0.x.
+        void pushToStringMethod(LogLevelToStringMethod_1_0 newToString);
+
         /**
          * When creating a "derived" LogLevel, a <code>StringToLogLevelMethod</code>
          * should be defined and registered with the LogLevelManager by calling
@@ -164,7 +176,17 @@ namespace log4cplus {
 
     private:
       // Data
-        typedef std::vector<LogLevelToStringMethod> LogLevelToStringMethodList;
+        struct LogLevelToStringMethodRec
+        {
+            union
+            {
+                LogLevelToStringMethod func;
+                LogLevelToStringMethod_1_0 func_1_0;
+            };
+            bool use_1_0;
+        };
+
+        typedef std::vector<LogLevelToStringMethodRec> LogLevelToStringMethodList;
         LogLevelToStringMethodList toStringMethods;
 
         typedef std::vector<StringToLogLevelMethod> StringToLogLevelMethodList;

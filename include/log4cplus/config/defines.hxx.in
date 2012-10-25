@@ -5,6 +5,9 @@
 #undef LOG4CPLUS_HAVE_SYSLOG_H
 
 /* */
+#undef LOG4CPLUS_HAVE_ARPA_INET_H
+
+/* */
 #undef LOG4CPLUS_HAVE_NETINET_IN_H
 
 /* */
@@ -82,6 +85,12 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef LOG4CPLUS_HAVE_CLOCK_GETTIME
 
+/* Define to 1 if you have the `nanosleep' function. */
+#undef LOG4CPLUS_HAVE_NANOSLEEP
+
+/* Define to 1 if you have the `clock_nanosleep' function. */
+#undef LOG4CPLUS_HAVE_CLOCK_NANOSLEEP
+
 /* */
 #undef LOG4CPLUS_HAVE_GMTIME_R
 
@@ -135,11 +144,17 @@
 /* Defined for --enable-debugging builds. */
 #undef LOG4CPLUS_DEBUGGING
 
-/* Defined if the compiler understands __declspec(export) or __attribute__((export)) construct. */
+/* Defined if the compiler understands __declspec(dllexport) or
+   __attribute__((visibility("default"))) construct. */
 #undef LOG4CPLUS_DECLSPEC_EXPORT
 
-/* Defined if the compiler understands __declspec(import) or __attribute__((import)) construct. */
+/* Defined if the compiler understands __declspec(dllimport) or
+   __attribute__((visibility("default"))) construct. */
 #undef LOG4CPLUS_DECLSPEC_IMPORT
+
+/* Defined if the compiler understands
+   __attribute__((visibility("hidden"))) construct. */
+#undef LOG4CPLUS_DECLSPEC_PRIVATE
 
 /* */
 #undef LOG4CPLUS_HAVE_TLS_SUPPORT
@@ -155,6 +170,10 @@
 
 /* Defined if the compiler provides __sync_sub_and_fetch(). */
 #undef LOG4CPLUS_HAVE___SYNC_SUB_AND_FETCH
+
+/* Defined if the compiler provides C++11 <atomic> header and increment,
+   decrement operations. */
+#undef LOG4CPLUS_HAVE_CXX11_ATOMICS
 
 /* */
 #undef LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
@@ -191,6 +210,9 @@
 
 /* Defined if the compiler supports __PRETTY_FUNCTION__ macro. */
 #undef LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO
+
+/* Defined if the compiler supports __func__ symbol. */
+#undef LOG4CPLUS_HAVE_FUNC_SYMBOL
 
 /* Define to 1 if you have the `mbstowcs' function. */
 #undef LOG4CPLUS_HAVE_MBSTOWCS

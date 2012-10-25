@@ -21,10 +21,15 @@
 
 /** @file */
 
-#ifndef _LOG4CPLUS_HELPERS_LOGLOG
-#define _LOG4CPLUS_HELPERS_LOGLOG
+#ifndef LOG4CPLUS_HELPERS_LOGLOG
+#define LOG4CPLUS_HELPERS_LOGLOG
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/tstring.h>
 #include <log4cplus/streams.h>
 #include <log4cplus/thread/syncprims.h>
@@ -49,11 +54,13 @@ namespace log4cplus {
         class LOG4CPLUS_EXPORT LogLog
         {
         public:
-          // Static methods
+            //! Return type of getLogLog().
+            typedef LogLog * Ptr;
+
             /**
              * Returns a reference to the <code>LogLog</code> singleton.
              */
-            static LogLog * getLogLog();
+            static Ptr getLogLog();
 
 
             /**
@@ -94,13 +101,9 @@ namespace log4cplus {
             void warn(const log4cplus::tstring& msg) const;
             void warn(tchar const * msg) const;
 
-          // Data
-            thread::Mutex mutex;
-
             // Public ctor and dtor to be used only by internal::DefaultContext.
             LogLog();
             virtual ~LogLog();
-
 
         private:
             enum TriState
@@ -111,23 +114,25 @@ namespace log4cplus {
             };
 
             template <typename StringType>
+            LOG4CPLUS_PRIVATE
             void logging_worker (tostream & os,
                 bool (LogLog:: * cond) () const, tchar const *,
                 StringType const &, bool throw_flag = false) const;
 
-            static void set_tristate_from_env (TriState *,
+            LOG4CPLUS_PRIVATE static void set_tristate_from_env (TriState *,
                 tchar const * envvar);
 
-            bool get_quiet_mode () const;
-            bool get_not_quiet_mode () const;
-            bool get_debug_mode () const;
+            LOG4CPLUS_PRIVATE bool get_quiet_mode () const;
+            LOG4CPLUS_PRIVATE bool get_not_quiet_mode () const;
+            LOG4CPLUS_PRIVATE bool get_debug_mode () const;
 
-          // Data
+            // Data
             mutable TriState debugEnabled;
             mutable TriState quietMode;
+            thread::Mutex mutex;
 
-            LogLog(const LogLog&);
-            LogLog & operator = (LogLog const &);
+            LOG4CPLUS_PRIVATE LogLog(const LogLog&);
+            LOG4CPLUS_PRIVATE LogLog & operator = (LogLog const &);
         };
 
         LOG4CPLUS_EXPORT LogLog & getLogLog ();
@@ -136,5 +141,5 @@ namespace log4cplus {
 } // end namespace log4cplus
 
 
-#endif // _LOG4CPLUS_HELPERS_LOGLOG
+#endif // LOG4CPLUS_HELPERS_LOGLOG
 

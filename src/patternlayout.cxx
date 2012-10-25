@@ -26,46 +26,12 @@
 #include <log4cplus/helpers/property.h>
 #include <log4cplus/spi/loggingevent.h>
 #include <log4cplus/internal/internal.h>
-#if defined (_WIN32)
-#include <log4cplus/config/windowsh-inc.h>
-#endif
-
+#include <log4cplus/internal/env.h>
 #include <cstdlib>
-
-#ifdef LOG4CPLUS_HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#ifdef LOG4CPLUS_HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 
 
 namespace
 {
-
-static
-#if defined (_WIN32)
-DWORD
-get_process_id ()
-{
-    return GetCurrentProcessId ();
-}
-
-#elif defined (LOG4CPLUS_HAVE_GETPID)
-pid_t
-get_process_id ()
-{
-    return getpid ();
-}
-
-#else
-int
-get_process_id ()
-{
-    return 0; 
-}
-
-#endif
 
 
 static
@@ -93,6 +59,10 @@ namespace log4cplus
 {
 
 static tchar const ESCAPE_CHAR = LOG4CPLUS_TEXT('%');
+
+extern void formatRelativeTimestamp (log4cplus::tostream & output,
+    log4cplus::spi::InternalLoggingEvent const & event);
+
 
 namespace pattern
 {
@@ -228,6 +198,14 @@ private:
     tstring format;
 };
 
+
+//! This pattern is used to format miliseconds since process start.
+class RelativeTimestampConverter: public PatternConverter {
+public:
+    RelativeTimestampConverter(const FormattingInfo& info);
+    virtual void convert(tstring & result,
+        const spi::InternalLoggingEvent& event);
+};
 
 
 /**
@@ -421,7 +399,7 @@ BasicPatternConverter::convert(tstring & result,
         return;
 
     case PROCESS_CONVERTER:
-		helpers::convertIntegerToString(result, get_process_id ()); 
+        helpers::convertIntegerToString(result, internal::get_process_id ()); 
         return;
 
     case NDC_CONVERTER:
@@ -547,6 +525,24 @@ DatePatternConverter::convert(tstring & result,
 }
 
 
+//
+//
+//
+
+RelativeTimestampConverter::RelativeTimestampConverter (FormattingInfo const & info)
+    : PatternConverter (info)
+{ }
+
+
+void
+RelativeTimestampConverter::convert (tstring & result,
+    spi::InternalLoggingEvent const & event)
+{
+    tostringstream & oss = internal::get_ptd ()->layout_oss;
+    detail::clear_tostringstream (oss);
+    formatRelativeTimestamp (oss, event);
+    oss.str ().swap (result);
+}
 
 
 ////////////////////////////////////////////////
@@ -896,10 +892,11 @@ PatternParser::finalizeConverter(tchar c)
             //formattingInfo.dump(getLogLog());
             break;
 
-        // 'r' is RELATIVE time converter in log4j.
-        // Not implemented.
         case LOG4CPLUS_TEXT('r'):
-            goto not_implemented;
+            pc = new RelativeTimestampConverter (formattingInfo);
+            //getLogLog().debug("RELATIVE converter.");
+            //formattingInfo.dump(getLogLog());
+            break;
 
         case LOG4CPLUS_TEXT('t'):
             pc = new BasicPatternConverter
@@ -927,7 +924,6 @@ PatternParser::finalizeConverter(tchar c)
             //getLogLog().debug("MDC converter.");
             break;
 
-not_implemented:;
         default:
             tostringstream buf;
             buf << LOG4CPLUS_TEXT("Unexpected char [")
@@ -939,8 +935,8 @@ not_implemented:;
             pc = new LiteralPatternConverter(currentLiteral);
     }
 
-    currentLiteral.resize(0);
     list.push_back(pc);
+    currentLiteral.resize(0);
     state = LITERAL_STATE;
     formattingInfo.reset();
 }

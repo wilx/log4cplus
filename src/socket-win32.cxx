@@ -27,6 +27,7 @@
 #include <cstring>
 #include <log4cplus/internal/socket.h>
 #include <log4cplus/helpers/loglog.h>
+#include <log4cplus/thread/threads.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,7 +94,7 @@ init_winsock_worker ()
                 return;
 
             case WS_INITIALIZING:
-                ::Sleep (0);
+                log4cplus::thread::yield ();
                 continue;
         
             default:
@@ -195,7 +196,7 @@ error:
 
 
 SOCKET_TYPE
-connectSocket(const tstring& hostn, unsigned short port, SocketState& state)
+connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& state)
 {
     struct hostent * hp;
     struct sockaddr_in insock;
@@ -203,7 +204,8 @@ connectSocket(const tstring& hostn, unsigned short port, SocketState& state)
 
     init_winsock ();
 
-    SOCKET sock = WSASocket (AF_INET, SOCK_STREAM, AF_UNSPEC, 0, 0
+    SOCKET sock = WSASocket (AF_INET, (udp ? SOCK_DGRAM : SOCK_STREAM),
+        AF_UNSPEC, 0, 0
 #if defined (WSA_FLAG_NO_HANDLE_INHERIT)
         , WSA_FLAG_NO_HANDLE_INHERIT
 #else
@@ -307,6 +309,17 @@ write(SOCKET_TYPE sock, const SocketBuffer& buffer)
 {
     long ret = ::send (to_os_socket (sock), buffer.getBuffer(),
         static_cast<int>(buffer.getSize()), 0);
+    if (ret == SOCKET_ERROR)
+        set_last_socket_error (WSAGetLastError ());
+    return ret;
+}
+
+
+long
+write(SOCKET_TYPE sock, const std::string & buffer)
+{
+    long ret = ::send (to_os_socket (sock), buffer.c_str (),
+        static_cast<int>(buffer.size ()), 0);
     if (ret == SOCKET_ERROR)
         set_last_socket_error (WSAGetLastError ());
     return ret;

@@ -25,6 +25,11 @@
 #define LOG4CPLUS_IMPL_THREADS_IMPL_HEADER_
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #if defined (_WIN32)
 #include <log4cplus/config/windowsh-inc.h>
 #endif
@@ -92,8 +97,6 @@ struct ThreadStart
 {
 #  ifdef LOG4CPLUS_USE_PTHREADS
 static void* threadStartFuncWorker(void *);
-#  elif defined(LOG4CPLUS_USE_WIN32_THREADS) && defined (_WIN32_WCE)
-static DWORD threadStartFuncWorker(void * arg);
 #  elif defined(LOG4CPLUS_USE_WIN32_THREADS)
 static unsigned threadStartFuncWorker(void *);
 #  endif
@@ -137,11 +140,7 @@ private:
     os_handle_type handle;
 
 #  if defined(LOG4CPLUS_USE_WIN32_THREADS)
-#    if defined (_WIN32_WCE)
-    DWORD thread_id;
-#    else
     unsigned thread_id;
-#    endif
 #  endif
 
     // Disallow copying of instances of this class.

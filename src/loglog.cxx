@@ -23,6 +23,7 @@
 #include <log4cplus/thread/syncprims-pub-impl.h>
 #include <log4cplus/thread/threads.h>
 #include <log4cplus/internal/env.h>
+#include <log4cplus/consoleappender.h>
 #include <ostream>
 #include <stdexcept>
 
@@ -59,6 +60,8 @@ LogLog::~LogLog()
 void
 LogLog::setInternalDebugging(bool enabled)
 {
+    thread::MutexGuard guard (mutex);
+
     debugEnabled = enabled ? TriTrue : TriFalse;
 }
 
@@ -66,6 +69,8 @@ LogLog::setInternalDebugging(bool enabled)
 void
 LogLog::setQuietMode(bool quietModeVal)
 {
+    thread::MutexGuard guard (mutex);
+
     quietMode = quietModeVal ? TriTrue : TriFalse;
 }
 
@@ -161,12 +166,21 @@ void
 LogLog::logging_worker (tostream & os, bool (LogLog:: * cond) () const,
     tchar const * prefix, StringType const & msg, bool throw_flag) const
 {
-    thread::MutexGuard guard (mutex);
+    bool output;
+    {
+        thread::MutexGuard guard (mutex);
+        output = (this->*cond) ();
+    }
 
-    if ((this->*cond) ())
+    if (LOG4CPLUS_UNLIKELY (output))
+    {
+        // XXX This is potential recursive lock of
+        // ConsoleAppender::outputMutex.
+        thread::MutexGuard outputGuard (ConsoleAppender::getOutputMutex ());
         os << prefix << msg << std::endl;
+    }
 
-    if (throw_flag)
+    if (LOG4CPLUS_UNLIKELY (throw_flag))
         throw std::runtime_error (LOG4CPLUS_TSTRING_TO_STRING (msg));
 }
 

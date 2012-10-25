@@ -15,6 +15,7 @@ set (log4cplus_sources
   hierarchy.cxx
   hierarchylocker.cxx
   layout.cxx
+  log4judpappender.cxx
   lockfile.cxx
   logger.cxx
   loggerimpl.cxx
@@ -69,7 +70,27 @@ if (UNICODE)
 endif (UNICODE)
 
 add_library (${log4cplus} ${log4cplus_sources})
-target_link_libraries (${log4cplus} ${CMAKE_THREAD_LIBS_INIT})
+
+set (log4cplus_LIBS ${CMAKE_THREAD_LIBS_INIT})
+if (LIBRT)
+  list (APPEND log4cplus_LIBS ${LIBRT})
+endif ()
+if (LIBPOSIX4)
+  list (APPEND log4cplus_LIBS ${LIBPOSIX4})
+endif ()
+if (LIBCPOSIX)
+  list (APPEND log4cplus_LIBS ${LIBCPOSIX})
+endif ()
+if (LIBSOCKET)
+  list (APPEND log4cplus_LIBS ${LIBSOCKET})
+endif ()
+if (LIBNSL)
+  list (APPEND log4cplus_LIBS ${LIBNSL})
+endif ()
+if (LOG4CPLUS_WITH_ICONV AND LIBICONV)
+  list (APPEND log4cplus_LIBS ${LIBICONV})
+endif ()
+target_link_libraries (${log4cplus} ${log4cplus_LIBS})
 
 set_target_properties (${log4cplus} PROPERTIES
   VERSION "${log4cplus_version_major}.${log4cplus_version_minor}.${log4cplus_version_patch}"
@@ -78,10 +99,7 @@ set_target_properties (${log4cplus} PROPERTIES
 
 if (WIN32)
   set_target_properties (${log4cplus} PROPERTIES
-    DEBUG_POSTFIX "${log4cplus_postfix}D"
-    RELEASE_POSTFIX "${log4cplus_postfix}"
-    MINSIZEREL_POSTFIX "${log4cplus_postfix}"
-    RELWITHDEBINFO_POSTFIX "${log4cplus_postfix}")
+    DEBUG_POSTFIX "D")
   target_link_libraries (${log4cplus} ws2_32 advapi32)
 endif ()
 
@@ -100,6 +118,7 @@ install(FILES ../include/log4cplus/appender.h
               ../include/log4cplus/hierarchy.h
               ../include/log4cplus/hierarchylocker.h
               ../include/log4cplus/layout.h
+              ../include/log4cplus/log4judpappender.h
               ../include/log4cplus/logger.h
               ../include/log4cplus/loggingmacros.h
               ../include/log4cplus/loglevel.h
@@ -170,6 +189,6 @@ install(FILES ../include/log4cplus/thread/syncprims-pub-impl.h
 install(FILES ../include/log4cplus/config/macosx.h
               ../include/log4cplus/config/win32.h
               ../include/log4cplus/config/windowsh-inc.h
-              ${CMAKE_BINARY_DIR}/include/log4cplus/config/defines.hxx
+              ${log4cplus_BINARY_DIR}/include/log4cplus/config/defines.hxx
         DESTINATION include/log4cplus/config )
 

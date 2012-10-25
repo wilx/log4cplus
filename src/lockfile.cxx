@@ -48,12 +48,14 @@
 #endif
 #if defined (_WIN32)
 #include <tchar.h>
+#include <share.h>
 #endif
 #include <log4cplus/config/windowsh-inc.h>
 
 #include <stdexcept>
 #include <cerrno>
 #include <limits>
+#include <cstring>
 
 #include <log4cplus/helpers/lockfile.h>
 #include <log4cplus/helpers/stringhelper.h>
@@ -89,7 +91,7 @@ namespace log4cplus { namespace helpers {
 
 
 #if defined (_WIN32)
-int const OPEN_FLAGS = _O_RDWR | _O_CREAT | _O_TEMPORARY | _O_NOINHERIT;
+int const OPEN_FLAGS = _O_RDWR | _O_CREAT /*| _O_TEMPORARY*/ | _O_NOINHERIT;
 int const OPEN_SHFLAGS = _SH_DENYNO;
 int const OPEN_MODE = _S_IREAD | _S_IWRITE;
 
@@ -214,6 +216,8 @@ LockFile::lock () const
 {
     LogLog & loglog = getLogLog ();
     int ret = 0;
+    (void) loglog;
+    (void) ret;
 
 #if defined (LOG4CPLUS_USE_WIN32_LOCKFILEEX)
     HANDLE fh = get_os_HANDLE (data->fd, loglog);

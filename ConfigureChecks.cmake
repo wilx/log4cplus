@@ -1,8 +1,10 @@
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
+include(CheckLibraryExists)
 include(CheckSymbolExists)
 include(CheckTypeSize)
 include(CheckCSourceCompiles)
+include(CheckCXXSourceCompiles)
 
 check_include_files(dlfcn.h  HAVE_DLFCN_H )
 
@@ -17,6 +19,7 @@ check_include_files(sys/timeb.h   LOG4CPLUS_HAVE_SYS_TIMEB_H )
 check_include_files(sys/stat.h    LOG4CPLUS_HAVE_SYS_STAT_H )
 check_include_files(sys/file.h    LOG4CPLUS_HAVE_SYS_FILE_H )
 check_include_files(syslog.h      LOG4CPLUS_HAVE_SYSLOG_H )
+check_include_files(arpa/inet.h   LOG4CPLUS_HAVE_ARPA_INET_H )
 check_include_files(netinet/in.h  LOG4CPLUS_HAVE_NETINET_IN_H )
 check_include_files(netinet/tcp.h LOG4CPLUS_HAVE_NETINET_TCP_H )
 check_include_files(netdb.h       LOG4CPLUS_HAVE_NETDB_H )
@@ -38,6 +41,16 @@ check_include_files(string.h      HAVE_STRING_H )
 
 check_include_files("stdlib.h;stdio.h;stdarg.h;string.h;float.h" STDC_HEADERS )
 
+find_library(LIBADVAPI32 advapi32)
+find_library(LIBKERNEL32 kernel32)
+find_library(LIBNSL nsl)
+find_library(LIBRT rt)
+find_library(LIBICONV iconv)
+find_library(LIBPOSIX4 posix4)
+find_library(LIBCPOSIX cposix)
+find_library(LIBSOCKET socket)
+find_library(LIBWS2_32 ws2_32)
+
 check_function_exists(gmtime_r      LOG4CPLUS_HAVE_GMTIME_R )
 check_function_exists(localtime_r   LOG4CPLUS_HAVE_LOCALTIME_R )
 check_function_exists(gettimeofday  LOG4CPLUS_HAVE_GETTIMEOFDAY )
@@ -52,12 +65,6 @@ check_function_exists(htons         LOG4CPLUS_HAVE_HTONS )
 check_function_exists(ntohs         LOG4CPLUS_HAVE_NTOHS )
 check_function_exists(htonl         LOG4CPLUS_HAVE_HTONL )
 check_function_exists(ntohl         LOG4CPLUS_HAVE_NTOHL )
-check_function_exists(iconv_open    LOG4CPLUS_HAVE_ICONV_OPEN )
-check_function_exists(iconv_close   LOG4CPLUS_HAVE_ICONV_CLOSE )
-check_function_exists(iconv         LOG4CPLUS_HAVE_ICONV )
-#check_function_exists(libiconv_open LOG4CPLUS_HAVE_ICONV_OPEN )
-#check_function_exists(libiconv_close LOG4CPLUS_HAVE_ICONV_CLOSE )
-#check_function_exists(libiconv      LOG4CPLUS_HAVE_ICONV )
 check_function_exists(vsnprintf     LOG4CPLUS_HAVE_VSNPRINTF )
 check_function_exists(_vsnprintf    LOG4CPLUS_HAVE__VSNPRINTF )
 check_function_exists(vsprintf_s    LOG4CPLUS_HAVE_VSPRINTF_S )
@@ -66,12 +73,15 @@ check_function_exists(vfprintf_s    LOG4CPLUS_HAVE_VFPRINTF_S )
 check_function_exists(vfwprintf_s   LOG4CPLUS_HAVE_VFWPRINTF_S )
 check_function_exists(_vsnprintf_s  LOG4CPLUS_HAVE__VSNPRINTF_S )
 check_function_exists(_vsnwprintf_s LOG4CPLUS_HAVE__VSNWPRINTF_S )
+check_function_exists(mbstowcs      LOG4CPLUS_HAVE_MBSTOWCS )
+check_function_exists(wcstombs      LOG4CPLUS_HAVE_WCSTOMBS )
 
 
 check_symbol_exists(ENAMETOOLONG          errno.h       LOG4CPLUS_HAVE_ENAMETOOLONG )
 check_symbol_exists(SYS_gettid            sys/syscall.h LOG4CPLUS_HAVE_GETTID )
 check_symbol_exists(__FUNCTION__          ""            LOG4CPLUS_HAVE_FUNCTION_MACRO )
 check_symbol_exists(__PRETTY_FUNCTION__   ""            LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO )
+check_symbol_exists(__func__              ""            LOG4CPLUS_HAVE_FUNC_SYMBOL )
 
 check_c_source_compiles("#include <stdlib.h> \n int main() { int x = 1; int y = __sync_add_and_fetch (&x, 1); return y;}"
                         LOG4CPLUS_HAVE___SYNC_ADD_AND_FETCH )
@@ -87,18 +97,215 @@ check_c_source_compiles("#include <stdio.h>\n #define MACRO(buf, ...) (sprintf (
 
 
 # clock_gettime() needs -lrt here
-check_function_exists(clock_gettime LOG4CPLUS_HAVE_CLOCK_GETTIME ) # TODO AC says this exists
+# TODO AC says this exists
+if (LIBRT)
+  check_library_exists("${LIBRT}" clock_gettime ""
+    LOG4CPLUS_HAVE_CLOCK_GETTIME )
+  check_library_exists("${LIBRT}" clock_nanosleep ""
+    LOG4CPLUS_HAVE_CLOCK_NANOSLEEP )
+  check_library_exists("${LIBRT}" nanosleep ""
+    LOG4CPLUS_HAVE_NANOSLEEP )
+else ()
+  check_function_exists(clock_gettime LOG4CPLUS_HAVE_CLOCK_GETTIME )
+  check_function_exists(clock_nanosleep LOG4CPLUS_HAVE_CLOCK_NANOSLEEP )
+  check_function_exists(nanosleep LOG4CPLUS_HAVE_NANOSLEEP )
+endif ()
+
+# iconv functions may require iconv library (on OS X for example)
+if(LOG4CPLUS_WITH_ICONV)
+  if(LIBICONV)
+    check_library_exists("${LIBICONV}" iconv_open  "" LOG4CPLUS_HAVE_ICONV_OPEN )
+    check_library_exists("${LIBICONV}" iconv_close "" LOG4CPLUS_HAVE_ICONV_CLOSE )
+    check_library_exists("${LIBICONV}" iconv       "" LOG4CPLUS_HAVE_ICONV )
+  else()
+    check_function_exists(iconv_open  LOG4CPLUS_HAVE_ICONV_OPEN )
+    check_function_exists(iconv_close LOG4CPLUS_HAVE_ICONV_CLOSE )
+    check_function_exists(iconv       LOG4CPLUS_HAVE_ICONV )
+  endif()
+endif()
 
 check_function_exists(gethostbyname_r LOG4CPLUS_HAVE_GETHOSTBYNAME_R) # TODO more complicated test in AC
 check_function_exists(getaddrinfo     LOG4CPLUS_HAVE_GETADDRINFO ) # TODO more complicated test in AC
 
 
 # check for declspec stuff
-check_c_source_compiles("int __attribute__ ((visibility(\"default\"))) main(void) { return 0; }" HAVE_ATTRIBUTE_VISIBILITY_DEFAULT)
-if(HAVE_ATTRIBUTE_VISIBILITY_DEFAULT)
-  set(LOG4CPLUS_DECLSPEC_EXPORT "__attribute__ ((visibility(\"default\")))" )
+if(NOT DEFINED LOG4CPLUS_DECLSPEC_EXPORT)
+  check_c_source_compiles(
+    "#if defined (__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ <= 1))
+     # error Please fail.
+     #endif
+
+     __attribute__((visibility(\"default\"))) int x = 0;
+     __attribute__((visibility(\"default\"))) int foo();
+     int foo() { return 0; }
+     __attribute__((visibility(\"default\"))) int bar() { return x; }
+     __attribute__((visibility(\"hidden\"))) int baz() { return 1; }
+
+     int main(void) { return 0; }"
+   HAVE_ATTRIBUTE_VISIBILITY
+  )
+  if(HAVE_ATTRIBUTE_VISIBILITY)
+    set(LOG4CPLUS_DECLSPEC_EXPORT "__attribute__ ((visibility(\"default\")))" )
+    set(LOG4CPLUS_DECLSPEC_IMPORT "__attribute__ ((visibility(\"default\")))" )
+    set(LOG4CPLUS_DECLSPEC_PRIVATE "__attribute__ ((visibility(\"hidden\")))" )
+  endif()
 endif()
-set(LOG4CPLUS_DECLSPEC_IMPORT "" )
+
+if(NOT DEFINED LOG4CPLUS_DECLSPEC_EXPORT)
+  check_c_source_compiles(
+    "#if defined (__clang__)
+     // Here the problem is that Clang only warns that it does not support
+     // __declspec(dllexport) but still compiles the executable.
+     # error Please fail.
+     #endif
+
+     __declspec(dllexport) int x = 0;
+     __declspec(dllexport) int foo ();
+     int foo () { return 0; }
+     __declspec(dllexport) int bar () { return x; }
+
+     int main(void) { return 0; }"
+    HAVE_DECLSPEC_DLLEXPORT
+  )
+  if(HAVE_DECLSPEC_DLLEXPORT)
+    set(LOG4CPLUS_DECLSPEC_EXPORT "__declspec(dllexport)" )
+    set(LOG4CPLUS_DECLSPEC_IMPORT "__declspec(dllimport)" )
+    set(LOG4CPLUS_DECLSPEC_PRIVATE "" )
+  endif()
+endif()
+
+if(NOT DEFINED LOG4CPLUS_DECLSPEC_EXPORT)
+  check_c_source_compiles(
+    "__global int x = 0;
+     __global int foo();
+     int foo() { return 0; }
+     __global int bar() { return x; }
+     __hidden int baz() { return 1; }
+
+     int main(void) { return 0; }"
+    HAVE_GLOBAL_AND_HIDDEN
+  )
+  if(HAVE_GLOBAL_AND_HIDDEN)
+    set(LOG4CPLUS_DECLSPEC_EXPORT "__global" )
+    set(LOG4CPLUS_DECLSPEC_IMPORT "__global" )
+    set(LOG4CPLUS_DECLSPEC_PRIVATE "__hidden" )
+  endif()
+endif()
+
+if(NOT DEFINED LOG4CPLUS_DECLSPEC_EXPORT)
+  set(LOG4CPLUS_DECLSPEC_EXPORT "")
+  set(LOG4CPLUS_DECLSPEC_IMPORT "")
+  set(LOG4CPLUS_DECLSPEC_PRIVATE "")
+endif()
+
+# check for thread-local stuff
+if(NOT DEFINED LOG4CPLUS_HAVE_TLS_SUPPORT)
+  # TODO: requires special compiler switch on GCC and Clang
+  # Currently it is assumed that they are provided in
+  # CMAKE_CXX_FLAGS
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_CXX_FLAGS}")
+  check_cxx_source_compiles(
+    "extern thread_local int x;
+     thread_local int * ptr = 0;
+     int foo() { ptr = &x; return x; }
+     thread_local int x = 1;
+
+     int main()
+     {
+         x = 2;
+         foo();
+         return 0;
+     }"
+    HAVE_CXX11_THREAD_LOCAL
+  )
+  set(CMAKE_REQUIRED_FLAGS "")
+  if(HAVE_CXX11_THREAD_LOCAL)
+    set(LOG4CPLUS_HAVE_TLS_SUPPORT 1)
+    set(LOG4CPLUS_THREAD_LOCAL_VAR "thread_local")
+  endif()
+endif()
+
+if(NOT DEFINED LOG4CPLUS_HAVE_TLS_SUPPORT)
+  check_cxx_source_compiles(
+    "#if defined (__NetBSD__)
+     #include <sys/param.h>
+     #if ! __NetBSD_Prereq__(5,1,0)
+     #error NetBSD __thread support does not work before 5.1.0. It is missing __tls_get_addr.
+     #endif
+     #endif
+
+     extern __thread int x;
+     __thread int * ptr = 0;
+     int foo() { ptr = &x; return x; }
+     __thread int x = 1;
+
+     int main()
+     {
+         x = 2;
+         foo();
+         return 0;
+     }"
+    HAVE_GCC_THREAD_EXTENSION
+  )
+  if(HAVE_GCC_THREAD_EXTENSION)
+    set(LOG4CPLUS_HAVE_TLS_SUPPORT 1)
+    set(LOG4CPLUS_THREAD_LOCAL_VAR "__thread")
+  endif()
+endif()
+
+if(NOT DEFINED LOG4CPLUS_HAVE_TLS_SUPPORT)
+  check_cxx_source_compiles(
+    "#if defined (__GNUC__)
+     #error Please fail.
+     #endif
+
+     extern __declspec(thread) int x;
+     __declspec(thread) int * ptr = 0;
+     int foo() { ptr = &x; return x; }
+     __declspec(thread) int x = 1;
+
+     int main()
+     {
+         x = 2;
+         foo();
+         return 0;
+     }"
+    HAVE_DECLSPEC_THREAD
+  )
+  if(HAVE_DECLSPEC_THREAD)
+    set(LOG4CPLUS_HAVE_TLS_SUPPORT 1)
+    set(LOG4CPLUS_THREAD_LOCAL_VAR "__declspec(thread)")
+  endif()
+endif()
+
+# check for c++11 atomic stuff
+# TODO: requires special compiler switch on GCC and Clang
+# Currently it is assumed that they are provided in
+# CMAKE_CXX_FLAGS
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_CXX_FLAGS}")
+check_cxx_source_compiles(
+  "#include <atomic>
+
+   template<typename T>
+   void test_atomic()
+   {
+       std::atomic<T> x(0);
+       std::atomic_fetch_add_explicit(&x, static_cast<T>(1), std::memory_order_acquire);
+       std::atomic_fetch_sub_explicit(&x, static_cast<T>(1), std::memory_order_release);
+   }
+
+   int main()
+   {
+       test_atomic<int>();
+       test_atomic<unsigned int>();
+       test_atomic<long>();
+       test_atomic<unsigned long>();
+       std::atomic_thread_fence(std::memory_order_acquire);
+       return 0;
+   }"
+  LOG4CPLUS_HAVE_CXX11_ATOMICS
+)
+set(CMAKE_REQUIRED_FLAGS "")
 
 set(CMAKE_EXTRA_INCLUDE_FILES sys/socket.h)
 check_type_size(socklen_t _SOCKLEN_SIZE)
@@ -107,14 +314,6 @@ if (_SOCKLEN_SIZE)
 else()
   set(socklen_t TRUE)
 endif()
-
-
-find_library(LIBADVAPI32 advapi32)
-find_library(LIBKERNEL32 kernel32)
-find_library(LIBNSL nsl)
-find_library(LIBRT rt)
-find_library(LIBSOCKET socket)
-find_library(LIBWS2_32 ws2_32)
 
 macro(PATH_TO_HAVE _pathVar )
   if (${_pathVar})
@@ -129,6 +328,8 @@ path_to_have(LIBADVAPI32)
 path_to_have(LIBKERNEL32)
 path_to_have(LIBNSL)
 path_to_have(LIBRT)
+path_to_have(LIBPOSIX4)
+path_to_have(LIBCPOSIX)
 path_to_have(LIBSOCKET)
 path_to_have(LIBWS2_32)
 

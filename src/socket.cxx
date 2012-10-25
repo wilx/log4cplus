@@ -129,14 +129,14 @@ Socket::Socket()
 { }
 
 
-Socket::Socket(const tstring& address, unsigned short port)
+Socket::Socket(const tstring& address, unsigned short port, bool udp /*= false*/)
     : AbstractSocket()
 {
-    sock = connectSocket(address, port, state);
+    sock = connectSocket(address, port, udp, state);
     if (sock == INVALID_SOCKET_VALUE)
         goto error;
 
-    if (setTCPNoDelay (sock, true) != 0)
+    if (! udp && setTCPNoDelay (sock, true) != 0)
         goto error;
 
     return;
@@ -186,6 +186,18 @@ Socket::write(const SocketBuffer& buffer)
 
     return (retval > 0);
 }
+
+
+bool
+Socket::write(const std::string & buffer)
+{
+    long retval = helpers::write (sock, buffer);
+    if (retval <= 0)
+        close();
+
+    return retval > 0;
+}
+
 
 
 

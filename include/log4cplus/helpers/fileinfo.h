@@ -27,6 +27,11 @@
 #define LOG4CPLUS_HELPERS_FILEINFO_H
 
 #include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #include <log4cplus/helpers/timehelper.h>
 #ifdef LOG4CPLUS_HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -35,6 +40,8 @@
 
 namespace log4cplus { namespace helpers {
 
+//! FileInfo structure is OS independent abstraction of the
+//! <code>stat()</code> function.
 struct LOG4CPLUS_EXPORT FileInfo
 {
     helpers::Time mtime;
@@ -43,6 +50,7 @@ struct LOG4CPLUS_EXPORT FileInfo
 };
 
 
+//! OS independent abstraction of <code>stat()</code> function.
 LOG4CPLUS_EXPORT int getFileInfo (FileInfo * fi, tstring const & name);
 
 

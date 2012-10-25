@@ -25,12 +25,17 @@
 #ifndef LOG4CPLUS_THREAD_SYNCPRIMS_IMPL_H
 #define LOG4CPLUS_THREAD_SYNCPRIMS_IMPL_H
 
+#include <log4cplus/config.hxx>
+
+#if defined (LOG4CPLUS_HAVE_PRAGMA_ONCE)
+#pragma once
+#endif
+
 #if ! defined (INSIDE_LOG4CPLUS)
 #  error "This header must not be be used outside log4cplus' implementation files."
 #endif
 
 #include <stdexcept>
-#include <log4cplus/config.hxx>
 #include <log4cplus/thread/syncprims.h>
 #if defined (_WIN32)
 #  include <log4cplus/config/windowsh-inc.h>
@@ -39,6 +44,19 @@
 #  include <errno.h>
 #  include <pthread.h>
 #  include <semaphore.h>
+#  if defined (LOG4CPLUS_USE_NAMED_POSIX_SEMAPHORE)
+#    include <sstream>
+#    include <string>
+#    if defined (LOG4CPLUS_HAVE_SYS_TYPES_H)
+#      include <sys/types.h>
+#    endif
+#    if defined (LOG4CPLUS_HAVE_UNISTD_H)
+#      include <unistd.h>
+#    endif
+#  endif
+#  if defined (LOG4CPLUS_HAVE_FCNTL_H)
+#    include <fcntl.h>
+#  endif
 #  include <log4cplus/helpers/timehelper.h>
 
 #endif
@@ -48,7 +66,7 @@ namespace log4cplus { namespace thread { namespace impl {
 
 
 LOG4CPLUS_EXPORT void syncprims_throw_exception (char const * const msg,
-    char const * const file, int line);
+    char const * const file, int line) LOG4CPLUS_ATTRIBUTE_NORETURN;
 
 
 #define LOG4CPLUS_THROW_RTE(msg) \
@@ -96,7 +114,11 @@ public:
 
 private:
 #if defined (LOG4CPLUS_USE_PTHREADS)
+#  if defined (LOG4CPLUS_USE_NAMED_POSIX_SEMAPHORE)
+    sem_t * sem;
+#  else
     mutable sem_t sem;
+#  endif
 #elif defined (LOG4CPLUS_USE_WIN32_THREADS)
     HANDLE sem;
 #endif
