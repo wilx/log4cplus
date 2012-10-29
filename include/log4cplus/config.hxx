@@ -152,6 +152,14 @@ namespace log4cplus
 //! automatically by other means.
 LOG4CPLUS_EXPORT void threadCleanup ();
 
+#define LOG4CPLUS_WITH_ATFORK_HANDLERS
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+//! Nothing to see here, move along. CoreAccess is just an internal
+//! detail and this is just a convenient place declare it.
+struct CoreAccess;
+
+#endif
+
 } // namespace log4cplus
 
 #endif

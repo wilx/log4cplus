@@ -30,6 +30,8 @@
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/spi/factory.h>
 #include <log4cplus/hierarchy.h>
+#include <log4cplus/hierarchylocker.h>
+#include <log4cplus/consoleappender.h>
 #include <cstdio>
 #include <iostream>
 #include <stdexcept>
@@ -50,7 +52,7 @@ LOG4CPLUS_EXPORT tostream & tcerr = std::cerr;
 #endif // UNICODE
 
 
-namespace 
+namespace
 {
 
 
@@ -72,7 +74,7 @@ struct DefaultContext
 
 
 enum DCState
-{ 
+{
     DC_UNINITIALIZED,
     DC_INITIALIZED,
     DC_DESTROYED
@@ -82,7 +84,7 @@ enum DCState
 static DCState default_context_state;
 static DefaultContext * default_context;
 
-   
+
 struct destroy_default_context
 {
     ~destroy_default_context ()
@@ -109,7 +111,7 @@ alloc_dc ()
         throw std::logic_error ("alloc_dc() called in DC_INITIALIZED state.");
 
     default_context = new DefaultContext;
-    
+
     if (default_context_state == DC_DESTROYED)
         default_context->loglog.error (
             LOG4CPLUS_TEXT ("Re-initializing default context after it has")
@@ -162,7 +164,7 @@ getTTCCLayoutTimeBase ()
 
 
 LogLevelManager &
-getLogLevelManager () 
+getLogLevelManager ()
 {
     return get_dc ()->log_level_manager;
 }
@@ -175,7 +177,7 @@ getDefaultHierarchy ()
 }
 
 
-NDC & 
+NDC &
 getNDC ()
 {
     return get_dc ()->ndc;
@@ -357,6 +359,97 @@ threadSetup ()
 }
 
 
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+
+struct CoreAccess
+{
+    static
+    log4cplus::thread::Mutex const &
+    getLogLogMutex ()
+    {
+        return helpers::getLogLog ().mutex;
+    }
+
+    template <typename Factory>
+    static
+    log4cplus::thread::Mutex const &
+    getFactoryMutex (spi::FactoryRegistry<Factory> & reg)
+    {
+        return reg.mutex;
+    }
+};
+
+//! This mutex protects access to hierachy_locker below.
+static log4cplus::thread::Mutex fork_mutex;
+
+static std::auto_ptr<HierarchyLocker> hierarchy_locker;
+
+
+static
+void
+prepare_fork ()
+{
+    std::auto_ptr<HierarchyLocker> hl (
+        new HierarchyLocker (getDefaultHierarchy ()));
+
+    ConsoleAppender::getOutputMutex ().lock ();
+    CoreAccess::getLogLogMutex ().lock ();
+    CoreAccess::getFactoryMutex(spi::getLocaleFactoryRegistry ()).lock ();
+    CoreAccess::getFactoryMutex(spi::getFilterFactoryRegistry ()).lock ();
+    CoreAccess::getFactoryMutex(spi::getLayoutFactoryRegistry ()).lock ();
+    CoreAccess::getFactoryMutex(spi::getAppenderFactoryRegistry ()).lock ();
+
+    fork_mutex.lock ();
+    hierarchy_locker = hl;
+}
+
+
+static
+void
+after_fork_parent ()
+{
+    std::auto_ptr<HierarchyLocker> hl (hierarchy_locker);
+
+    log4cplus::thread::MutexGuard fork_guard;
+    fork_guard.attach (fork_mutex);
+
+    log4cplus::thread::MutexGuard console_guard;
+    console_guard.attach (ConsoleAppender::getOutputMutex ());
+
+    log4cplus::thread::MutexGuard loglog_guard;
+    loglog_guard.attach (CoreAccess::getLogLogMutex ());
+
+    log4cplus::thread::MutexGuard locale_guard;
+    locale_guard.attach (
+        CoreAccess::getFactoryMutex(spi::getLocaleFactoryRegistry ()));
+
+    log4cplus::thread::MutexGuard filter_guard;
+    filter_guard.attach (
+        CoreAccess::getFactoryMutex(spi::getFilterFactoryRegistry ()));
+
+    log4cplus::thread::MutexGuard layout_guard;
+    layout_guard.attach (
+        CoreAccess::getFactoryMutex(spi::getLayoutFactoryRegistry ()));
+
+    log4cplus::thread::MutexGuard appender_guard;
+    appender_guard.attach (
+        CoreAccess::getFactoryMutex(spi::getAppenderFactoryRegistry ()));
+}
+
+
+static
+void
+after_fork_child ()
+{
+    get_dc ()->TTCCLayout_time_base = helpers::Time::gettimeofday();
+    
+    // Rest of the procedure is the same.
+    after_fork_parent ();
+}
+
+#endif
+
+
 void initializeLog4cplus()
 {
     static bool initialized = false;
@@ -370,6 +463,11 @@ void initializeLog4cplus()
     dc->TTCCLayout_time_base = helpers::Time::gettimeofday ();
     Logger::getRoot();
     initializeFactoryRegistry();
+
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+    int ret
+        = pthread_atfork (prepare_fork, after_fork_parent, after_fork_child);
+#endif
 
     initialized = true;
 }
@@ -397,8 +495,8 @@ DllMain (LOG4CPLUS_DLLMAIN_HINSTANCE /*hinstDLL*/, DWORD fdwReason,
     LPVOID /*lpReserved*/)
 {
     // Perform actions based on the reason for calling.
-    switch( fdwReason ) 
-    { 
+    switch( fdwReason )
+    {
     case DLL_PROCESS_ATTACH:
     {
         log4cplus::initializeLog4cplus();
@@ -442,7 +540,7 @@ DllMain (LOG4CPLUS_DLLMAIN_HINSTANCE /*hinstDLL*/, DWORD fdwReason,
 
     return TRUE;  // Successful DLL_PROCESS_ATTACH.
 }
- 
+
 #else
 
 namespace {

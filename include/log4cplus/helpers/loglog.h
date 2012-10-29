@@ -49,7 +49,7 @@ namespace log4cplus {
          * All log4cplus internal debug calls go to <code>cout</code>
          * where as internal error messages are sent to
          * <code>cerr</code>. All internal messages are prepended with
-         * the string "log4clus: ".
+         * the string "log4cplus: ".
          */
         class LOG4CPLUS_EXPORT LogLog
         {
@@ -129,10 +129,14 @@ namespace log4cplus {
             // Data
             mutable TriState debugEnabled;
             mutable TriState quietMode;
-            thread::Mutex mutex;
+            log4cplus::thread::Mutex mutex;
 
             LOG4CPLUS_PRIVATE LogLog(const LogLog&);
             LOG4CPLUS_PRIVATE LogLog & operator = (LogLog const &);
+
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+            friend struct log4cplus::CoreAccess;
+#endif
         };
 
         LOG4CPLUS_EXPORT LogLog & getLogLog ();

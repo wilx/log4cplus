@@ -177,6 +177,10 @@ namespace log4cplus {
             virtual void deleteObject(void *object) const {
                 delete static_cast<T*>(object);
             }
+
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+            friend struct log4cplus::CoreAccess;
+#endif
         };
 
 
