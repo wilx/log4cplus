@@ -38,153 +38,154 @@
 #include <log4cplus/thread/syncprims.h>
 #include <algorithm>
 #include <cassert>
-#if ! defined (LOG4CPLUS_SINGLE_THREADED) \
+#if ! defined (LOG4CPLUS_SINGLE_THREADED)       \
     && defined (LOG4CPLUS_HAVE_CXX11_ATOMICS)
 #include <atomic>
 #endif
+#include <memory>
 
 
 namespace log4cplus {
-    namespace helpers {
+namespace helpers {
 
-        /******************************************************************************
-         *                       Class SharedObject (from pp. 204-205)                *
-         ******************************************************************************/
+/******************************************************************************
+ *                       Class SharedObject (from pp. 204-205)                *
+ ******************************************************************************/
 
-        class LOG4CPLUS_EXPORT SharedObject
-        {
-        public:
-            void addReference() const;
-            void removeReference() const;
+class LOG4CPLUS_EXPORT SharedObject
+{
+public:
+    void addReference() const;
+    void removeReference() const;
 
-        protected:
-          // Ctor
-            SharedObject()
-                : access_mutex()
-                , count(0)
-            { }
+protected:
+    // Ctor
+    SharedObject()
+        : access_mutex()
+        , count(0)
+    { }
 
-            SharedObject(const SharedObject&)
-                : access_mutex()
-                , count(0)
-            { }
+    SharedObject(const SharedObject&)
+        : access_mutex()
+        , count(0)
+    { }
 
-          // Dtor
-            virtual ~SharedObject();
+    // Dtor
+    virtual ~SharedObject();
 
-          // Operators
-            SharedObject& operator=(const SharedObject&) { return *this; }
+    // Operators
+    SharedObject& operator=(const SharedObject&) { return *this; }
 
-        public:
-            thread::Mutex access_mutex;
+public:
+    thread::Mutex access_mutex;
 
-        private:
+private:
 #if defined (LOG4CPLUS_SINGLE_THREADED)
-            typedef unsigned count_type;
+    typedef unsigned count_type;
 #elif defined (LOG4CPLUS_HAVE_CXX11_ATOMICS)
-            typedef std::atomic<unsigned> count_type;
+    typedef std::atomic<unsigned> count_type;
 #elif defined (_WIN32) || defined (__CYGWIN__)
-            typedef long count_type;
+    typedef long count_type;
 #else
-            typedef unsigned count_type;
+    typedef unsigned count_type;
 #endif
-            mutable count_type count;
-        };
+    mutable count_type count;
+};
 
 
-        /******************************************************************************
-         *           Template Class SharedObjectPtr (from pp. 203, 206)               *
-         ******************************************************************************/
-        template<class T>
-        class SharedObjectPtr
-        {
-        public:
-            // Ctor
-            explicit
-            SharedObjectPtr(T* realPtr = 0)
-                : pointee(realPtr)
-            {
-                addref ();
-            }
+/******************************************************************************
+ *           Template Class SharedObjectPtr (from pp. 203, 206)               *
+ ******************************************************************************/
+template<class T>
+class SharedObjectPtr
+{
+public:
+    // Ctor
+    explicit
+    SharedObjectPtr(T* realPtr = 0)
+        : pointee(realPtr)
+    {
+        addref ();
+    }
 
-            SharedObjectPtr(const SharedObjectPtr& rhs)
-                : pointee(rhs.pointee)
-            {
-                addref ();
-            }
+    SharedObjectPtr(const SharedObjectPtr& rhs)
+    : pointee(rhs.pointee)
+    {
+        addref ();
+    }
 
 #if defined (LOG4CPLUS_HAVE_RVALUE_REFS)
-            SharedObjectPtr(SharedObjectPtr && rhs)
-                : pointee (std::move (rhs.pointee))
-            {
-                rhs.pointee = 0;
-            }
+    SharedObjectPtr(SharedObjectPtr && rhs)
+    : pointee (std::move (rhs.pointee))
+    {
+        rhs.pointee = 0;
+    }
 
-            SharedObjectPtr & operator = (SharedObjectPtr && rhs)
-            {
-                rhs.swap (*this);
-                return *this;
-            }
+    SharedObjectPtr & operator = (SharedObjectPtr && rhs)
+    {
+        rhs.swap (*this);
+        return *this;
+    }
 #endif
 
-            // Dtor
-            ~SharedObjectPtr()
-            {
-                if (pointee)
-                    pointee->removeReference();
-            }
+    // Dtor
+    ~SharedObjectPtr()
+    {
+        if (pointee)
+            pointee->removeReference();
+    }
 
-            // Operators
-            bool operator==(const SharedObjectPtr& rhs) const { return (pointee == rhs.pointee); }
-            bool operator!=(const SharedObjectPtr& rhs) const { return (pointee != rhs.pointee); }
-            bool operator==(const T* rhs) const { return (pointee == rhs); }
-            bool operator!=(const T* rhs) const { return (pointee != rhs); }
-            T* operator->() const {assert (pointee); return pointee; }
-            T& operator*() const {assert (pointee); return *pointee; }
+    // Operators
+    bool operator==(const SharedObjectPtr& rhs) const { return (pointee == rhs.pointee); }
+    bool operator!=(const SharedObjectPtr& rhs) const { return (pointee != rhs.pointee); }
+    bool operator==(const T* rhs) const { return (pointee == rhs); }
+    bool operator!=(const T* rhs) const { return (pointee != rhs); }
+    T* operator->() const {assert (pointee); return pointee; }
+    T& operator*() const {assert (pointee); return *pointee; }
 
-            SharedObjectPtr& operator=(const SharedObjectPtr& rhs)
-            {
-                return this->operator = (rhs.pointee);
-            }
+    SharedObjectPtr& operator=(const SharedObjectPtr& rhs)
+    {
+        return this->operator = (rhs.pointee);
+    }
 
-            SharedObjectPtr& operator=(T* rhs)
-            {
-                SharedObjectPtr<T> (rhs).swap (*this);
-                return *this;
-            }
+    SharedObjectPtr& operator=(T* rhs)
+    {
+        SharedObjectPtr<T> (rhs).swap (*this);
+        return *this;
+    }
 
-          // Methods
-            T* get() const { return pointee; }
+    // Methods
+    T* get() const { return pointee; }
 
-            void swap (SharedObjectPtr & other) throw ()
-            {
-                std::swap (pointee, other.pointee);
-            }
+    void swap (SharedObjectPtr & other) throw ()
+    {
+        std::swap (pointee, other.pointee);
+    }
 
-            typedef T * (SharedObjectPtr:: * unspec_bool_type) () const;
-            operator unspec_bool_type () const
-            {
-                return pointee ? &SharedObjectPtr::get : 0;
-            }
+    typedef T * (SharedObjectPtr:: * unspec_bool_type) () const;
+    operator unspec_bool_type () const
+    {
+        return pointee ? &SharedObjectPtr::get : 0;
+    }
 
-            bool operator ! () const
-            {
-                return ! pointee;
-            }
+    bool operator ! () const
+    {
+        return ! pointee;
+    }
 
-        private:
-          // Methods
-            void addref() const
-            {
-                if (pointee)
-                    pointee->addReference();
-            }
+private:
+    // Methods
+    void addref() const
+    {
+        if (pointee)
+            pointee->addReference();
+    }
 
-          // Data
-            T* pointee;
-        };
+    // Data
+    T* pointee;
+};
 
-    } // end namespace helpers
+} // end namespace helpers
 } // end namespace log4cplus
 
 
