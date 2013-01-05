@@ -76,6 +76,12 @@ namespace log4cplus {
         };
 
 
+        enum SocketProto
+        {
+            SocketProtoTCP
+            , SocketProtoUDP
+            , SocketProtoSCTP
+        };
 
         /**
          * This class implements client sockets (also called just "sockets").
@@ -86,13 +92,20 @@ namespace log4cplus {
           // ctor and dtor
             Socket();
             Socket(SOCKET_TYPE sock, SocketState state, int err);
-            Socket(const tstring& address, unsigned short port, bool udp = false);
+            Socket(const tstring& address, unsigned short port,
+                bool udp = false);
+            Socket(const tstring& address, unsigned short port,
+                SocketProto protocol);
             virtual ~Socket();
 
           // methods
             virtual bool read(SocketBuffer& buffer);
             virtual bool write(const SocketBuffer& buffer);
             virtual bool write(const std::string & buffer);
+
+        private:
+            void init(const tstring& address, unsigned short port,
+                SocketProto protocol);
         };
 
 
@@ -113,11 +126,18 @@ namespace log4cplus {
         };
 
 
-        LOG4CPLUS_EXPORT SOCKET_TYPE openSocket(unsigned short port, SocketState& state);
-        LOG4CPLUS_EXPORT SOCKET_TYPE connectSocket(const log4cplus::tstring& hostn,
-                                                   unsigned short port, bool udp,
-                                                   SocketState& state);
-        LOG4CPLUS_EXPORT SOCKET_TYPE acceptSocket(SOCKET_TYPE sock, SocketState& state);
+        LOG4CPLUS_EXPORT SOCKET_TYPE openSocket(unsigned short port,
+            SocketState& state);
+        LOG4CPLUS_EXPORT SOCKET_TYPE openSocket(unsigned short port,
+            SocketProto protocol, SocketState& state);
+        LOG4CPLUS_EXPORT SOCKET_TYPE connectSocket(
+            const log4cplus::tstring& hostn, unsigned short port, bool udp,
+            SocketState& state);
+        LOG4CPLUS_EXPORT SOCKET_TYPE connectSocket(
+            const log4cplus::tstring& hostn, unsigned short port,
+            SocketProto protocol, SocketState& state);
+        LOG4CPLUS_EXPORT SOCKET_TYPE acceptSocket(SOCKET_TYPE sock,
+            SocketState& state);
         LOG4CPLUS_EXPORT int closeSocket(SOCKET_TYPE sock);
 
         LOG4CPLUS_EXPORT long read(SOCKET_TYPE sock, SocketBuffer& buffer);

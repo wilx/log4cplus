@@ -4293,7 +4293,7 @@ esac
 #  ? :+1 : ?   == just some internal changes, nothing breaks but might work
 #                 better
 # CURRENT : REVISION : AGE
-LT_VERSION=0:0:0
+LT_VERSION=1:0:1
 LT_RELEASE=1.2
 
 
@@ -8553,6 +8553,14 @@ fi
    ac_fn_cxx_check_header_mongrel "$LINENO" "netinet/tcp.h" "ac_cv_header_netinet_tcp_h" "$ac_includes_default"
 if test "x$ac_cv_header_netinet_tcp_h" = xyes; then :
   $as_echo "#define LOG4CPLUS_HAVE_NETINET_TCP_H 1" >>confdefs.h
+
+fi
+
+
+
+   ac_fn_cxx_check_header_mongrel "$LINENO" "netinet/sctp.h" "ac_cv_header_netinet_sctp_h" "$ac_includes_default"
+if test "x$ac_cv_header_netinet_sctp_h" = xyes; then :
+  $as_echo "#define LOG4CPLUS_HAVE_NETINET_SCTP_H 1" >>confdefs.h
 
 fi
 

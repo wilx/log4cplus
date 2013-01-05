@@ -48,6 +48,10 @@
 #include <netinet/tcp.h>
 #endif
 
+#if defined (LOG4CPLUS_HAVE_NETINET_SCTP_H)
+#include <netinet/sctp.h>
+#endif
+
 #if defined (LOG4CPLUS_HAVE_ARPA_INET_H)
 #include <arpa/inet.h>
 #endif
@@ -140,6 +144,35 @@ get_host_by_name (char const * hostname, std::string * name,
 }
 
 
+bool
+get_socket_type_and_protocol (SocketProto protocol, int & socket_type,
+    int & socket_protocol)
+{
+    socket_type = SOCK_STREAM;
+    socket_protocol = 0;
+
+    switch (protocol)
+    {
+    case SocketProtoTCP:
+        break;
+
+    case SocketProtoUDP:
+        socket_type = SOCK_DGRAM;
+        break;
+
+#if defined (IPPROTO_SCTP)
+    case SocketProtoSCTP:
+        socket_protocol = IPPROTO_SCTP;
+        break;
+#endif
+        
+    default:
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 
@@ -148,12 +181,26 @@ get_host_by_name (char const * hostname, std::string * name,
 /////////////////////////////////////////////////////////////////////////////
 
 SOCKET_TYPE
-openSocket(unsigned short port, SocketState& state)
+openSocket (unsigned short port, SocketState& state)
 {
-    int sock = ::socket(AF_INET, SOCK_STREAM, 0);
-    if(sock < 0) {
+    return openSocket (port, SocketProtoTCP, state);
+}
+
+
+SOCKET_TYPE
+openSocket (unsigned short port, SocketProto protocol, SocketState& state)
+{
+    int socket_type;
+    int socket_protocol;
+    if (! get_socket_type_and_protocol (protocol, socket_type, socket_protocol))
+    {
+        errno = EINVAL;
         return INVALID_SOCKET_VALUE;
     }
+
+    int sock = ::socket(AF_INET, socket_type, socket_protocol);
+    if (sock < 0)
+        return INVALID_SOCKET_VALUE;
 
     struct sockaddr_in server = sockaddr_in ();
     server.sin_family = AF_INET;
@@ -187,7 +234,17 @@ error:
 
 
 SOCKET_TYPE
-connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& state)
+connectSocket(const tstring& hostn, unsigned short port, bool udp,
+    SocketState& state)
+{
+    return connectSocket (hostn, port, udp ? SocketProtoUDP : SocketProtoTCP,
+        state);
+}
+
+
+SOCKET_TYPE
+connectSocket(const tstring& hostn, unsigned short port, SocketProto protocol,
+    SocketState& state)
 {
     struct sockaddr_in server;
     int sock;
@@ -202,10 +259,17 @@ connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& 
     server.sin_port = htons(port);
     server.sin_family = AF_INET;
 
-    sock = ::socket(AF_INET, (udp ? SOCK_DGRAM : SOCK_STREAM), 0);
-    if(sock < 0) {
+    int socket_type;
+    int socket_protocol;
+    if (! get_socket_type_and_protocol (protocol, socket_type, socket_protocol))
+    {
+        errno = EINVAL;
         return INVALID_SOCKET_VALUE;
     }
+
+    sock = ::socket(AF_INET, socket_type, socket_protocol);
+    if (sock < 0)
+        return INVALID_SOCKET_VALUE;
 
     socklen_t namelen = sizeof (server);
     while (

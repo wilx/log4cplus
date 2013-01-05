@@ -129,21 +129,20 @@ Socket::Socket()
 { }
 
 
-Socket::Socket(const tstring& address, unsigned short port, bool udp /*= false*/)
+Socket::Socket(const tstring& address, unsigned short port, bool udp)
     : AbstractSocket()
 {
-    sock = connectSocket(address, port, udp, state);
-    if (sock == INVALID_SOCKET_VALUE)
-        goto error;
-
-    if (! udp && setTCPNoDelay (sock, true) != 0)
-        goto error;
-
-    return;
-
-error:
-    err = get_last_socket_error ();
+    init (address, port, udp ? SocketProtoUDP : SocketProtoTCP);
 }
+
+
+Socket::Socket(const tstring& address, unsigned short port,
+    SocketProto protocol)
+    : AbstractSocket()
+{
+    init (address, port, protocol);
+}
+
 
 
 Socket::Socket(SOCKET_TYPE sock_, SocketState state_, int err_)
@@ -159,6 +158,23 @@ Socket::~Socket()
 //////////////////////////////////////////////////////////////////////////////
 // Socket methods
 //////////////////////////////////////////////////////////////////////////////
+
+void
+Socket::init(const tstring& address, unsigned short port, SocketProto protocol)
+{
+    sock = connectSocket (address, port, protocol, state);
+    if (sock == INVALID_SOCKET_VALUE)
+        goto error;
+
+    if (protocol == SocketProtoTCP && setTCPNoDelay (sock, true) != 0)
+        goto error;
+
+    return;
+
+error:
+    err = get_last_socket_error ();
+}
+
 
 bool
 Socket::read(SocketBuffer& buffer)
