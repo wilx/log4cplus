@@ -385,22 +385,22 @@ SysLogAppender::appendRemote(const spi::InternalLoggingEvent& event)
     internal::appender_sratch_pad & appender_sp = internal::get_appender_sp ();
     detail::clear_tostringstream (appender_sp.oss);
 
+    tchar const SP = LOG4CPLUS_TEXT (' ');
     appender_sp.oss
         // PRI
         << LOG4CPLUS_TEXT ('<') << (level | facility) << LOG4CPLUS_TEXT ('>')
         // VERSION
         << 1
         // TIMESTAMP
-        << LOG4CPLUS_TEXT (' ')
-        << event.getTimestamp ().getFormattedTime (remoteTimeFormat, true)
+        << SP << event.getTimestamp ().getFormattedTime (remoteTimeFormat, true)
         // HOSTNAME
-        << LOG4CPLUS_TEXT (' ') << hostname
+        << SP << hostname
         // APP-NAME
-        << LOG4CPLUS_TEXT (' ') << ident
+        << SP << ident
         // PROCID
-        << LOG4CPLUS_TEXT (' ') << internal::get_process_id ()
+        << SP << internal::get_process_id ()
         // MSGID
-        << LOG4CPLUS_TEXT (' ') << event.getLoggerName ()
+        << SP << event.getLoggerName ()
         // STRUCTURED-DATA
         // no structured data, it could be whole MDC
         << LOG4CPLUS_TEXT (" - ");
