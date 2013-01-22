@@ -328,7 +328,6 @@ ManualResetEvent::signal () const
     int ret = pthread_cond_broadcast (&cv);
     if (ret != 0)
         LOG4CPLUS_THROW_RTE ("ManualResetEVent::signal");
-
 }
 
 

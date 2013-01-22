@@ -29,6 +29,7 @@
 //! syncprims.h.
 
 #include <stdexcept>
+#include <mutex>
 
 
 namespace log4cplus { namespace thread { namespace impl {
