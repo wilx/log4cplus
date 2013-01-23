@@ -200,13 +200,14 @@ ManualResetEvent::timed_wait (unsigned long msec) const
         unsigned prev_count = sigcount;
         do
         {
-            int ret = cv.wait_for (guard, std::chrono::milliseconds (msec));
+            int ret = static_cast<int>(
+                cv.wait_for (guard, std::chrono::milliseconds (msec)));
             switch (ret)
             {
-            case std::cv_status::no_timeout:
+            case static_cast<int>(std::cv_status::no_timeout):
                 break;
 
-            case std::cv_status::timeout:
+            case static_cast<int>(std::cv_status::timeout):
                 return false;
 
             default:

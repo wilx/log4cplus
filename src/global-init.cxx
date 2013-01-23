@@ -457,7 +457,7 @@ DllMain (LOG4CPLUS_DLLMAIN_HINSTANCE hinstDLL, DWORD fdwReason,
 #else
 
 #if defined (_MSC_VER) && _MSC_VER >= 1400 \
-    && ! defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+    && ! defined (LOG4CPLUS_WITH_CXX11_THREADS)
 
 extern "C"
 {

@@ -37,7 +37,7 @@
 
 #include <stdexcept>
 #include <log4cplus/thread/syncprims.h>
-#if defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+#if defined (LOG4CPLUS_WITH_CXX11_THREADS)
 #  include <mutex>
 #  include <thread>
 #  include <condition_variable>
@@ -93,7 +93,7 @@ public:
     void unlock () const;
 
 private:
-#if defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+#if defined (LOG4CPLUS_WITH_CXX11_THREADS)
     mutable std::recursive_mutex mtx;
 #elif defined (LOG4CPLUS_USE_PTHREADS)
     mutable pthread_mutex_t mtx;
@@ -121,7 +121,7 @@ public:
     void unlock () const;
 
 private:
-#if defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+#if defined (LOG4CPLUS_WITH_CXX11_THREADS)
     mutable std::mutex mtx;
     mutable std::condition_variable cv;
     mutable unsigned max;
@@ -157,7 +157,7 @@ public:
 
 private:
 #if defined (LOG4CPLUS_USE_PTHREADS) \
-    || defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+    || defined (LOG4CPLUS_WITH_CXX11_THREADS)
     Semaphore sem;
 #elif defined (LOG4CPLUS_USE_WIN32_THREADS)
     HANDLE mtx;
@@ -184,7 +184,7 @@ public:
     void reset () const;
 
 private:
-#if defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+#if defined (LOG4CPLUS_WITH_CXX11_THREADS)
     mutable std::mutex mtx;
     mutable std::condition_variable cv;
     mutable unsigned sigcount;
@@ -217,7 +217,7 @@ public:
 
 private:
 #if defined (LOG4CPLUS_POOR_MANS_SHAREDMUTEX) \
-    || defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+    || defined (LOG4CPLUS_WITH_CXX11_THREADS)
     Mutex m1;
     Mutex m2;
     Mutex m3;
@@ -247,7 +247,7 @@ private:
 // Include the appropriate implementations of the classes declared
 // above.
 
-#if defined (LOG4CPLUS_HAVE_CXX11_THREADS)
+#if defined (LOG4CPLUS_WITH_CXX11_THREADS)
 #  include <log4cplus/thread/impl/syncprims-cxx11.h>
 #elif defined (LOG4CPLUS_USE_PTHREADS)
 #  include <log4cplus/thread/impl/syncprims-pthreads.h>
