@@ -46,7 +46,7 @@ Mutex::Mutex (log4cplus::thread::Mutex::Type)
 
 
 inline
-Mutex::~Mutex ()
+Mutex::~Mutex () LOG4CPLUS_NOEXCEPT
 { }
 
 
@@ -78,7 +78,7 @@ Semaphore::Semaphore (unsigned max_, unsigned initial)
 
 
 inline
-Semaphore::~Semaphore ()
+Semaphore::~Semaphore () LOG4CPLUS_NOEXCEPT
 { }
 
 
@@ -124,7 +124,7 @@ FairMutex::FairMutex ()
 
 
 inline
-FairMutex::~FairMutex ()
+FairMutex::~FairMutex () LOG4CPLUS_NOEXCEPT
 { }
 
 
@@ -156,7 +156,7 @@ ManualResetEvent::ManualResetEvent (bool sig)
 
 
 inline
-ManualResetEvent::~ManualResetEvent ()
+ManualResetEvent::~ManualResetEvent () LOG4CPLUS_NOEXCEPT
 { }
 
 

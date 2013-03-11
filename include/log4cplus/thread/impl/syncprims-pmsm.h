@@ -52,7 +52,7 @@ SharedMutex::SharedMutex ()
 
 
 inline
-SharedMutex::~SharedMutex ()
+SharedMutex::~SharedMutex () LOG4CPLUS_NOEXCEPT
 { }
 
 

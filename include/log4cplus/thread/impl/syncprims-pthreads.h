@@ -46,7 +46,7 @@ struct PthreadMutexAttr
     }
 
 
-    ~PthreadMutexAttr ()
+    ~PthreadMutexAttr () LOG4CPLUS_NOEXCEPT
     {
         try
         {
@@ -100,7 +100,7 @@ Mutex::Mutex (log4cplus::thread::Mutex::Type t)
 
 
 inline
-Mutex::~Mutex ()
+Mutex::~Mutex () LOG4CPLUS_NOEXCEPT
 {
     try
     {
@@ -176,7 +176,7 @@ Semaphore::Semaphore (unsigned max, unsigned initial)
     {
         ret = sem_close (sem);
         if (LOG4CPLUS_UNLIKELY (ret != 0))
-            LOG4CPLUS_THROW_RTE ("Semaphore::~Semaphore");
+            LOG4CPLUS_THROW_RTE ("Semaphore::Semaphore");
 
         throw;
     }
@@ -201,7 +201,7 @@ Semaphore::Semaphore (unsigned max, unsigned initial)
         ret = sem_destroy (&sem);
 #endif
         if (LOG4CPLUS_UNLIKELY (ret != 0))
-            LOG4CPLUS_THROW_RTE ("Semaphore::~Semaphore");
+            LOG4CPLUS_THROW_RTE ("Semaphore::Semaphore");
 
         throw;
     }
@@ -209,7 +209,7 @@ Semaphore::Semaphore (unsigned max, unsigned initial)
 
 
 inline
-Semaphore::~Semaphore ()
+Semaphore::~Semaphore () LOG4CPLUS_NOEXCEPT
 {
     try
     {
@@ -267,7 +267,7 @@ FairMutex::FairMutex ()
 
 
 inline
-FairMutex::~FairMutex ()
+FairMutex::~FairMutex () LOG4CPLUS_NOEXCEPT
 { }
 
 
@@ -304,7 +304,7 @@ ManualResetEvent::ManualResetEvent (bool sig)
 
 
 inline
-ManualResetEvent::~ManualResetEvent ()
+ManualResetEvent::~ManualResetEvent () LOG4CPLUS_NOEXCEPT
 {
     try
     {
@@ -421,7 +421,7 @@ SharedMutex::SharedMutex ()
 
 
 inline
-SharedMutex::~SharedMutex ()
+SharedMutex::~SharedMutex () LOG4CPLUS_NOEXCEPT
 {
     try
     {

@@ -42,7 +42,7 @@
 #if defined(_MSC_VER)
 #define LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()  \
     __pragma (warning (push))                 \
-    __pragma (warning (disable:4127))           
+    __pragma (warning (disable:4127))
 
 #define LOG4CPLUS_RESTORE_DOWHILE_WARNING()   \
     __pragma (warning (pop))
@@ -200,6 +200,28 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
 
 #endif
 
+#if defined (LOG4CPLUS_HAVE_LAMBDAS)
+#  define LOG4CPLUS_MACRO_IF_BODY(logEvent, logLevel)                   \
+    [&] (char const * _func) {                                          \
+        LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (_log4cplus_buf);     \
+        _log4cplus_buf << logEvent;                                     \
+        log4cplus::detail::macro_forced_log (_l,                        \
+            log4cplus::logLevel, _log4cplus_buf.str(),                  \
+            __FILE__, __LINE__, _func);                                 \
+    } (LOG4CPLUS_MACRO_FUNCTION ())
+
+#else
+#  define LOG4CPLUS_MACRO_IF_BODY(logEvent, logLevel)                   \
+    do {                                                                \
+        LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (_log4cplus_buf);     \
+        _log4cplus_buf << logEvent;                                     \
+        log4cplus::detail::macro_forced_log (_l,                        \
+            log4cplus::logLevel, _log4cplus_buf.str(),                  \
+            __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());           \
+    } while (0)
+
+#endif
+
 
 #define LOG4CPLUS_MACRO_BODY(logger, logEvent, logLevel)                \
     LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()                                \
@@ -207,13 +229,8 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
         log4cplus::Logger const & _l                                    \
             = log4cplus::detail::macros_get_logger (logger);            \
         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
-                _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (_log4cplus_buf); \
-            _log4cplus_buf << logEvent;                                 \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _log4cplus_buf.str(),              \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
-        }                                                               \
+                _l.isEnabledFor (log4cplus::logLevel), logLevel))       \
+            LOG4CPLUS_MACRO_IF_BODY(logEvent, logLevel);                \
     } while (0)                                                         \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
 

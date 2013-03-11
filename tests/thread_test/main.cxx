@@ -34,10 +34,12 @@ public:
 
     void doSomething()
     {
-        LOG4CPLUS_TRACE_METHOD(logger, LOG4CPLUS_TEXT("SlowObject::doSomething()"));
+        LOG4CPLUS_TRACE_METHOD(logger,
+            LOG4CPLUS_TEXT("SlowObject::doSomething():"));
         {
             log4cplus::thread::MutexGuard guard (mutex);
-            LOG4CPLUS_INFO(logger, LOG4CPLUS_TEXT("Actually doing something..."));
+            LOG4CPLUS_INFO(logger,
+                LOG4CPLUS_TEXT("Actually doing something...") << foo ());
             sleep(0, 75 * MILLIS_TO_NANOS);
             LOG4CPLUS_INFO_FMT(logger,
                 LOG4CPLUS_TEXT (
@@ -45,6 +47,11 @@ public:
                 1, 2, 3, L"testing");
         }
         log4cplus::thread::yield();
+    }
+
+    int foo () const
+    {
+        return 1;
     }
 
     ~SlowObject ()

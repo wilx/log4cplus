@@ -80,7 +80,7 @@ Mutex::Mutex (log4cplus::thread::Mutex::Type)
 
 
 inline
-Mutex::~Mutex ()
+Mutex::~Mutex () LOG4CPLUS_NOEXCEPT
 {
     DeleteCriticalSection (&cs);
 }
@@ -116,7 +116,7 @@ Semaphore::Semaphore (unsigned max, unsigned initial)
 
 
 inline
-Semaphore::~Semaphore ()
+Semaphore::~Semaphore () LOG4CPLUS_NOEXCEPT
 {
     try
     {
@@ -163,7 +163,7 @@ FairMutex::FairMutex ()
 
 
 inline
-FairMutex::~FairMutex ()
+FairMutex::~FairMutex () LOG4CPLUS_NOEXCEPT
 {
     try
     {
@@ -208,7 +208,7 @@ ManualResetEvent::ManualResetEvent (bool sig)
 
 
 inline
-ManualResetEvent::~ManualResetEvent ()
+ManualResetEvent::~ManualResetEvent () LOG4CPLUS_NOEXCEPT
 {
     try
     {
@@ -286,7 +286,7 @@ SharedMutex::SharedMutex ()
 
 
 inline
-SharedMutex::~SharedMutex ()
+SharedMutex::~SharedMutex () LOG4CPLUS_NOEXCEPT
 { }
 
 

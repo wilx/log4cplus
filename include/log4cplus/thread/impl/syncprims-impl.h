@@ -87,7 +87,7 @@ class Mutex
 {
 public:
     explicit Mutex (log4cplus::thread::Mutex::Type);
-    ~Mutex ();
+    ~Mutex () LOG4CPLUS_NOEXCEPT;
 
     void lock () const;
     void unlock () const;
@@ -115,7 +115,7 @@ class Semaphore
 {
 public:
     Semaphore (unsigned max, unsigned initial);
-    ~Semaphore ();
+    ~Semaphore () LOG4CPLUS_NOEXCEPT;
 
     void lock () const;
     void unlock () const;
@@ -150,7 +150,7 @@ class FairMutex
 {
 public:
     FairMutex ();
-    ~FairMutex ();
+    ~FairMutex () LOG4CPLUS_NOEXCEPT;
 
     void lock () const;
     void unlock () const;
@@ -176,7 +176,7 @@ class ManualResetEvent
 {
 public:
     ManualResetEvent (bool = false);
-    ~ManualResetEvent ();
+    ~ManualResetEvent () LOG4CPLUS_NOEXCEPT;
 
     void signal () const;
     void wait () const;
@@ -208,7 +208,7 @@ class SharedMutex
 {
 public:
     SharedMutex ();
-    ~SharedMutex ();
+    ~SharedMutex () LOG4CPLUS_NOEXCEPT;
 
     void rdlock () const;
     void wrlock () const;
