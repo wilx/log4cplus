@@ -201,19 +201,37 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
 #endif
 
 
+#if defined (LOG4CPLUS_HAVE_CXX11_SUPPORT)
+#define LOG4CPLUS_MACRO_IF_BODY_BEGIN()         \
+    [&](char const * const _func)
+
+#define LOG4CPLUS_MACRO_IF_BODY_END()           \
+    (LOG4CPLUS_MACRO_FUNCTION ())
+
+#else
+#define LOG4CPLUS_MACRO_IF_BODY_BEGIN()                         \
+    do { char const * const _func = LOG4CPLUS_MACRO_FUNCTION ();
+#define LOG4CPLUS_MACRO_IF_BODY_END() } while (0)
+
+#endif
+
+
 #define LOG4CPLUS_MACRO_BODY(logger, logEvent, logLevel)                \
     LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()                                \
     do {                                                                \
         log4cplus::Logger const & _l                                    \
             = log4cplus::detail::macros_get_logger (logger);            \
         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
-                _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (_log4cplus_buf); \
-            _log4cplus_buf << logEvent;                                 \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _log4cplus_buf.str(),              \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
-        }                                                               \
+                _l.isEnabledFor (log4cplus::logLevel), logLevel))       \
+            LOG4CPLUS_MACRO_IF_BODY_BEGIN ()                            \
+            {                                                           \
+                LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (_log4cplus_buf); \
+                _log4cplus_buf << logEvent;                             \
+                log4cplus::detail::macro_forced_log (_l,                \
+                    log4cplus::logLevel, _log4cplus_buf.str(),          \
+                    __FILE__, __LINE__, _func);                          \
+            }                                                           \
+            LOG4CPLUS_MACRO_IF_BODY_END ();                             \
     } while (0)                                                         \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
 
@@ -239,14 +257,17 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
         log4cplus::Logger const & _l                                    \
             = log4cplus::detail::macros_get_logger (logger);            \
         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
-                _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);         \
-            log4cplus::tchar const * _logEvent                          \
-                = _snpbuf.print (logFmt, __VA_ARGS__);                  \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _logEvent,                         \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
-        }                                                               \
+                _l.isEnabledFor (log4cplus::logLevel), logLevel))       \
+            LOG4CPLUS_MACRO_IF_BODY_BEGIN ()                            \
+            {                                                           \
+                LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);     \
+                log4cplus::tchar const * _logEvent                      \
+                    = _snpbuf.print (logFmt, __VA_ARGS__);              \
+                log4cplus::detail::macro_forced_log (_l,                \
+                    log4cplus::logLevel, _logEvent, __FILE__, __LINE__, \
+                    _func);                                             \
+            }                                                           \
+            LOG4CPLUS_MACRO_IF_BODY_END ();                             \
     } while(0)                                                          \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
 
@@ -257,14 +278,17 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
         log4cplus::Logger const & _l                                    \
             = log4cplus::detail::macros_get_logger (logger);            \
         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
-                _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);         \
-            log4cplus::tchar const * _logEvent                          \
-                = _snpbuf.print (logFmt, logArgs);                      \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _logEvent,                         \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
-        }                                                               \
+                _l.isEnabledFor (log4cplus::logLevel), logLevel))       \
+            LOG4CPLUS_MACRO_IF_BODY_BEGIN ()                            \
+            {                                                           \
+                LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);     \
+                log4cplus::tchar const * _logEvent                      \
+                    = _snpbuf.print (logFmt, logArgs);                  \
+                log4cplus::detail::macro_forced_log (_l,                \
+                    log4cplus::logLevel, _logEvent, __FILE__, __LINE__, \
+                    _func);                                              \
+            }                                                           \
+            LOG4CPLUS_MACRO_IF_BODY_END ();                             \
     } while(0)                                                          \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
 
