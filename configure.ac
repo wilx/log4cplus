@@ -1,15 +1,16 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl This version of log4cplus requires the follwing autotools versions:
 dnl autoconf-2.69
-dnl automake-1.12
+dnl automake-1.14.1
 dnl libtool-2.4.2
 
-AC_INIT([log4cplus],[1.1.0])
+AC_INIT([log4cplus],[1.2.0])
 AC_CANONICAL_TARGET
 AC_CONFIG_SRCDIR([src/logger.cxx])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([1.12 no-define nostdinc gnu -Wall])
+AM_INIT_AUTOMAKE([1.14 no-define no-dist nostdinc foreign subdir-objects -Wall])
 AC_CONFIG_TESTDIR([tests])
+AM_MAINTAINER_MODE([enable])
 AM_PROG_AR
 
 #
@@ -19,8 +20,8 @@ AM_PROG_AR
 #  ? :+1 : ?   == just some internal changes, nothing breaks but might work
 #                 better
 # CURRENT : REVISION : AGE
-LT_VERSION=5:0:0
-LT_RELEASE=1.1
+LT_VERSION=2:0:0
+LT_RELEASE=1.2
 AC_SUBST([LT_VERSION])
 AC_SUBST([LT_RELEASE])
 
@@ -71,12 +72,34 @@ AS_IF([test "x$with_iconv" = "xyes"],
   [AC_DEFINE([LOG4CPLUS_WITH_ICONV], [1])],
   [])
 
+AS_IF([test "x$with_working_locale" = "xno" \
+  -a "x$with_working_c_locale" = "xno" \
+  -a "x$with_iconv" = "xno"],
+  [AC_MSG_WARN([Neither C++ locale support nor C locale support \
+nor iconv() support requested, using poor man's locale conversion.])])
+
+dnl With C++11 threads and synchronization primitives.
+
+AH_TEMPLATE([LOG4CPLUS_WITH_CXX11_THREADS],
+  [Define so that log4cplus will use C++11 threads and synchronization
+   primitives.])
+
+AC_ARG_WITH([c++11-threads],
+  [AS_HELP_STRING([--with-c++11-threads],
+    [Use C++11 threads and synchronization primitives.])],
+  [LOG4CPLUS_CHECK_YESNO([${withval}], [--with-c++11-threads])],
+  [with_c__11_threads=no])
+
+AS_IF([test "x$with_c__11_threads" = "xyes"],
+  [AC_DEFINE([LOG4CPLUS_WITH_CXX11_THREADS], [1])],
+  [])
+
 dnl Debugging or release build?
 
 AC_ARG_ENABLE([debugging],
   [AS_HELP_STRING([--enable-debugging],
     [Turns off optimization and adds switches that generate debugging
-    information.])],
+    information. [default=no]])],
   [LOG4CPLUS_CHECK_YESNO([${enableval}], [--enable-debugging])],
   [enable_debugging=no])
 
@@ -100,9 +123,39 @@ dnl Turn warnings on/off?
 
 AC_ARG_ENABLE([warnings],
   [AC_HELP_STRING([--enable-warnings],
-    [Use compiler warnings option, e.g. -Wall. Enabled by default.])],
+    [Use compiler warnings option, e.g. -Wall. [default=yes]])],
   [LOG4CPLUS_CHECK_YESNO([${enableval}], [--enable-warnings])],
   [enable_warnings=yes])
+
+dnl Enable SO version.
+
+AC_ARG_ENABLE([so-version],
+  [AC_HELP_STRING([--enable-so-version],
+    [Use libtool -version-info option. [default=yes]])],
+  [LOG4CPLUS_CHECK_YESNO([${enableval}], [--enable-so-version])],
+  [enable_so_version=yes])
+AM_CONDITIONAL([ENABLE_VERSION_INFO_OPTION],
+  [test "x$enable_so_version" = "xyes"])
+
+dnl Enable release version.
+
+AC_ARG_ENABLE([release-version],
+  [AC_HELP_STRING([--enable-release-version],
+    [Use libtool -release option. [default=yes]])],
+  [LOG4CPLUS_CHECK_YESNO([${enableval}], [--enable-release-version])],
+  [enable_release_version=yes])
+AM_CONDITIONAL([ENABLE_RELEASE_OPTION],
+  [test "x$enable_release_version" = "xyes"])
+
+dnl Enable use of symbol visibility options.
+
+AC_ARG_ENABLE([symbols-visibility-options],
+  [AC_HELP_STRING([--enable-symbols-visibility-options],
+    [Use platform and compiler specific symbols visibility options,
+     where they are available. [default=yes]])],
+  [LOG4CPLUS_CHECK_YESNO([${enableval}],
+    [--enable-symbols-visibility-options])],
+  [enable_symbols_visibility_options=yes])
 
 dnl Check for c/c++ compilers.
 
@@ -130,7 +183,7 @@ AS_CASE(["$target_os"],
 
 AC_ARG_ENABLE([profiling],
   [AS_HELP_STRING([--enable-profiling],
-    [Compile with profiling compiler options.])],
+    [Compile with profiling compiler options. [default=no]])],
   [LOG4CPLUS_CHECK_YESNO([${enableval}], [--enable-profiling])],
   [enable_profiling=no])
 LOG4CPLUS_PROFILING_LDFLAGS=
@@ -147,9 +200,24 @@ AS_IF([test "x$enable_warnings" = "xyes"],
     [sun], [],
     [AX_CXXFLAGS_WARN_ALL])])
 
+LOG4CPLUS_AIX_XLC_LDFLAGS=
 AS_CASE([$ax_cv_cxx_compiler_vendor],
+  [ibm],
+  [AS_VAR_APPEND([CXXFLAGS], [" -qroconst"])
+   AS_VAR_APPEND([LOG4CPLUS_AIX_XLC_LDFLAGS], [" -qmkshrobj=-300"])],
   [gnu|clang],
-  [AS_IF([test "x$enable_warnings" = "xyes"],
+  [AX_CXXFLAGS_GCC_OPTION([-fdiagnostics-show-caret])
+   AX_CXXFLAGS_GCC_OPTION([-ftrack-macro-expansion])
+
+   dnl This is Clang flavour. It defaults to on, so we do not have to
+   dnl check for it here.
+   dnl AX_CXXFLAGS_GCC_OPTION([-fcolor-diagnostics])
+
+   dnl This is GCC flavour.  It defaults to off, so we have to enable
+   dnl it here.
+   AX_CXXFLAGS_GCC_OPTION([-fdiagnostics-color=auto])
+
+   AS_IF([test "x$enable_warnings" = "xyes"],
      [AX_CXXFLAGS_GCC_OPTION([-Wextra])
       dnl The -ansi switch sets __STRICT_ANSI__ which disables some
       dnl useful function declarations in MinGW and Cygwin headers.
@@ -179,17 +247,22 @@ AS_CASE([$ax_cv_cxx_compiler_vendor],
 
    AS_IF([test "x$enable_debugging" = "xyes"],
      [AX_CXXFLAGS_GCC_OPTION([-g3])
-      AX_CXXFLAGS_GCC_OPTION([-fkeep-inline-functions])
-      AX_CXXFLAGS_GCC_OPTION([-fstack-check])
-      AX_CXXFLAGS_GCC_OPTION([-fstack-protector])
+      dnl AX_CXXFLAGS_GCC_OPTION([-fkeep-inline-functions])
+      AS_CASE(["$target_os"],
+        dnl Disable these for MinGW32 as it seems to generate DLLs that
+        dnl segfault in DllMain().
+        [mingw32], [],
+        [AX_CXXFLAGS_GCC_OPTION([-fstack-check])
+         AX_CXXFLAGS_GCC_OPTION([-fstack-protector])])
       dnl -Wstack-protector results into not too interesting warnings.
       dnl AX_CXXFLAGS_GCC_OPTION([-Wstack-protector])
-      AX_CXXFLAGS_GCC_OPTION([-ftrapv])],
-     [AC_REQUIRE([AC_PROG_GREP])
-      AS_IF([AS_ECHO_N(["$CXXFLAGS"]) dnl
-             | $GREP -e ['\(^\|[[:space:]]\)-O\([^[:space:]]*\([[:space:]]\|$\)\)'] >/dev/null],
-        [],
-        [AX_CXXFLAGS_GCC_OPTION([-O2])])])
+      AX_CXXFLAGS_GCC_OPTION([-fsanitize=address])
+      dnl The -fsanitize=thread option requires -pie or -shared flags.
+      dnl AX_CXXFLAGS_GCC_OPTION([-fsanitize=thread])
+      AX_CXXFLAGS_GCC_OPTION([-ftrapv])
+      LOG4CPLUS_CXXFLAGS_ADD_IF_NO_OPTIMIZATION([-Og])
+      LOG4CPLUS_CXXFLAGS_ADD_IF_NO_OPTIMIZATION([-O1])],
+     [LOG4CPLUS_CXXFLAGS_ADD_IF_NO_OPTIMIZATION([-O2])])
 
    dnl Try -pg profiling option.
    AS_IF([test "x$enable_profiling" = "xyes"],
@@ -248,17 +321,30 @@ AS_CASE([$ax_cv_cxx_compiler_vendor],
 
    dnl Adding -library=Crun is always necessary.
    AX_CXXFLAGS_SUN_OPTION([-library=Crun])])
+AC_SUBST([LOG4CPLUS_AIX_XLC_LDFLAGS])
 
-AX_DECLSPEC([LOG4CPLUS_DECLSPEC])
-AS_IF([test "x$ac_cv_declspec" = "xyes" dnl
-  || test "x$ac_cv__attribute__visibility" = "xyes" dnl
-  || test "x$ac_cv__global" = "xyes"],
-  [AS_CASE([$ax_cv_cxx_compiler_vendor],
-    [gnu|clang],
-    [AX_CXXFLAGS_GCC_OPTION([-fvisibility=hidden])],
+use_export_symbols_regex=no
+AS_IF([test "x$enable_symbols_visibility_options" = "xyes"],
+  [AX_DECLSPEC([LOG4CPLUS_DECLSPEC])
+   AS_IF([test "x$ac_cv_declspec" = "xyes" dnl
+    || test "x$ac_cv__attribute__visibility" = "xyes" dnl
+    || test "x$ac_cv__global" = "xyes"],
+    [AS_CASE([$ax_cv_cxx_compiler_vendor],
+      [gnu|clang],
+      [AX_CXXFLAGS_GCC_OPTION([-fvisibility=hidden])],
 
-    [sun],
-    [AX_CXXFLAGS_SUN_OPTION([-xldscope=hidden])])])
+      dnl Adding -Bhidden or -Bhidden_def to CXXFLAGS causes configure
+      dnl tests to fail because main() becomes hidden.
+      dnl[hp],
+      dnl[AS_VAR_APPEND([CXXFLAGS], [" -Bhidden_def -Wl,-a"])],
+
+      [sun],
+      [AX_CXXFLAGS_SUN_OPTION([-xldscope=hidden])],
+
+      [use_export_symbols_regex=yes])],
+    [use_export_symbols_regex=yes])])
+AM_CONDITIONAL([USE_LOG4CPLUS_EXPORT_SYMBOLS_REGEX],
+  [test "x$use_export_symbols_regex" = "xyes"])
 
 AX_C99_VARIADIC_MACROS
 AH_TEMPLATE([LOG4CPLUS_HAVE_C99_VARIADIC_MACROS])
@@ -295,19 +381,27 @@ AC_SEARCH_LIBS([clock_gettime], [rt posix4])
 dnl On some systems libcompat exists only as a static library which
 dnl breaks compilation of shared library log4cplus.
 dnl AC_SEARCH_LIBS([ftime], [compat])
-AC_SEARCH_LIBS([gethostbyname], [nsl])
-AC_SEARCH_LIBS([setsockopt], [socket])
+AC_SEARCH_LIBS([gethostbyname], [nsl network net])
+AC_SEARCH_LIBS([setsockopt], [socket network net])
 AS_IF([test "x$with_iconv" = "xyes"],
   [AC_SEARCH_LIBS([iconv_open], [iconv], [],
      [AC_SEARCH_LIBS([libiconv_open], [iconv])])])
 
 dnl Windows/MinGW specific.
 
-AC_LANG_PUSH([C])
-AC_HAVE_LIBRARY([kernel32])
-AC_HAVE_LIBRARY([advapi32])
-AC_HAVE_LIBRARY([ws2_32])
-AC_LANG_POP([C])
+AS_CASE(["$target_os"],
+  [mingw*], [
+    AC_LANG_PUSH([C])
+    AC_HAVE_LIBRARY([kernel32])
+    AC_HAVE_LIBRARY([advapi32])
+    AC_HAVE_LIBRARY([ws2_32])
+    AC_HAVE_LIBRARY([oleaut32])
+    AC_LANG_POP([C])],
+  [cygwin*], [
+    AC_LANG_PUSH([C])
+    AC_HAVE_LIBRARY([kernel32])
+    AC_HAVE_LIBRARY([oleaut32])
+    AC_LANG_POP([C])])
 
 dnl Checks for header files.
 
@@ -334,6 +428,8 @@ LOG4CPLUS_CHECK_HEADER([wchar.h], [LOG4CPLUS_HAVE_WCHAR_H])
 LOG4CPLUS_CHECK_HEADER([time.h], [LOG4CPLUS_HAVE_TIME_H])
 LOG4CPLUS_CHECK_HEADER([errno.h], [LOG4CPLUS_HAVE_ERRNO_H])
 LOG4CPLUS_CHECK_HEADER([limits.h], [LOG4CPLUS_HAVE_LIMITS_H])
+LOG4CPLUS_CHECK_HEADER([atomic.h], [LOG4CPLUS_HAVE_ATOMIC_H])
+LOG4CPLUS_CHECK_HEADER([poll.h], [LOG4CPLUS_HAVE_POLL_H])
 AS_IF([test "x$with_iconv" = "xyes"],
   [LOG4CPLUS_CHECK_HEADER([iconv.h], [LOG4CPLUS_HAVE_ICONV_H])])
 
@@ -349,6 +445,8 @@ AC_ARG_ENABLE([threads],
     [Use this option to create a singled-threaded version of this library])],
   [LOG4CPLUS_CHECK_YESNO([${enableval}], [--enable-threads])],
   [enable_threads=yes])
+AS_VAR_SET([ENABLE_THREADS], [$enable_threads])
+AC_SUBST([ENABLE_THREADS])
 
 AS_IF([test "x$enable_threads" = "xyes"],
 dnl Multi threaded library.
@@ -383,22 +481,43 @@ dnl Multi threaded library.
    AH_TEMPLATE([LOG4CPLUS_HAVE___SYNC_ADD_AND_FETCH])
    AS_IF([test "x$ac_cv___sync_add_and_fetch" = "xyes"],
      [AC_DEFINE([LOG4CPLUS_HAVE___SYNC_ADD_AND_FETCH])])
+     
    AH_TEMPLATE([LOG4CPLUS_HAVE___SYNC_SUB_AND_FETCH])
    AS_IF([test "x$ac_cv___sync_sub_and_fetch" = "xyes"],
      [AC_DEFINE([LOG4CPLUS_HAVE___SYNC_SUB_AND_FETCH])])
+     
    AH_TEMPLATE([LOG4CPLUS_HAVE_CXX11_ATOMICS])
    AS_IF([test "x$ac_cv_cxx11_atomics" = "xyes"],
      [AC_DEFINE([LOG4CPLUS_HAVE_CXX11_ATOMICS])])
 
+   AH_TEMPLATE([LOG4CPLUS_HAVE___ATOMIC_ADD_FETCH])
+   AS_IF([test "x$ac_cv___atomic_add_fetch" = "xyes"],
+     [AC_DEFINE([LOG4CPLUS_HAVE___ATOMIC_ADD_FETCH])])
+     
+   AH_TEMPLATE([LOG4CPLUS_HAVE___ATOMIC_SUB_FETCH])
+   AS_IF([test "x$ac_cv___atomic_sub_fetch" = "xyes"],
+     [AC_DEFINE([LOG4CPLUS_HAVE___ATOMIC_SUB_FETCH])])
+
+   AH_TEMPLATE([LOG4CPLUS_HAVE_ATOMIC_INC_UINT])
+   AS_IF([test "x$ac_cv_atomic_inc_uint" = "xyes"],
+     [AC_DEFINE([LOG4CPLUS_HAVE_ATOMIC_INC_UINT])])
+
+   AH_TEMPLATE([LOG4CPLUS_HAVE_ATOMIC_DEC_UINT_NV])
+   AS_IF([test "x$ac_cv_atomic_dec_uint_nv" = "xyes"],
+     [AC_DEFINE([LOG4CPLUS_HAVE_ATOMIC_DEC_UINT_NV])])
+
    AX_TLS_SUPPORT
    AH_TEMPLATE([LOG4CPLUS_HAVE_TLS_SUPPORT])
    AH_TEMPLATE([LOG4CPLUS_THREAD_LOCAL_VAR])
-   AS_IF([test "x$ac_cv_declspec_thread" = "xyes"],
+   AS_IF([test "x$ac_cv_thread_local" = "xyes"],
      [AC_DEFINE([LOG4CPLUS_HAVE_TLS_SUPPORT])
-      AC_DEFINE([LOG4CPLUS_THREAD_LOCAL_VAR], [__declspec(thread)])],
-     [AS_IF([test "x$ac_cv__thread_keyword" = "xyes"],
-       [AC_DEFINE([LOG4CPLUS_HAVE_TLS_SUPPORT])
-        AC_DEFINE([LOG4CPLUS_THREAD_LOCAL_VAR], [__thread])])])],
+      AC_DEFINE([LOG4CPLUS_THREAD_LOCAL_VAR], [thread_local])],
+     [AS_IF([test "x$ac_cv_declspec_thread" = "xyes"],
+        [AC_DEFINE([LOG4CPLUS_HAVE_TLS_SUPPORT])
+         AC_DEFINE([LOG4CPLUS_THREAD_LOCAL_VAR], [__declspec(thread)])],
+        [AS_IF([test "x$ac_cv__thread_keyword" = "xyes"],
+           [AC_DEFINE([LOG4CPLUS_HAVE_TLS_SUPPORT])
+            AC_DEFINE([LOG4CPLUS_THREAD_LOCAL_VAR], [__thread])])])])],
 
 dnl Single threaded library.
   [AC_MSG_NOTICE([Creating a single-threaded library])
@@ -419,6 +538,9 @@ LOG4CPLUS_CHECK_FUNCS([nanosleep], [LOG4CPLUS_HAVE_NANOSLEEP])
 LOG4CPLUS_CHECK_FUNCS([clock_nanosleep], [LOG4CPLUS_HAVE_CLOCK_NANOSLEEP])
 LOG4CPLUS_CHECK_FUNCS([clock_gettime], [LOG4CPLUS_HAVE_CLOCK_GETTIME])
 LOG4CPLUS_CHECK_FUNCS([getpid], [LOG4CPLUS_HAVE_GETPID])
+LOG4CPLUS_CHECK_FUNCS([poll], [LOG4CPLUS_HAVE_POLL])
+LOG4CPLUS_CHECK_FUNCS([pipe], [LOG4CPLUS_HAVE_PIPE])
+LOG4CPLUS_CHECK_FUNCS([pipe2], [LOG4CPLUS_HAVE_PIPE2])
 LOG4CPLUS_CHECK_FUNCS([ftime], [LOG4CPLUS_HAVE_FTIME])
 LOG4CPLUS_CHECK_FUNCS([stat], [LOG4CPLUS_HAVE_STAT])
 LOG4CPLUS_CHECK_FUNCS([lstat], [LOG4CPLUS_HAVE_LSTAT])
@@ -429,6 +551,7 @@ LOG4CPLUS_CHECK_FUNCS([htons], [LOG4CPLUS_HAVE_HTONS])
 LOG4CPLUS_CHECK_FUNCS([ntohs], [LOG4CPLUS_HAVE_NTOHS])
 LOG4CPLUS_CHECK_FUNCS([htonl], [LOG4CPLUS_HAVE_HTONL])
 LOG4CPLUS_CHECK_FUNCS([ntohl], [LOG4CPLUS_HAVE_NTOHL])
+LOG4CPLUS_CHECK_FUNCS([shutdown], [LOG4CPLUS_HAVE_SHUTDOWN])
 LOG4CPLUS_CHECK_FUNCS([mbstowcs], [LOG4CPLUS_HAVE_MBSTOWCS])
 LOG4CPLUS_CHECK_FUNCS([wcstombs], [LOG4CPLUS_HAVE_WCSTOMBS])
 AS_IF([test "x$with_iconv" = "xyes"],
@@ -443,6 +566,8 @@ dnl Various functions used by snprintf.cxx.
 
 LOG4CPLUS_CHECK_FUNCS([vsnprintf], [LOG4CPLUS_HAVE_VSNPRINTF])
 LOG4CPLUS_CHECK_FUNCS([_vsnprintf], [LOG4CPLUS_HAVE__VSNPRINTF])
+LOG4CPLUS_CHECK_FUNCS([vsnwprintf], [LOG4CPLUS_HAVE_VSNWPRINTF])
+LOG4CPLUS_CHECK_FUNCS([_vsnwprintf], [LOG4CPLUS_HAVE__VSNWPRINTF])
 LOG4CPLUS_CHECK_FUNCS([vsprintf_s], [LOG4CPLUS_HAVE_VSPRINTF_S])
 LOG4CPLUS_CHECK_FUNCS([vswprintf_s], [LOG4CPLUS_HAVE_VSWPRINTF_S])
 LOG4CPLUS_CHECK_FUNCS([vfprintf_s], [LOG4CPLUS_HAVE_VFPRINTF_S])
@@ -461,6 +586,11 @@ dnl AC_CHECK_FUNCS([vfprintf], [AC_DEFINE([LOG4CPLUS_HAVE_VFPRINTF])])
 
 dnl AH_TEMPLATE([LOG4CPLUS_HAVE_VSWPRINTF])
 dnl AC_CHECK_FUNCS([vswprintf], [AC_DEFINE([LOG4CPLUS_HAVE_VSWPRINTF])])
+
+AS_CASE(["$target_os"],
+  [cygwin*], [
+    LOG4CPLUS_CHECK_FUNCS([OutputDebugStringW],
+      [LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING])])
 
 AH_TEMPLATE([LOG4CPLUS_HAVE_ENAMETOOLONG])
 AC_CACHE_CHECK([for ENAMETOOLONG], [ax_cv_have_enametoolong],
@@ -510,6 +640,22 @@ AM_CONDITIONAL([QT], [test "x$with_qt" = "xyes"])
 AC_SUBST([QT_CFLAGS])
 AC_SUBST([QT_LIBS])
 
+dnl Qt5 setup using pkg-config.
+
+AC_ARG_WITH([qt5],
+  [AS_HELP_STRING([--with-qt5],
+    [Build liblog4cplusqt5debugappender.])],
+  [LOG4CPLUS_CHECK_YESNO([${withval}], [--with-qt5])],
+  [with_qt5=no])
+
+AS_IF([test "x$with_qt5" = "xyes"],
+  [PKG_CHECK_MODULES([QT5], [Qt5Core >= 5.0.0])],
+  [QT5_CFLAGS=
+   QT5_LIBS=])
+AM_CONDITIONAL([QT5], [test "x$with_qt5" = "xyes"])
+AC_SUBST([QT5_CFLAGS])
+AC_SUBST([QT5_LIBS])
+
 dnl SWIG generated bindings related configure machinery is here.
 
 AS_VAR_SET([with_swig], [no])
@@ -522,8 +668,7 @@ AC_ARG_WITH([python],
 
 AS_IF([test "x$with_swig" = "xyes"],
   [AX_PKG_SWIG([2.0.0], [:], [AC_MSG_ERROR([SWIG is required to build.])])
-   AX_SWIG_MULTI_MODULE_SUPPORT
-   AC_CONFIG_FILES([swig/Makefile])])
+   AX_SWIG_MULTI_MODULE_SUPPORT])
 
 AM_CONDITIONAL([WITH_SWIG], [test "x$with_swig" = "xyes"])
 
@@ -531,8 +676,7 @@ AS_IF([test "x$with_python" = "xyes"],
   [AM_PATH_PYTHON([2.3])
    AX_PYTHON_DEVEL
    AC_SUBST([AX_SWIG_PYTHON_OPT],[-python$swig_shadow])
-   AC_SUBST([AX_SWIG_PYTHON_CPPFLAGS],[$PYTHON_CPPFLAGS])
-   AC_CONFIG_FILES([swig/python/Makefile])])
+   AC_SUBST([AX_SWIG_PYTHON_CPPFLAGS],[$PYTHON_CPPFLAGS])])
 
 AM_CONDITIONAL([WITH_PYTHON], [test "x$with_python" = "xyes"])
 
@@ -541,7 +685,7 @@ dnl Must be latest to catch rpath compiled in by changes made during
 dnl checks before.
 
 LT_PREREQ([2.4.2])
-LT_INIT([win32-dll])
+LT_INIT([win32-dll disable-static pic-only])
 
 AH_TOP([#ifndef LOG4CPLUS_CONFIG_H])
 AH_TOP([#define LOG4CPLUS_CONFIG_H])
@@ -551,27 +695,7 @@ AC_CONFIG_HEADERS([include/log4cplus/config.h])
 AC_CONFIG_HEADERS([include/log4cplus/config/defines.hxx])
 AC_CONFIG_FILES([Makefile
            include/Makefile
-           src/Makefile
-           loggingserver/Makefile
-           qt4debugappender/Makefile
-           tests/atlocal
-           tests/Makefile
-           tests/appender_test/Makefile
-           tests/configandwatch_test/Makefile
-           tests/customloglevel_test/Makefile
-           tests/fileappender_test/Makefile
-           tests/filter_test/Makefile
-           tests/hierarchy_test/Makefile
-           tests/loglog_test/Makefile
-           tests/ndc_test/Makefile
-           tests/ostream_test/Makefile
-           tests/patternlayout_test/Makefile
-           tests/performance_test/Makefile
-           tests/priority_test/Makefile
-           tests/propertyconfig_test/Makefile
-           tests/socket_test/Makefile
-           tests/thread_test/Makefile
-           tests/timeformat_test/Makefile])
+           tests/atlocal])
 
 m4_include([tests/configure.m4])
 

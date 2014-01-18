@@ -1,6 +1,9 @@
 set (qt4debugappender_sources
   qt4debugappender.cxx)
 
+if (${BUILD_SHARED_LIBS})
+  add_definitions (-D${log4cplus}_EXPORTS)
+endif ()
 if (UNICODE)
   add_definitions (-DUNICODE -D_UNICODE -UMBCS -U_MBCS)
 endif (UNICODE)
@@ -26,9 +29,9 @@ if (WIN32)
 endif ()
 
 install (TARGETS ${qt4debugappender}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin)
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install (FILES ../include/log4cplus/qt4debugappender.h
-  DESTINATION include/log4cplus)
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/log4cplus)

@@ -26,6 +26,7 @@ AC_CACHE_CHECK([for __global and __hidden], [ac_cv__global],
         int foo () { return 0; }
         __global int bar () { return x; }
         __hidden int baz () { return 1; }
+        class __global Class { public: Class () { } };
       ]],
       [[]])],
     [ac_cv__global=yes],
@@ -48,9 +49,10 @@ AC_CACHE_CHECK([for __declspec(dllexport) and __declspec(dllimport)],
   AC_COMPILE_IFELSE(
     [AC_LANG_PROGRAM(
       [[
-#if defined (__clang__)
+#if defined (__clang__) || defined (__HAIKU__)
 // Here the problem is that Clang only warns that it does not support
-// __declspec(dllexport) but still compiles the executable.
+// __declspec(dllexport) but still compiles the executable. GCC on Haiku OS
+// suffers from the same problem.
 #  error Please fail.
 And extra please fail.
 #else
@@ -58,6 +60,7 @@ And extra please fail.
         __declspec(dllexport) int foo ();
         int foo () { return 0; }
         __declspec(dllexport) int bar () { return x; }
+        class __declspec(dllexport) Class { public: Class () { } };
 #endif
       ]],
       [[]])],
@@ -91,6 +94,7 @@ And extra please fail.
         int foo () { return 0; }
         __attribute__((visibility("default"))) int bar () { return x; }
         __attribute__((visibility("hidden"))) int baz () { return 1; }
+        class __attribute__((visibility("default"))) Class { public: Class () { } };
 #endif
       ]],
       [[]])],

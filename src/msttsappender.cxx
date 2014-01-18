@@ -4,7 +4,7 @@
 // Author:  Vaclav Zeman
 //
 //
-//  Copyright (C) 2012, Vaclav Zeman. All rights reserved.
+//  Copyright (C) 2012-2013, Vaclav Zeman. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -289,11 +289,8 @@ MSTTSAppender::append (spi::InternalLoggingEvent const & ev)
 
     DWORD flags = SPF_IS_NOT_XML;
 
-    if (data->async)
-        flags |= SPF_ASYNC;
-
-    if (data->speak_punc)
-        flags |= SPF_NLP_SPEAK_PUNC;
+    flags |= SPF_ASYNC * +data->async;
+    flags |= SPF_NLP_SPEAK_PUNC * +data->speak_punc;
 
     COMInitializer com_init;
     HRESULT hr = data->ispvoice->Speak (

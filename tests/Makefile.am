@@ -1,54 +1,36 @@
-SINGLE_THREADED_TESTS = appender_test \
-          customloglevel_test \
-          fileappender_test \
-          filter_test \
-          hierarchy_test \
-          loglog_test \
-          ndc_test \
-          ostream_test \
-          patternlayout_test \
-          performance_test \
-          priority_test \
-          propertyconfig_test \
-          socket_test \
-          timeformat_test
-
-if MULTI_THREADED
-SUBDIRS = $(SINGLE_THREADED_TESTS) thread_test configandwatch_test
-else
-SUBDIRS = $(SINGLE_THREADED_TESTS)
-endif
-
-EXTRA_DIST = testsuite.at $(TESTSUITE) atlocal.in
-
-TESTSUITE = $(srcdir)/testsuite
+TESTSUITE = %D%/testsuite
 AUTOTEST = $(AUTOM4TE) --language=Autotest
 TESTSUITE_AT = \
-  appender_test.at \
-  configandwatch_test.at \
-  customloglevel_test.at \
-  fileappender_test.at \
-  filter_test.at \
-  hierarchy_test.at \
-  loglog_test.at \
-  ndc_test.at \
-  ostream_test.at \
-  patternlayout_test.at \
-  priority_test.at \
-  propertyconfig_test.at \
-  thread_test.at \
-  timeformat_test.at \
-  local.at \
-  testsuite.at
+  %D%/appender_test.at \
+  %D%/configandwatch_test.at \
+  %D%/customloglevel_test.at \
+  %D%/fileappender_test.at \
+  %D%/filter_test.at \
+  %D%/hierarchy_test.at \
+  %D%/loglog_test.at \
+  %D%/ndc_test.at \
+  %D%/ostream_test.at \
+  %D%/patternlayout_test.at \
+  %D%/priority_test.at \
+  %D%/propertyconfig_test.at \
+  %D%/thread_test.at \
+  %D%/timeformat_test.at \
+  %D%/local.at \
+  %D%/testsuite.at
 
-$(TESTSUITE): $(TESTSUITE_AT)
-	$(AUTOTEST) -I $(srcdir) $(srcdir)/testsuite.at -o $@
+all: $(TESTSUITE)
 
-atconfig: $(top_builddir)/config.status
-	cd "$(top_builddir)" && ./config.status tests/$@
+$(TESTSUITE): $(TESTSUITE_AT) %D%/atlocal.in
+	cd "$(abs_top_srcdir)" && $(AUTOTEST) -I tests %D%/testsuite.at -o $@
 
-check-local: atconfig atlocal $(TESTSUITE)
-	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS)
+%D%/atconfig: $(top_builddir)/config.status
+	cd "$(top_builddir)" && ./config.status $@
+
+check-local: %D%/atconfig %D%/atlocal $(TESTSUITE)
+	cd "$(top_builddir)/tests" && $(SHELL) $(abs_top_srcdir)/$(TESTSUITE) $(TESTSUITEFLAGS)
 
 clean-local:
-	test ! -f '$(TESTSUITE)' || $(SHELL) '$(TESTSUITE)' --clean
+	cd "$(top_builddir)/tests" && (test ! -f '$(abs_top_srcdir)/$(TESTSUITE)' || $(SHELL) '$(abs_top_srcdir)/$(TESTSUITE)' --clean)
+
+EXTRA_DIST += %D%/testsuite.at $(TESTSUITE) %D%/atlocal.in
+

@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <log4cplus/spi/rootlogger.h>
 #include <log4cplus/thread/syncprims-pub-impl.h>
 #include <utility>
+#include <limits>
 
 
 namespace log4cplus
@@ -99,6 +100,10 @@ Hierarchy::clear()
 bool
 Hierarchy::exists(const tstring& name)
 {
+    // Root logger always does exist.
+    if (name.empty ())
+        return true;
+
     thread::MutexGuard guard (hashtable_mutex);
 
     LoggerMap::iterator it = loggerPtrs.find(name);
@@ -127,7 +132,7 @@ Hierarchy::disable(LogLevel ll)
 void 
 Hierarchy::disableAll() 
 { 
-    disable(FATAL_LOG_LEVEL);
+    disable((std::numeric_limits<LogLevel>::max) ());
 }
 
 

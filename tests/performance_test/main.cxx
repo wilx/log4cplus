@@ -26,6 +26,7 @@ int
 main()
 {
     tcout << LOG4CPLUS_TEXT("Entering main()...") << endl;
+    log4cplus::initialize ();
     PropertyConfigurator::doConfigure(LOG4CPLUS_TEXT("log4cplus.properties"));
     Logger root = Logger::getRoot();
     try {
@@ -55,8 +56,8 @@ main()
 
         start = Time::gettimeofday();
         for(i=0; i<LOOP_COUNT; ++i) {
-	    log4cplus::spi::InternalLoggingEvent e(logger.getName(), log4cplus::WARN_LOG_LEVEL,
-			                         msg, 0, 0);
+	    log4cplus::spi::InternalLoggingEvent e(logger.getName(),
+                log4cplus::WARN_LOG_LEVEL, msg, __FILE__, __LINE__, "main");
         }
         end = Time::gettimeofday();
         diff = end - start;
@@ -66,8 +67,8 @@ main()
 
         start = Time::gettimeofday();
         for(i=0; i<LOOP_COUNT; ++i) {
-	    log4cplus::spi::InternalLoggingEvent e(logger.getName(), log4cplus::WARN_LOG_LEVEL,
-			                           msg, 0, 0);
+	    log4cplus::spi::InternalLoggingEvent e(logger.getName(),
+                log4cplus::WARN_LOG_LEVEL, msg, __FILE__, __LINE__, "main");
 	    e.getNDC();
 	    e.getThread();
         }
@@ -78,8 +79,8 @@ main()
         
         start = Time::gettimeofday();
         for(i=0; i<LOOP_COUNT; ++i) {
-            log4cplus::spi::InternalLoggingEvent e(logger.getName(), log4cplus::WARN_LOG_LEVEL,
-			                           msg, 0, 0);
+            log4cplus::spi::InternalLoggingEvent e(logger.getName(),
+                log4cplus::WARN_LOG_LEVEL, msg, __FILE__, __LINE__, "main");
 	    e.getNDC();
         }
         end = Time::gettimeofday();
@@ -89,8 +90,8 @@ main()
         
         start = Time::gettimeofday();
         for(i=0; i<LOOP_COUNT; ++i) {
-            log4cplus::spi::InternalLoggingEvent e(logger.getName(), log4cplus::WARN_LOG_LEVEL,
-			                           msg, 0, 0);
+            log4cplus::spi::InternalLoggingEvent e(logger.getName(),
+                log4cplus::WARN_LOG_LEVEL, msg, __FILE__, __LINE__, "main");
 	    e.getThread();
         }
         end = Time::gettimeofday();

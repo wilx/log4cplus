@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -225,7 +225,7 @@ void
 Logger::assertion (bool assertionVal, const log4cplus::tstring& msg) const
 {
     if (! assertionVal)
-        log (FATAL_LOG_LEVEL, msg);
+        log (FATAL_LOG_LEVEL, msg, 0, -1);
 }
 
 
@@ -245,9 +245,9 @@ Logger::isEnabledFor (LogLevel ll) const
 
 void
 Logger::log (LogLevel ll, const log4cplus::tstring& message, const char* file,
-    int line) const
+    int line, const char* function) const
 {
-    value->log (ll, message, file, line);
+    value->log (ll, message, file, line, function ? function : "");
 }
 
 
@@ -260,9 +260,9 @@ Logger::log (spi::InternalLoggingEvent const & ev) const
 
 void
 Logger::forcedLog (LogLevel ll, const log4cplus::tstring& message,
-    const char* file, int line) const
+    const char* file, int line, const char* function) const
 {
-    value->forcedLog (ll, message, file, line);
+    value->forcedLog (ll, message, file, line, function ? function : "");
 }
 
 

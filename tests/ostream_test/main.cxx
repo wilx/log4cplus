@@ -11,6 +11,7 @@ using namespace log4cplus;
 int
 main()
 {
+    log4cplus::initialize ();
     SharedAppenderPtr append_1(new ConsoleAppender());
     append_1->setName(LOG4CPLUS_TEXT("First"));
     Logger::getRoot().addAppender(append_1);
@@ -42,7 +43,7 @@ main()
     LOG4CPLUS_FATAL(test,
                     "This is a long double: "
                     << setprecision(15)
-                    << 123452342342.342L);
+                    << 123452342342.25L);
     LOG4CPLUS_WARN(test, "The following message is empty:");
     LOG4CPLUS_WARN(test, "");
 

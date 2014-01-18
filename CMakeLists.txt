@@ -1,16 +1,37 @@
-project (log4cplus)
-cmake_minimum_required (VERSION 2.8.0)
+# This block needs to stay before the project (log4cplus) line so that
+#  the output files placed into Android's libs directory.
+if (CMAKE_TOOLCHAIN_FILE)
+  get_filename_component(TOOL_CHAIN_FILE_NAME "${CMAKE_TOOLCHAIN_FILE}" NAME_WE)
+  if("${TOOL_CHAIN_FILE_NAME}" MATCHES "android.toolchain")
+    # Android: set output folder to ${CMAKE_BINARY_DIR}
+    set (LIBRARY_OUTPUT_PATH_ROOT ${CMAKE_BINARY_DIR} CACHE PATH
+      "root for library output, set this to change where Android libs are compiled to")
+  endif()
+endif ()
+# Remove when CMake >= 2.8.4 is required
+set (CMAKE_LEGACY_CYGWIN_WIN32 0)
 
-set (log4cplus_version_major 1)
-set (log4cplus_version_minor 1)
-set (log4cplus_version_patch 0)
+project (log4cplus)
+cmake_minimum_required (VERSION 2.8.4)
+
+enable_language (CXX)
+include(GNUInstallDirs)
+
+include (Log4CPlusUtils.cmake)
+log4cplus_get_version ("${PROJECT_SOURCE_DIR}/include"
+  log4cplus_version_major log4cplus_version_minor log4cplus_version_patch)
+message("-- Generating build for Log4cplus version ${log4cplus_version_major}.${log4cplus_version_minor}.${log4cplus_version_patch}")
 set (log4cplus_soversion 0)
 set (log4cplus_postfix "")
 
 option(LOG4CPLUS_BUILD_TESTING "Build the test suite." ON)
 
-find_package (Threads)
-message (STATUS "Threads: ${CMAKE_THREAD_LIBS_INIT}")
+option(LOG4CPLUS_BUILD_LOGGINGSERVER "Build the logging server." ON)
+
+if(NOT LOG4CPLUS_SINGLE_THREADED)
+  find_package (Threads)
+  message (STATUS "Threads: ${CMAKE_THREAD_LIBS_INIT}")
+endif(NOT LOG4CPLUS_SINGLE_THREADED)
 
 set(BUILD_SHARED_LIBS TRUE CACHE BOOL "If TRUE, log4cplus is built as a shared library, otherwise as a static library")
 
@@ -34,11 +55,23 @@ option(LOG4CPLUS_WORKING_C_LOCALE
   OFF)
 
 option (LOG4CPLUS_QT4 "Build with Qt4DebugAppender" OFF)
+option (LOG4CPLUS_QT5 "Build with Qt5DebugAppender" OFF)
 
 option(UNICODE "Build with tchar = wchar_t" ${UNICODE_DEFAULT})
 
 option(WITH_ICONV "Use iconv() for char->wchar_t conversion."
   OFF)
+
+option(ENABLE_SYMBOLS_VISIBILITY
+  "Enable compiler and platform specific options for symbols visibility"
+  ON)
+
+set(_WIN32_WINNT 0x0500 CACHE STRING "Define Windows API version to use.")
+
+if (NOT ${BUILD_SHARED_LIBS})
+  # set S-prefix for static build
+  set (log4cplus_postfix "${log4cplus_postfix}S")
+endif()
 
 if (UNICODE)
   set (log4cplus_postfix "${log4cplus_postfix}U")
@@ -50,28 +83,54 @@ endif ()
 
 set (log4cplus "log4cplus${log4cplus_postfix}")
 
-include(ConfigureChecks.cmake)
+if(LOG4CPLUS_CONFIGURE_CHECKS_PATH)
+  get_filename_component(LOG4CPLUS_CONFIGURE_CHECKS_PATH "${LOG4CPLUS_CONFIGURE_CHECKS_PATH}" ABSOLUTE)
+endif()
 
-configure_file(include/log4cplus/config.h.cmake.in
-  ${log4cplus_BINARY_DIR}/include/log4cplus/config.h @ONLY)
-configure_file(include/log4cplus/config/defines.hxx.cmake.in
-  ${log4cplus_BINARY_DIR}/include/log4cplus/config/defines.hxx @ONLY)
+if(LOG4CPLUS_CONFIGURE_CHECKS_PATH AND EXISTS ${LOG4CPLUS_CONFIGURE_CHECKS_PATH})
+  message(STATUS "Custom ConfigureChecks script found: ${LOG4CPLUS_CONFIGURE_CHECKS_PATH}")
+else()
+  set(LOG4CPLUS_CONFIGURE_CHECKS_PATH "ConfigureChecks.cmake")
+endif()
+
+include(${LOG4CPLUS_CONFIGURE_CHECKS_PATH})
+
+# Prepare defines.hxx.cmake from defines.hxx.in by doing a bit of
+# string manipulation.
+file(READ include/log4cplus/config/defines.hxx.in FILE_BUFFER)
+string(REGEX REPLACE "#undef[^a-zA-Z0-9_]+([a-zA-Z0-9_]+)"
+  "#cmakedefine \\1 @\\1@" FILE_BUFFER "${FILE_BUFFER}")
+set(DEFINES_HXX_CMAKE
+  ${log4cplus_BINARY_DIR}/include/log4cplus/config/defines.hxx.cmake)
+set(DEFINES_HXX ${log4cplus_BINARY_DIR}/include/log4cplus/config/defines.hxx)
+file(WRITE ${DEFINES_HXX_CMAKE} ${FILE_BUFFER})
+
+configure_file(${DEFINES_HXX_CMAKE} ${DEFINES_HXX} @ONLY)
 
 include_directories (${log4cplus_SOURCE_DIR}/include
                      ${log4cplus_BINARY_DIR}/include
                     )
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 if (LOG4CPLUS_BUILD_TESTING)
   enable_testing()
 endif (LOG4CPLUS_BUILD_TESTING)
 
 add_subdirectory (src)
-add_subdirectory (loggingserver)
+
+if (LOG4CPLUS_BUILD_LOGGINGSERVER)
+  add_subdirectory (simpleserver)
+endif (LOG4CPLUS_BUILD_LOGGINGSERVER)
+
 if (LOG4CPLUS_BUILD_TESTING)
   add_subdirectory (tests)
 endif (LOG4CPLUS_BUILD_TESTING)
 if (LOG4CPLUS_QT4)
   add_subdirectory (qt4debugappender)
 endif (LOG4CPLUS_QT4)
+if (LOG4CPLUS_QT5)
+  add_subdirectory (qt5debugappender)
+endif (LOG4CPLUS_QT5)
 
 include(Log4CPlusCPack.cmake)

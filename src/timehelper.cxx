@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,6 +53,8 @@
 #define LOG4CPLUS_NEED_LOCALTIME_R
 #endif
 
+#include <log4cplus/config/windowsh-inc.h>
+
 
 namespace log4cplus { namespace helpers {
 
@@ -100,14 +102,13 @@ Time::gettimeofday()
 #if defined (LOG4CPLUS_HAVE_CLOCK_GETTIME)
     struct timespec ts;
     int res = clock_gettime (CLOCK_REALTIME, &ts);
-    assert (res == 0);
-    if (res != 0)
-        LogLog::getLogLog ()->error (
-            LOG4CPLUS_TEXT("clock_gettime() has failed"), true);
+    if (LOG4CPLUS_LIKELY (res == 0))
+        return Time (ts.tv_sec, ts.tv_nsec / 1000);
 
-    return Time (ts.tv_sec, ts.tv_nsec / 1000);
+    // Fall through down to a different method of obtaining time.
+#endif
 
-#elif defined(LOG4CPLUS_HAVE_GETTIMEOFDAY)
+#if defined(LOG4CPLUS_HAVE_GETTIMEOFDAY)
     struct timeval tp;
     ::gettimeofday(&tp, 0);
 
@@ -115,7 +116,11 @@ Time::gettimeofday()
 
 #elif defined (_WIN32)
     FILETIME ft;
+#if _WIN32_WINNT >= 0x602
+    GetSystemTimePreciseAsFileTime (&ft);
+#else
     GetSystemTimeAsFileTime (&ft);
+#endif
 
     typedef unsigned __int64 uint64_type;
     uint64_type st100ns
@@ -268,14 +273,14 @@ Time::getFormattedTime(const log4cplus::tstring& fmt_orig, bool use_gmtime) cons
     internal::gft_scratch_pad & gft_sp = internal::get_gft_scratch_pad ();
     gft_sp.reset ();
 
-    gft_sp.fmt.assign (fmt_orig);
-    gft_sp.ret.reserve (static_cast<std::size_t>(gft_sp.fmt.size () * 1.35));
+    std::size_t const fmt_orig_size = gft_sp.fmt.size ();
+    gft_sp.ret.reserve (fmt_orig_size + fmt_orig_size / 3);
     State state = TEXT;
 
-    // Walk the format string and process all occurences of %q and %Q.
+    // Walk the format string and process all occurences of %q, %Q and %s.
     
-    for (log4cplus::tstring::const_iterator fmt_it = gft_sp.fmt.begin ();
-         fmt_it != gft_sp.fmt.end (); ++fmt_it)
+    for (log4cplus::tstring::const_iterator fmt_it = fmt_orig.begin ();
+         fmt_it != fmt_orig.end (); ++fmt_it)
     {
         switch (state)
         {
@@ -344,7 +349,7 @@ Time::getFormattedTime(const log4cplus::tstring& fmt_orig, bool use_gmtime) cons
 
     // Finally call strftime/wcsftime to format the rest of the string.
 
-    gft_sp.ret.swap (gft_sp.fmt);
+    gft_sp.fmt.swap (gft_sp.ret);
     std::size_t buffer_size = gft_sp.fmt.size () + 1;
     std::size_t len;
 

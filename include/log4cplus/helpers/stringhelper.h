@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,12 +43,14 @@ namespace log4cplus {
          * Returns <code>s</code> in upper case.
          */
         LOG4CPLUS_EXPORT log4cplus::tstring toUpper(const log4cplus::tstring& s);
+        LOG4CPLUS_EXPORT tchar toUpper(tchar);
 
 
         /**
          * Returns <code>s</code> in lower case.
          */
         LOG4CPLUS_EXPORT log4cplus::tstring toLower(const log4cplus::tstring& s);
+        LOG4CPLUS_EXPORT tchar toLower(tchar);
 
 
         /**
@@ -91,16 +93,16 @@ namespace log4cplus {
         }
 
 
-        template <typename intType, bool isSigned>
+        template <typename intType, typename stringType, bool isSigned>
         struct ConvertIntegerToStringHelper;
 
 
-        template <typename intType>
-        struct ConvertIntegerToStringHelper<intType, true>
+        template <typename intType, typename charType>
+        struct ConvertIntegerToStringHelper<intType, charType, true>
         {
             static inline
             void
-            step1 (tchar * & it, intType & value)
+            step1 (charType * & it, intType & value)
             {
                 // The sign of the result of the modulo operator is
                 // implementation defined. That's why we work with
@@ -109,14 +111,16 @@ namespace log4cplus {
                 // does not have positive counterpart; the range is
                 // asymetric.  That's why we handle the case of value
                 // == min() specially here.
-                if (value == (std::numeric_limits<intType>::min) ())
+                if (LOG4CPLUS_UNLIKELY (
+                    value == (std::numeric_limits<intType>::min) ()))
                 {
                     intType const r = value / 10;
                     intType const a = (-r) * 10;
                     intType const mod = -(a + value);
                     value = -r;
 
-                    *(it - 1) = LOG4CPLUS_TEXT('0') + static_cast<tchar>(mod);
+                    *(it - 1)
+                        = static_cast<charType>(LOG4CPLUS_TEXT('0') + mod);
                     --it;
                 }
                 else
@@ -132,12 +136,12 @@ namespace log4cplus {
         };
 
 
-        template <typename intType>
-        struct ConvertIntegerToStringHelper<intType, false>
+        template <typename intType, typename charType>
+        struct ConvertIntegerToStringHelper<intType, charType, false>
         {
             static inline
             void
-            step1 (tchar * &, intType &)
+            step1 (charType * &, intType &)
             {
                 // This will never be called for unsigned types.
             }
@@ -151,45 +155,52 @@ namespace log4cplus {
         };
 
 
-        template<class intType>
+        template <class stringType, class intType>
         inline
         void
-        convertIntegerToString (tstring & str, intType value)
+        convertIntegerToString (stringType & str, intType value)
         {
             typedef std::numeric_limits<intType> intTypeLimits;
-            typedef ConvertIntegerToStringHelper<intType, intTypeLimits::is_signed>
-                HelperType;
-
+            typedef typename stringType::value_type charType;
+            typedef ConvertIntegerToStringHelper<intType, charType,
+                intTypeLimits::is_signed> HelperType;
+            
+            charType buffer[intTypeLimits::digits10 + 2];
+            // We define buffer_size from buffer using sizeof operator
+            // to apease HP aCC compiler.
             const std::size_t buffer_size
-                = intTypeLimits::digits10 + 2;
-            tchar buffer[buffer_size];
-            tchar * it = &buffer[buffer_size];
-            tchar const * const buf_end = it;
+                = sizeof (buffer) / sizeof (charType);
 
-            if (value == 0)
+            charType * it = &buffer[buffer_size];
+            charType const * const buf_end = &buffer[buffer_size];
+
+            if (LOG4CPLUS_UNLIKELY (value == 0))
             {
                 --it;
                 *it = LOG4CPLUS_TEXT('0');
             }
-
-            bool const negative = HelperType::is_negative (value);
-            if (negative)
-                HelperType::step1 (it, value);
-
-            for (; value != 0; --it)
+            else
             {
-                intType mod = value % 10;
-                value = value / 10;
-                *(it - 1) = LOG4CPLUS_TEXT('0') + static_cast<tchar>(mod);
+                bool const negative = HelperType::is_negative (value);
+                if (negative)
+                    HelperType::step1 (it, value);
+
+                for (; value != 0; --it)
+                {
+                    intType mod = value % 10;
+                    value = value / 10;
+                    *(it - 1) = static_cast<charType>(LOG4CPLUS_TEXT('0')
+                        + mod);
+                }
+
+                if (negative)
+                {
+                    --it;
+                    *it = LOG4CPLUS_TEXT('-');
+                }
             }
 
-            if (negative)
-            {
-                --it;
-                *it = LOG4CPLUS_TEXT('-');
-            }
-
-            str.assign (static_cast<tchar const *>(it), buf_end);
+            str.assign (static_cast<charType const *>(it), buf_end);
         }
 
 
@@ -202,6 +213,35 @@ namespace log4cplus {
             convertIntegerToString (result, value);
             return result;
         }
+
+
+        template<class intType>
+        inline
+        std::string
+        convertIntegerToNarrowString (intType value)
+        {
+            std::string result;
+            convertIntegerToString (result, value);
+            return result;
+        }
+
+
+        //! Join a list of items into a string.
+        template <typename Iterator>
+        inline
+        void
+        join (tstring & result, Iterator start, Iterator last, tstring const & sep)
+        {
+            if (start != last)
+                result = *start++;
+
+            for (; start != last; ++start)
+            {
+                result += sep;
+                result += *start;
+            }
+        }
+
 
     } // namespace helpers
 

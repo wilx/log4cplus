@@ -1,11 +1,14 @@
+if WITH_SWIG
 SWIG_SOURCES = \
-  $(srcdir)/../configurator.swg \
-  $(srcdir)/../hierarchy.swg \
-  $(srcdir)/../log4cplus.swg \
-  $(srcdir)/../logger.swg \
-  $(srcdir)/../loggingevent.swg
+  %D%/configurator.swg \
+  %D%/hierarchy.swg \
+  %D%/log4cplus.swg \
+  %D%/logger.swg \
+  %D%/loggingevent.swg
 
-$(srcdir)/../log4cplus.swg: $(srcdir)/../configurator.swg \
-  $(srcdir)/../hierarchy.swg \
-  $(srcdir)/../logger.swg \
-  $(srcdir)/../loggingevent.swg
+%D%/log4cplus.swg: %D%/configurator.swg \
+  %D%/hierarchy.swg \
+  %D%/logger.swg \
+  %D%/loggingevent.swg
+
+endif

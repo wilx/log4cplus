@@ -5,7 +5,7 @@
 // Author:  Vaclav Haisman
 //
 //
-//  Copyright (C) 2010, Vaclav Haisman. All rights reserved.
+//  Copyright (C) 2010-2013, Vaclav Haisman. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -37,6 +37,7 @@
 #pragma once
 #endif
 
+#include <vector>
 #include <log4cplus/tstring.h>
 
 #if defined (_WIN32)
@@ -53,8 +54,18 @@
 namespace log4cplus { namespace internal {
 
 
+//! Get environment variable value.
 bool get_env_var (tstring & value, tstring const & name);
+
+//! Parse a string as a boolean value.
 bool parse_bool (bool & val, tstring const & str);
+
+//! Parse a path into path components.
+bool split_path (std::vector<tstring> & components, std::size_t & special,
+    tstring const & path);
+
+//! Makes directories leading to file.
+void make_dirs (tstring const & file_path);
 
 inline
 #if defined (_WIN32)

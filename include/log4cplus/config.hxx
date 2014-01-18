@@ -1,4 +1,4 @@
-//  Copyright (C) 2009-2010, Vaclav Haisman. All rights reserved.
+//  Copyright (C) 2009-2013, Vaclav Haisman. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -99,7 +99,8 @@
 #endif
 
 #if (defined (_MSC_VER) && _MSC_VER >= 1600) \
-    || defined (__GXX_EXPERIMENTAL_CXX0X__)
+    || defined (__GXX_EXPERIMENTAL_CXX0X__) \
+    || __cplusplus >= 201103L
 #  define LOG4CPLUS_HAVE_CXX11_SUPPORT
 #endif
 
@@ -116,12 +117,25 @@
     /* empty */
 #endif
 
+#if defined (__GNUC__) \
+    && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#  define LOG4CPLUS_CALLER_FILE() __builtin_FILE ()
+#  define LOG4CPLUS_CALLER_LINE() __builtin_LINE ()
+#  define LOG4CPLUS_CALLER_FUNCTION() __builtin_FUNCTION ()
+#else
+#  define LOG4CPLUS_CALLER_FILE() (NULL)
+#  define LOG4CPLUS_CALLER_LINE() (-1)
+#  define LOG4CPLUS_CALLER_FUNCTION() (NULL)
+#endif
+
 #if defined (__GNUC__) && __GNUC__ >= 3
 #  define LOG4CPLUS_ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
 #  define LOG4CPLUS_ATTRIBUTE_PURE __attribute__ ((__pure__))
 #  define LOG4CPLUS_BUILTIN_EXPECT(exp, c) __builtin_expect ((exp), (c))
 #else
-#  define LOG4CPLUS_ATTRIBUTE_NORETURN /* empty */
+#  if ! defined (LOG4CPLUS_ATTRIBUTE_NORETURN)
+#    define LOG4CPLUS_ATTRIBUTE_NORETURN /* empty */
+#  endif
 #  define LOG4CPLUS_ATTRIBUTE_PURE /* empty */
 #  define LOG4CPLUS_BUILTIN_EXPECT(exp, c) (exp)
 #endif
@@ -130,6 +144,7 @@
 #define LOG4CPLUS_UNLIKELY(cond) LOG4CPLUS_BUILTIN_EXPECT(!! (cond), 0)
 
 #if defined (_MSC_VER)                                             \
+    || (defined (__BORLANDC__) && __BORLANDC__ >= 0x0650)          \
     || (defined (__COMO__) && __COMO_VERSION__ >= 400) /* ??? */   \
     || (defined (__DMC__) && __DMC__ >= 0x700) /* ??? */           \
     || (defined (__clang__) && __clang_major__ >= 3)               \
@@ -159,6 +174,9 @@ LOG4CPLUS_EXPORT void threadCleanup ();
 struct CoreAccess;
 
 #endif
+
+//! Initializes log4cplus.
+LOG4CPLUS_EXPORT void initialize ();
 
 } // namespace log4cplus
 

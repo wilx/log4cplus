@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -180,7 +180,9 @@ namespace log4cplus
          * This generic form is intended to be used by wrappers. 
          */
         void log(LogLevel ll, const log4cplus::tstring& message,
-                 const char* file=NULL, int line=-1) const;
+            const char* file = LOG4CPLUS_CALLER_FILE (),
+            int line = LOG4CPLUS_CALLER_LINE (),
+            const char* function = LOG4CPLUS_CALLER_FUNCTION ()) const;
 
         void log(spi::InternalLoggingEvent const &) const;
 
@@ -189,7 +191,9 @@ namespace log4cplus
          * without further checks.  
          */
         void forcedLog(LogLevel ll, const log4cplus::tstring& message,
-                       const char* file=NULL, int line=-1) const;
+            const char* file = LOG4CPLUS_CALLER_FILE (),
+            int line = LOG4CPLUS_CALLER_LINE (),
+            const char* function = LOG4CPLUS_CALLER_FUNCTION ()) const;
 
         void forcedLog(spi::InternalLoggingEvent const &) const;
 

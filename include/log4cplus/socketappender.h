@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,11 +34,11 @@
 #include <log4cplus/helpers/socket.h>
 #include <log4cplus/thread/syncprims.h>
 #include <log4cplus/thread/threads.h>
+#include <log4cplus/helpers/connectorthread.h>
 
 
 namespace log4cplus
 {
- 
 
 #ifndef UNICODE
     std::size_t const LOG4CPLUS_MAX_MESSAGE_SIZE = 8*1024;
@@ -98,7 +98,12 @@ namespace log4cplus
      *
      * </dl>
      */
-    class LOG4CPLUS_EXPORT SocketAppender : public Appender {
+    class LOG4CPLUS_EXPORT SocketAppender
+        : public Appender 
+#if ! defined (LOG4CPLUS_SINGLE_THREADED)
+        , protected virtual helpers::IConnectorThreadClient
+#endif
+    {
     public:
       // Ctors
         SocketAppender(const log4cplus::tstring& host, unsigned short port, 
@@ -123,29 +128,13 @@ namespace log4cplus
         log4cplus::tstring serverName;
 
 #if ! defined (LOG4CPLUS_SINGLE_THREADED)
-        class LOG4CPLUS_EXPORT ConnectorThread;
-        friend class ConnectorThread;
-
-        class LOG4CPLUS_EXPORT ConnectorThread
-            : public thread::AbstractThread
-        {
-        public:
-            ConnectorThread (SocketAppender &);
-            virtual ~ConnectorThread ();
-
-            virtual void run();
-
-            void terminate ();
-            void trigger ();
-
-        protected:
-            SocketAppender & sa;
-            thread::ManualResetEvent trigger_ev;
-            bool exit_flag;
-        };
+        virtual thread::Mutex const & ctcGetAccessMutex () const;
+        virtual helpers::Socket & ctcGetSocket ();
+        virtual helpers::Socket ctcConnect ();
+        virtual void ctcSetConnected ();
 
         volatile bool connected;
-        helpers::SharedObjectPtr<ConnectorThread> connector;
+        helpers::SharedObjectPtr<helpers::ConnectorThread> connector;
 #endif
 
     private:

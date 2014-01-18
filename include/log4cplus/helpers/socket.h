@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ namespace log4cplus {
                            connection_failed,
                            broken_pipe, 
                            invalid_access_mode,
-                           message_truncated
+                           message_truncated,
+                           accept_interrupted
                          };
 
         typedef std::ptrdiff_t SOCKET_TYPE;
@@ -62,7 +63,7 @@ namespace log4cplus {
             /// Close socket
             virtual void close();
             virtual bool isOpen() const;
-
+            virtual void shutdown(); 
             AbstractSocket& operator=(const AbstractSocket& rhs);
 
         protected:
@@ -110,6 +111,10 @@ namespace log4cplus {
             virtual ~ServerSocket();
 
             Socket accept();
+            void interruptAccept ();
+
+        protected:
+            std::ptrdiff_t interruptHandles[2];
         };
 
 
@@ -119,6 +124,7 @@ namespace log4cplus {
                                                    SocketState& state);
         LOG4CPLUS_EXPORT SOCKET_TYPE acceptSocket(SOCKET_TYPE sock, SocketState& state);
         LOG4CPLUS_EXPORT int closeSocket(SOCKET_TYPE sock);
+        LOG4CPLUS_EXPORT int shutdownSocket(SOCKET_TYPE sock);
 
         LOG4CPLUS_EXPORT long read(SOCKET_TYPE sock, SocketBuffer& buffer);
         LOG4CPLUS_EXPORT long write(SOCKET_TYPE sock,

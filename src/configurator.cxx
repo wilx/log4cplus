@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -289,8 +289,7 @@ PropertyConfigurator::configure()
         helpers::getLogLog ().setQuietMode (quiet_mode);
 
     bool disable_override = false;
-    if (properties.getBool (disable_override,
-            LOG4CPLUS_TEXT ("disableOverride")))
+    properties.getBool (disable_override, LOG4CPLUS_TEXT ("disableOverride"));
 
     initializeLog4cplus();
     configureAppenders();

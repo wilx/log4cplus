@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -80,9 +80,12 @@ void
 LoggerImpl::closeNestedAppenders()
 {
     SharedAppenderPtrList appenders = getAllAppenders();
-    for(SharedAppenderPtrList::iterator it=appenders.begin(); it!=appenders.end(); ++it)
+    for(SharedAppenderPtrList::iterator it=appenders.begin();
+        it!=appenders.end(); ++it)
     {
-        (*it)->close();
+        Appender & appender = **it;
+        if (! appender.isClosed())
+            appender.close();
     }
 }
 
@@ -101,10 +104,11 @@ void
 LoggerImpl::log(LogLevel loglevel, 
                 const log4cplus::tstring& message,
                 const char* file, 
-                int line)
+                int line,
+                const char* function)
 {
     if(isEnabledFor(loglevel)) {
-        forcedLog(loglevel, message, file, line);
+        forcedLog(loglevel, message, file, line, function ? function : "");
     }
 }
 
@@ -158,10 +162,13 @@ void
 LoggerImpl::forcedLog(LogLevel loglevel,
                       const log4cplus::tstring& message,
                       const char* file, 
-                      int line)
+                      int line,
+                      const char* function)
 {
     spi::InternalLoggingEvent & ev = internal::get_ptd ()->forced_log_ev;
-    ev.setLoggingEvent (this->getName(), loglevel, message, file, line);
+    assert (function);
+    ev.setLoggingEvent (this->getName(), loglevel, message, file, line,
+        function);
     callAppenders(ev);
 }
 

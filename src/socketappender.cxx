@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,96 +31,6 @@
 namespace log4cplus {
 
 int const LOG4CPLUS_MESSAGE_VERSION = 3;
-
-
-#if ! defined (LOG4CPLUS_SINGLE_THREADED)
-SocketAppender::ConnectorThread::ConnectorThread (
-    SocketAppender & socket_appender)
-    : sa (socket_appender)
-    , exit_flag (false)
-{ }
-
-
-SocketAppender::ConnectorThread::~ConnectorThread ()
-{ }
-
-
-void
-SocketAppender::ConnectorThread::run ()
-{
-    while (true)
-    {
-        trigger_ev.timed_wait (30 * 1000);
-
-        helpers::getLogLog().debug (
-            LOG4CPLUS_TEXT("SocketAppender::ConnectorThread::run()")
-            LOG4CPLUS_TEXT("- running..."));
-
-        // Check exit condition as the very first thing.
-
-        {
-            thread::MutexGuard guard (access_mutex);
-            if (exit_flag)
-                return;
-            trigger_ev.reset ();
-        }
-
-        // Do not try to re-open already open socket.
-
-        {
-            thread::MutexGuard guard (sa.access_mutex);
-            if (sa.socket.isOpen ())
-                continue;
-        }
-
-        // The socket is not open, try to reconnect.
-
-        helpers::Socket new_socket (sa.host,
-            static_cast<unsigned short>(sa.port));
-        if (! new_socket.isOpen ())
-        {
-            helpers::getLogLog().error(
-                LOG4CPLUS_TEXT("SocketAppender::ConnectorThread::run()")
-                LOG4CPLUS_TEXT("- Cannot connect to server"));
-
-            // Sleep for a short while after unsuccessful connection attempt
-            // so that we do not try to reconnect after each logging attempt
-            // which could be many times per second.
-            helpers::sleep (5);
-
-            continue;
-        }
-
-        // Connection was successful, move the socket into SocketAppender.
-
-        {
-            thread::MutexGuard guard (sa.access_mutex);
-            sa.socket = new_socket;
-            sa.connected = true;
-        }
-    }
-}
-
-
-void
-SocketAppender::ConnectorThread::terminate ()
-{
-    {
-        thread::MutexGuard guard (access_mutex);
-        exit_flag = true;
-        trigger_ev.signal ();
-    }
-    join ();
-}
-
-
-void
-SocketAppender::ConnectorThread::trigger ()
-{
-    trigger_ev.signal ();
-}
-
-#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -155,10 +65,6 @@ SocketAppender::SocketAppender(const helpers::Properties & properties)
 
 SocketAppender::~SocketAppender()
 {
-#if ! defined (LOG4CPLUS_SINGLE_THREADED)
-    connector->terminate ();
-#endif
-
     destructorImpl();
 }
 
@@ -202,7 +108,7 @@ SocketAppender::initConnector ()
 {
 #if ! defined (LOG4CPLUS_SINGLE_THREADED)
     connected = true;
-    connector = new ConnectorThread (*this);
+    connector = new helpers::ConnectorThread (*this);
     connector->start ();
 #endif
 }
@@ -246,6 +152,36 @@ SocketAppender::append(const spi::InternalLoggingEvent& event)
 #endif
     }
 }
+
+
+#if ! defined (LOG4CPLUS_SINGLE_THREADED)
+thread::Mutex const &
+SocketAppender::ctcGetAccessMutex () const
+{
+    return access_mutex;
+}
+
+
+helpers::Socket &
+SocketAppender::ctcGetSocket ()
+{
+    return socket;
+}
+
+
+helpers::Socket
+SocketAppender::ctcConnect ()
+{
+    return helpers::Socket (host, static_cast<unsigned short>(port));
+}
+
+void
+SocketAppender::ctcSetConnected ()
+{
+    connected = true;
+}
+
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -316,8 +252,7 @@ readFromBuffer(SocketBuffer& buffer)
     // TODO: Pass MDC through.
     spi::InternalLoggingEvent ev (loggerName, ll, ndc,
         MappedDiagnosticContextMap (), message, thread, Time(sec, usec), file,
-        line);
-    ev.setFunction (function);
+        line, function);
     return ev;
 }
 

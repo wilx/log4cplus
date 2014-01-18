@@ -1,8 +1,7 @@
-include $(top_srcdir)/tests/Makefile.am.tests
+if MULTI_THREADED
+noinst_PROGRAMS += configandwatch_test
 
-noinst_PROGRAMS = configandwatch_test
+configandwatch_test_SOURCES = %D%/main.cxx
 
-configandwatch_test_SOURCES = main.cxx
-
-configandwatch_test_LDADD = $(top_builddir)/src/liblog4cplus.la 
-
+configandwatch_test_LDADD = $(liblog4cplus_la_file) 
+endif

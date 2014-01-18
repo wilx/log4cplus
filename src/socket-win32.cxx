@@ -4,7 +4,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2003-2010 Tad E. Smith
+// Copyright 2003-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 #include <log4cplus/internal/socket.h>
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/thread/threads.h>
+#include <log4cplus/helpers/stringhelper.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -96,7 +97,7 @@ init_winsock_worker ()
             case WS_INITIALIZING:
                 log4cplus::thread::yield ();
                 continue;
-        
+
             default:
                 assert (0);
                 loglog->error (LOG4CPLUS_TEXT ("Unknown WinSock state."), true);
@@ -120,7 +121,7 @@ init_winsock ()
 {
     // Quick check first to avoid the expensive interlocked compare
     // and exchange.
-    if (winsock_state == WS_INITIALIZED)
+    if (LOG4CPLUS_LIKELY (winsock_state == WS_INITIALIZED))
         return;
     else
         init_winsock_worker ();
@@ -223,7 +224,7 @@ connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& 
         INT ret = WSAStringToAddress (const_cast<LPTSTR>(hostn.c_str ()),
             AF_INET, 0, reinterpret_cast<struct sockaddr *>(&insock),
             &insock_size);
-        if (ret == SOCKET_ERROR || insock_size != sizeof (insock)) 
+        if (ret == SOCKET_ERROR || insock_size != static_cast<INT>(sizeof (insock)))
         {
             state = bad_address;
             goto error;
@@ -265,6 +266,8 @@ acceptSocket(SOCKET_TYPE sock, SocketState & state)
 
     if (connected_socket != INVALID_OS_SOCKET_VALUE)
         state = ok;
+    else
+        set_last_socket_error (WSAGetLastError ());
 
     return to_log4cplus_socket (connected_socket);
 }
@@ -278,16 +281,23 @@ closeSocket(SOCKET_TYPE sock)
 }
 
 
+int
+shutdownSocket(SOCKET_TYPE sock)
+{
+    return ::shutdown (to_os_socket (sock), SD_BOTH);
+}
+
 
 long
 read(SOCKET_TYPE sock, SocketBuffer& buffer)
 {
     long res, read = 0;
- 
+    os_socket_type const osSocket = to_os_socket (sock);
+
     do
-    { 
-        res = ::recv(to_os_socket (sock), 
-                     buffer.getBuffer() + read, 
+    {
+        res = ::recv(osSocket,
+                     buffer.getBuffer() + read,
                      static_cast<int>(buffer.getMaxSize() - read),
                      0);
         if (res == SOCKET_ERROR)
@@ -295,10 +305,16 @@ read(SOCKET_TYPE sock, SocketBuffer& buffer)
             set_last_socket_error (WSAGetLastError ());
             return res;
         }
+
+        // A return of 0 indicates the socket is closed,
+        // return to prevent an infinite loop.
+        if (res == 0)
+            return read;
+
         read += res;
     }
     while (read < static_cast<long>(buffer.getMaxSize()));
- 
+
     return read;
 }
 
@@ -329,6 +345,8 @@ write(SOCKET_TYPE sock, const std::string & buffer)
 tstring
 getHostname (bool fqdn)
 {
+    init_winsock ();
+
     char const * hostname = "unknown";
     int ret;
     std::vector<char> hn (1024, 0);
@@ -373,6 +391,196 @@ setTCPNoDelay (SOCKET_TYPE sock, bool val)
 
     return result;
 }
+
+
+//
+// ServerSocket OS dependent stuff
+//
+
+namespace
+{
+
+static
+bool
+setSocketBlocking (SOCKET_TYPE s)
+{
+    u_long val = 0;
+    int ret = ioctlsocket (to_os_socket (s), FIONBIO, &val);
+    if (ret == SOCKET_ERROR)
+    {
+        set_last_socket_error (WSAGetLastError ());
+        return false;
+    }
+    else
+        return true;
+}
+
+static
+bool
+removeSocketEvents (SOCKET_TYPE s, HANDLE ev)
+{
+    // Clean up socket events handling.
+
+    int ret = WSAEventSelect (to_os_socket (s), ev, 0);
+    if (ret == SOCKET_ERROR)
+    {
+        set_last_socket_error (WSAGetLastError ());
+        return false;
+    }
+    else
+        return true;
+}
+
+
+static
+bool
+socketEventHandlingCleanup (SOCKET_TYPE s, HANDLE ev)
+{
+    bool ret = removeSocketEvents (s, ev);
+    ret = setSocketBlocking (s) && ret;
+    ret = WSACloseEvent (ev) && ret;
+    return ret;
+}
+
+
+} // namespace
+
+
+ServerSocket::ServerSocket(unsigned short port)
+{
+    sock = openSocket (port, state);
+    if (sock == INVALID_SOCKET_VALUE)
+    {
+        err = get_last_socket_error ();
+        return;
+    }
+
+    HANDLE ev = WSACreateEvent ();
+    if (ev == WSA_INVALID_EVENT)
+    {
+        err = WSAGetLastError ();
+        closeSocket (sock);
+        sock = INVALID_SOCKET_VALUE;
+    }
+    else
+    {
+        assert (sizeof (std::ptrdiff_t) >= sizeof (HANDLE));
+        interruptHandles[0] = reinterpret_cast<std::ptrdiff_t>(ev);
+    }
+}
+
+Socket
+ServerSocket::accept ()
+{
+    int const N_EVENTS = 2;
+    HANDLE events[N_EVENTS] = {
+        reinterpret_cast<HANDLE>(interruptHandles[0]) };
+    HANDLE & accept_ev = events[1];
+    int ret;
+
+    // Create event and prime socket to set the event on FD_ACCEPT.
+
+    accept_ev = WSACreateEvent ();
+    if (accept_ev == WSA_INVALID_EVENT)
+    {
+        set_last_socket_error (WSAGetLastError ());
+        goto error;
+    }
+
+    ret = WSAEventSelect (to_os_socket (sock), accept_ev, FD_ACCEPT);
+    if (ret == SOCKET_ERROR)
+    {
+        set_last_socket_error (WSAGetLastError ());
+        goto error;
+    }
+
+    do
+    {
+        // Wait either for interrupt event or actual connection coming in.
+
+        DWORD wsawfme = WSAWaitForMultipleEvents (N_EVENTS, events, FALSE,
+            WSA_INFINITE, TRUE);
+        switch (wsawfme)
+        {
+        case WSA_WAIT_TIMEOUT:
+        case WSA_WAIT_IO_COMPLETION:
+            // Retry after timeout or APC.
+            continue;
+
+        // This is interrupt signal/event.
+        case WSA_WAIT_EVENT_0:
+        {
+            // Reset the interrupt event back to non-signalled state.
+
+            ret = WSAResetEvent (reinterpret_cast<HANDLE>(interruptHandles[0]));
+
+            // Clean up socket events handling.
+
+            ret = socketEventHandlingCleanup (sock, accept_ev);
+
+            // Return Socket with state set to accept_interrupted.
+
+            return Socket (INVALID_SOCKET_VALUE, accept_interrupted, 0);
+        }
+
+        // This is accept_ev.
+        case WSA_WAIT_EVENT_0 + 1:
+        {
+            // Clean up socket events handling.
+
+            ret = socketEventHandlingCleanup (sock, accept_ev);
+
+            // Finally, call accept().
+
+            SocketState st = not_opened;
+            SOCKET_TYPE clientSock = acceptSocket (sock, st);
+            int eno = 0;
+            if (clientSock == INVALID_SOCKET_VALUE)
+                eno = get_last_socket_error ();
+
+            return Socket (clientSock, st, eno);
+        }
+
+        case WSA_WAIT_FAILED:
+        default:
+            set_last_socket_error (WSAGetLastError ());
+            goto error;
+        }
+    }
+    while (true);
+
+
+error:;
+    DWORD eno = get_last_socket_error ();
+
+    // Clean up socket events handling.
+
+    if (sock != INVALID_SOCKET_VALUE)
+    {
+        (void) removeSocketEvents (sock, accept_ev);
+        (void) setSocketBlocking (sock);
+    }
+
+    if (accept_ev != WSA_INVALID_EVENT)
+        WSACloseEvent (accept_ev);
+
+    set_last_socket_error (eno);
+    return Socket (INVALID_SOCKET_VALUE, not_opened, eno);
+}
+
+
+void
+ServerSocket::interruptAccept ()
+{
+    (void) WSASetEvent (reinterpret_cast<HANDLE>(interruptHandles[0]));
+}
+
+
+ServerSocket::~ServerSocket()
+{
+    (void) WSACloseEvent (reinterpret_cast<HANDLE>(interruptHandles[0]));
+}
+
 
 
 } } // namespace log4cplus { namespace helpers {

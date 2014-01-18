@@ -15,6 +15,7 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/fileappender.h \
 	log4cplus/fstreams.h \
 	log4cplus/helpers/appenderattachableimpl.h \
+	log4cplus/helpers/connectorthread.h \
 	log4cplus/helpers/fileinfo.h \
 	log4cplus/helpers/lockfile.h \
 	log4cplus/helpers/loglog.h \
@@ -57,6 +58,7 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/streams.h \
 	log4cplus/syslogappender.h \
 	log4cplus/tchar.h \
+	log4cplus/thread/impl/syncprims-cxx11.h \
 	log4cplus/thread/impl/syncprims-impl.h \
 	log4cplus/thread/impl/syncprims-pthreads.h \
 	log4cplus/thread/impl/syncprims-win32.h \

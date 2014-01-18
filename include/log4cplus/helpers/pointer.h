@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -183,6 +183,24 @@ namespace log4cplus {
           // Data
             T* pointee;
         };
+
+
+        //! Boost `intrusive_ptr` helpers.
+        //! @{
+        inline
+        void
+        intrusive_ptr_add_ref (SharedObject const * so)
+        {
+            so->addReference();
+        }
+
+        inline
+        void
+        intrusive_ptr_release (SharedObject const * so)
+        {
+            so->removeReference();
+        }
+        //! @}
 
     } // end namespace helpers
 } // end namespace log4cplus

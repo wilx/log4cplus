@@ -4,7 +4,7 @@
 // Created: 7/2011
 // Author:  Vaclav Zeman
 //
-//  Copyright (C) 2011, Vaclav Zeman. All rights reserved.
+//  Copyright (C) 2011-2013, Vaclav Zeman. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modifica-
 //  tion, are permitted provided that the following conditions are met:
@@ -46,6 +46,7 @@
 namespace log4cplus { namespace cygwin {
 
 unsigned long get_current_win32_thread_id ();
+void output_debug_stringW (wchar_t const *);
 
 } } // namespace log4cplus { namespace cygwin {
 

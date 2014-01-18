@@ -11,6 +11,12 @@
 /* Defined if the compiler supports GNU style variadic macros. */
 #undef HAS_GNU_VARIADIC_MACROS
 
+/* Defined if the compiler provides atomic_dec_uint_nv(). */
+#undef HAVE_ATOMIC_DEC_UINT_NV
+
+/* Defined if the compiler provides atomic_inc_uint(). */
+#undef HAVE_ATOMIC_INC_UINT
+
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
@@ -81,6 +87,9 @@
 /* Define to 1 if you have the `kernel32' library (-lkernel32). */
 #undef HAVE_LIBKERNEL32
 
+/* Define to 1 if you have the `oleaut32' library (-loleaut32). */
+#undef HAVE_LIBOLEAUT32
+
 /* Define to 1 if you have the `ws2_32' library (-lws2_32). */
 #undef HAVE_LIBWS2_32
 
@@ -108,6 +117,18 @@
 /* Define to 1 if you have the `ntohs' function. */
 #undef HAVE_NTOHS
 
+/* Define to 1 if you have the `OutputDebugStringW' function. */
+#undef HAVE_OUTPUTDEBUGSTRINGW
+
+/* Define to 1 if you have the `pipe' function. */
+#undef HAVE_PIPE
+
+/* Define to 1 if you have the `pipe2' function. */
+#undef HAVE_PIPE2
+
+/* Define to 1 if you have the `poll' function. */
+#undef HAVE_POLL
+
 /* Define if you have POSIX threads libraries and header files. */
 #undef HAVE_PTHREAD
 
@@ -116,6 +137,9 @@
 
 /* If available, contains the Python version number currently in use. */
 #undef HAVE_PYTHON
+
+/* Define to 1 if you have the `shutdown' function. */
+#undef HAVE_SHUTDOWN
 
 /* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
@@ -154,6 +178,9 @@
 /* Define to 1 if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
+/* Define to 1 if you have the `vsnwprintf' function. */
+#undef HAVE_VSNWPRINTF
+
 /* Define to 1 if you have the `vsprintf_s' function. */
 #undef HAVE_VSPRINTF_S
 
@@ -169,8 +196,17 @@
 /* Define to 1 if you have the `_vsnprintf_s' function. */
 #undef HAVE__VSNPRINTF_S
 
+/* Define to 1 if you have the `_vsnwprintf' function. */
+#undef HAVE__VSNWPRINTF
+
 /* Define to 1 if you have the `_vsnwprintf_s' function. */
 #undef HAVE__VSNWPRINTF_S
+
+/* Defined if the compiler provides __atomic_add_fetch(). */
+#undef HAVE___ATOMIC_ADD_FETCH
+
+/* Defined if the compiler provides __atomic_sub_fetch(). */
+#undef HAVE___ATOMIC_SUB_FETCH
 
 /* Defined if the compiler supports __FUNCTION__ macro. */
 #undef HAVE___FUNCTION___MACRO
@@ -204,6 +240,15 @@
 
 /* */
 #undef LOG4CPLUS_HAVE_ARPA_INET_H
+
+/* */
+#undef LOG4CPLUS_HAVE_ATOMIC_DEC_UINT_NV
+
+/* */
+#undef LOG4CPLUS_HAVE_ATOMIC_H
+
+/* */
+#undef LOG4CPLUS_HAVE_ATOMIC_INC_UINT
 
 /* */
 #undef LOG4CPLUS_HAVE_C99_VARIADIC_MACROS
@@ -314,7 +359,25 @@
 #undef LOG4CPLUS_HAVE_NTOHS
 
 /* */
+#undef LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING
+
+/* */
+#undef LOG4CPLUS_HAVE_PIPE
+
+/* */
+#undef LOG4CPLUS_HAVE_PIPE2
+
+/* */
+#undef LOG4CPLUS_HAVE_POLL
+
+/* */
+#undef LOG4CPLUS_HAVE_POLL_H
+
+/* */
 #undef LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO
+
+/* */
+#undef LOG4CPLUS_HAVE_SHUTDOWN
 
 /* */
 #undef LOG4CPLUS_HAVE_STAT
@@ -371,6 +434,9 @@
 #undef LOG4CPLUS_HAVE_VSNPRINTF
 
 /* */
+#undef LOG4CPLUS_HAVE_VSNWPRINTF
+
+/* */
 #undef LOG4CPLUS_HAVE_VSPRINTF_S
 
 /* */
@@ -389,7 +455,16 @@
 #undef LOG4CPLUS_HAVE__VSNPRINTF_S
 
 /* */
+#undef LOG4CPLUS_HAVE__VSNWPRINTF
+
+/* */
 #undef LOG4CPLUS_HAVE__VSNWPRINTF_S
+
+/* */
+#undef LOG4CPLUS_HAVE___ATOMIC_ADD_FETCH
+
+/* */
+#undef LOG4CPLUS_HAVE___ATOMIC_SUB_FETCH
 
 /* */
 #undef LOG4CPLUS_HAVE___SYNC_ADD_AND_FETCH
@@ -405,6 +480,10 @@
 
 /* */
 #undef LOG4CPLUS_USE_PTHREADS
+
+/* Define so that log4cplus will use C++11 threads and synchronization
+   primitives. */
+#undef LOG4CPLUS_WITH_CXX11_THREADS
 
 /* Define when iconv() is available. */
 #undef LOG4CPLUS_WITH_ICONV

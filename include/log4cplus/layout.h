@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -129,29 +129,32 @@ namespace log4cplus {
      * 
      * Here is an example TTCCLayout output:
      * 
-     * <pre>
-     * 176 [main] INFO  org.apache.log4j.examples.Sort - Populating an array of 2 elements in reverse order.
-     * 225 [main] INFO  org.apache.log4j.examples.SortAlgo - Entered the sort method.
-     * 262 [main] DEBUG org.apache.log4j.examples.SortAlgo.OUTER i=1 - Outer loop.
-     * 276 [main] DEBUG org.apache.log4j.examples.SortAlgo.SWAP i=1 j=0 - Swapping intArray[0] = 1 and intArray[1] = 0
-     * 290 [main] DEBUG org.apache.log4j.examples.SortAlgo.OUTER i=0 - Outer loop.
-     * 304 [main] INFO  org.apache.log4j.examples.SortAlgo.DUMP - Dump of interger array:
-     * 317 [main] INFO  org.apache.log4j.examples.SortAlgo.DUMP - Element [0] = 0
-     * 331 [main] INFO  org.apache.log4j.examples.SortAlgo.DUMP - Element [1] = 1
-     * 343 [main] INFO  org.apache.log4j.examples.Sort - The next log statement should be an error message.
-     * 346 [main] ERROR org.apache.log4j.examples.SortAlgo.DUMP - Tried to dump an uninitialized array.
-     * 467 [main] INFO  org.apache.log4j.examples.Sort - Exiting main method.
-     * </pre>
+     * ~~~~
+     * 1 [0x60004dca0] WARN test.TestThread <> - Thread-3 TestThread.run()- Starting...
+     * 1 [0x60004dca0] TRACE SlowObject <Thread-3 loop> - ENTER: SlowObject::doSomething()
+     * 2 [0x60004b030] INFO SlowObject <Thread-0 loop> - Actually doing something...1, 2, 3, testing...DONE
+     * 2 [0x60004b130] INFO SlowObject <Thread-1 loop> - Actually doing something...
+     * 2 [0x60004b030] TRACE SlowObject <Thread-0 loop> - EXIT:  SlowObject::doSomething()
+     * 2 [0x60004b030] TRACE SlowObject <Thread-0 loop> - ENTER: SlowObject::doSomething()
+     * 3 [0x60004b130] INFO SlowObject <Thread-1 loop> - Actually doing something...1, 2, 3, testing...DONE
+     * 3 [0x60004cad0] INFO SlowObject <Thread-2 loop> - Actually doing something...
+     * ~~~~
      * 
-     *  The first field is the number of milliseconds elapsed since the
-     *  start of the program. The second field is the thread outputting the
-     *  log statement. The third field is the LogLevel, the fourth field is
-     *  the logger to which the statement belongs.
+     *  The first field is the number of milliseconds elapsed since
+     *  the start of the program.
+     *
+     *  The second field is the thread outputting the log
+     *  statement. (The value is the same as that of the `t` formatter
+     *  for PatternLayout.)
+     *
+     *  The third field is the LogLevel.
+     *
+     *  The fourth field is the logger to which the statement belongs.
      * 
-     *  The fifth field (just before the '-') is the nested diagnostic
-     *  context.  Note the nested diagnostic context may be empty as in the
-     *  first two statements. The text after the '-' is the message of the
-     *  statement.
+     *  The fifth field (just before the '-') is the nested
+     *  diagnostic context.  Note the nested diagnostic context may be
+     *  empty as in the first two statements. The text after the '-'
+     *  is the message of the statement.
      * 
      *  PatternLayout offers a much more flexible alternative.
      */
@@ -203,19 +206,22 @@ namespace log4cplus {
      * modifiers control such things as field width, padding, left and
      * right justification. The following is a simple example.
      * 
-     * Let the conversion pattern be <b>"%-5p [%t]: %m%n"</b> and assume
+     * Let the conversion pattern be `"%-5p [%t]: %m%n"` and assume
      * that the log4cplus environment was set to use a PatternLayout. Then the
      * statements
-     * <code><pre>
+     *
+     * ~~~~{.c}
      * Logger root = Logger.getRoot();
      * LOG4CPLUS_DEBUG(root, "Message 1");
      * LOG4CPLUS_WARN(root, "Message 2");
-     * </pre></code>
+     * ~~~~
+     *
      * would yield the output
-     * <tt><pre>
+     *
+     * ~~~~
      * DEBUG [main]: Message 1
      * WARN  [main]: Message 2  
-     * </pre></tt>
+     * ~~~~
      * 
      * Note that there is no explicit separator between text and
      * conversion specifiers. The pattern parser knows when it has reached
@@ -307,6 +313,18 @@ namespace log4cplus {
      *   <td>Used to output the date of the logging event in <b>local</b> time.
      *
      *   All of the above information applies.
+     * </td>
+     * </tr>
+     *
+     * <tr>
+     *   <td align=center><b>E</b></td>
+     * 
+     *   <td>Used to output the value of a given environment variable.  The 
+     *   name of is supplied as an argument in brackets.  If the variable does
+     *   exist then empty string will be used.
+     * 
+     *   For example, the pattern <b>%E{HOME}</b> will output the contents
+     *   of the HOME environment variable.
      * </td>
      * </tr>
      *
@@ -408,8 +426,10 @@ namespace log4cplus {
      * <tr>
      *   <td align=center><b>t</b></td>
      * 
-     *   <td>Used to output the name of the thread that generated the
-     *   logging event.</td>
+     *   <td>Used to output the thread ID of the thread that generated
+     *   the logging event. (This is either `pthread_t` value returned
+     *   by `pthread_self()` on POSIX platforms or thread ID returned
+     *   by `GetCurrentThreadId()` on Windows.)</td>
      * </tr>
      *
      * <tr>
@@ -431,6 +451,17 @@ namespace log4cplus {
      * 
      *   <td>Used to output the NDC (nested diagnostic context) associated
      *   with the thread that generated the logging event.
+     *   </td>     
+     * </tr>
+     *
+     * <tr>
+     *   <td align=center><b>X</b></td>
+     * 
+     *   <td>Used to output the MDC (mapped diagnostic context)
+     *   associated with the thread that generated the logging
+     *   event. It takes optional key parameter. Without the key
+     *   paramter (%%X), it outputs the whole MDC map. With the key
+     *   (%%X{key}), it outputs just the key's value.
      *   </td>     
      * </tr>
      *

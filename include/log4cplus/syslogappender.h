@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@
 
 #include <log4cplus/appender.h>
 #include <log4cplus/helpers/socket.h>
+#include <log4cplus/helpers/connectorthread.h>
 
 
 namespace log4cplus
@@ -62,17 +63,36 @@ namespace log4cplus
      * <tt>host</tt> property. The default value is port 514.</dd>
      * </dl>
      *
+     * <dt><tt>udp</tt></dt> <dd>When the syslog is remote, this
+     * property picks the IP protocol. When the value is true, UDP is
+     * used. When the value is false, TCP is used. The default value
+     * is true.</dd> </dl>
+     *
      * \note Messages sent to remote syslog using UDP are conforming
-     * to RFC5424.
+     * to RFC5424. Messages sent to remote syslog using TCP are
+     * using octet counting as described in RFC6587.
      */
-    class LOG4CPLUS_EXPORT SysLogAppender : public Appender {
+    class LOG4CPLUS_EXPORT SysLogAppender
+      : public Appender
+#if ! defined (LOG4CPLUS_SINGLE_THREADED)
+      , protected virtual helpers::IConnectorThreadClient
+#endif
+    {
     public:
+        //! Remote syslog IP protocol type.
+        enum RemoteSyslogType
+        {
+            RSTUdp,
+            RSTTcp
+        };
+      
       // Ctors
 #if defined (LOG4CPLUS_HAVE_SYSLOG_H)
         SysLogAppender(const tstring& ident);
 #endif
         SysLogAppender(const tstring& ident, const tstring & host,
-            int port = 514, const tstring & facility = tstring ());
+            int port = 514, const tstring & facility = tstring (),
+            RemoteSyslogType remoteSyslogType = RSTUdp);
         SysLogAppender(const log4cplus::helpers::Properties & properties);
 
       // Dtor
@@ -85,8 +105,10 @@ namespace log4cplus
         virtual int getSysLogLevel(const LogLevel& ll) const;
         virtual void append(const spi::InternalLoggingEvent& event);
 #if defined (LOG4CPLUS_HAVE_SYSLOG_H)
+        //! Local syslog (served by `syslog()`) worker function.
         void appendLocal(const spi::InternalLoggingEvent& event);
 #endif
+        //! Remote syslog worker function.
         void appendRemote(const spi::InternalLoggingEvent& event);
 
       // Data
@@ -99,9 +121,23 @@ namespace log4cplus
 
         tstring host;
         int port;
+        RemoteSyslogType remoteSyslogType;
         helpers::Socket syslogSocket;
+        bool connected;
 
         static tstring const remoteTimeFormat;
+
+        void initConnector ();
+        void openSocket ();
+
+#if ! defined (LOG4CPLUS_SINGLE_THREADED)
+        virtual thread::Mutex const & ctcGetAccessMutex () const;
+        virtual helpers::Socket & ctcGetSocket ();
+        virtual helpers::Socket ctcConnect ();
+        virtual void ctcSetConnected ();
+
+        helpers::SharedObjectPtr<helpers::ConnectorThread> connector;
+#endif
 
     private:
       // Disallow copying of instances of this class

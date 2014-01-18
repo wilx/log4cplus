@@ -5,7 +5,7 @@
 // Author:  Tad E. Smith
 //
 //
-// Copyright 2001-2010 Tad E. Smith
+// Copyright 2001-2013 Tad E. Smith
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,6 +86,25 @@ namespace log4cplus {
      *
      * <h3>Properties</h3>
      * <dl>
+     *
+     * <dt><tt>layout</tt></dt>
+     * <dd>This property specifies message layout used by
+     * Appender.
+     * \sa Layout
+     * </dd>
+     *
+     * <dt><tt>filters</tt></dt>
+     * <dd>This property specifies possibly multiple filters used by
+     * Appender. Each of multple filters and its properties is under a
+     * numbered subkey of filters key. E.g.:
+     * <tt>filters.<em>1</em>=log4cplus::spi::LogLevelMatchFilter</tt>. Filter
+     * subkey numbers must be consecutive.</dd>
+     *
+     * <dt><tt>Threshold</tt></dt>
+     * <dd>This property specifies log level threshold. Events with
+     * lower log level than the threshold will not be logged by
+     * appender.</dd>
+     *
      * <dt><tt>UseLockFile</tt></dt>
      * <dd>Set this property to <tt>true</tt> if you want your output
      * through this appender to be synchronized between multiple
@@ -118,6 +137,14 @@ namespace log4cplus {
       // Dtor
         virtual ~Appender();
 
+        /**
+         * This function is for derived appenders to call from their
+         * destructors. All classes derived from `Appender` class
+         * _must_ call this function from their destructors. It
+         * ensures that appenders will get properly closed during
+         * shutdown by call to `close()` function before they are
+         * destroyed.
+         */
         void destructorImpl();
 
       // Methods
@@ -128,6 +155,11 @@ namespace log4cplus {
          * It is a programming error to append to a closed appender.
          */
         virtual void close() = 0;
+
+        /**
+         * Check if this appender is in closed state.
+         */
+        bool isClosed() const;
 
         /**
          * This method performs threshold checks and invokes filters before
