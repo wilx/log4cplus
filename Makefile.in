@@ -225,6 +225,7 @@ am__objects_3 = src/liblog4cplus_la-appenderattachableimpl.lo \
 	src/liblog4cplus_la-factory.lo \
 	src/liblog4cplus_la-fileappender.lo \
 	src/liblog4cplus_la-fileinfo.lo src/liblog4cplus_la-filter.lo \
+	src/liblog4cplus_la-forkhandler.lo \
 	src/liblog4cplus_la-global-init.lo \
 	src/liblog4cplus_la-hierarchy.lo \
 	src/liblog4cplus_la-hierarchylocker.lo \
@@ -658,6 +659,7 @@ SINGLE_THREADED_SRC = \
 	src/fileappender.cxx \
 	src/fileinfo.cxx \
 	src/filter.cxx \
+	src/forkhandler.cxx \
 	src/global-init.cxx \
 	src/hierarchy.cxx \
 	src/hierarchylocker.cxx \
@@ -1017,6 +1019,8 @@ src/liblog4cplus_la-fileappender.lo: src/$(am__dirstamp) \
 src/liblog4cplus_la-fileinfo.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplus_la-filter.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
+src/liblog4cplus_la-forkhandler.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplus_la-global-init.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
@@ -1409,6 +1413,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-fileappender.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-fileinfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-filter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-forkhandler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-global-init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-hierarchy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-hierarchylocker.Plo@am__quote@
@@ -1592,6 +1597,13 @@ src/liblog4cplus_la-filter.lo: src/filter.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/filter.cxx' object='src/liblog4cplus_la-filter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/liblog4cplus_la-filter.lo `test -f 'src/filter.cxx' || echo '$(srcdir)/'`src/filter.cxx
+
+src/liblog4cplus_la-forkhandler.lo: src/forkhandler.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/liblog4cplus_la-forkhandler.lo -MD -MP -MF src/$(DEPDIR)/liblog4cplus_la-forkhandler.Tpo -c -o src/liblog4cplus_la-forkhandler.lo `test -f 'src/forkhandler.cxx' || echo '$(srcdir)/'`src/forkhandler.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblog4cplus_la-forkhandler.Tpo src/$(DEPDIR)/liblog4cplus_la-forkhandler.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/forkhandler.cxx' object='src/liblog4cplus_la-forkhandler.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/liblog4cplus_la-forkhandler.lo `test -f 'src/forkhandler.cxx' || echo '$(srcdir)/'`src/forkhandler.cxx
 
 src/liblog4cplus_la-global-init.lo: src/global-init.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/liblog4cplus_la-global-init.lo -MD -MP -MF src/$(DEPDIR)/liblog4cplus_la-global-init.Tpo -c -o src/liblog4cplus_la-global-init.lo `test -f 'src/global-init.cxx' || echo '$(srcdir)/'`src/global-init.cxx

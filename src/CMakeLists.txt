@@ -12,6 +12,7 @@ set (log4cplus_sources
   fileappender.cxx
   fileinfo.cxx
   filter.cxx
+  forkhandler.cxx
   global-init.cxx
   hierarchy.cxx
   hierarchylocker.cxx
