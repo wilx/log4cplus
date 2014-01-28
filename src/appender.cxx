@@ -49,7 +49,7 @@ ErrorHandler::~ErrorHandler()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// log4cplus::OnlyOnceErrorHandler 
+// log4cplus::OnlyOnceErrorHandler
 ///////////////////////////////////////////////////////////////////////////////
 
 OnlyOnceErrorHandler::OnlyOnceErrorHandler()
@@ -121,7 +121,8 @@ Appender::Appender(const log4cplus::helpers::Properties & properties)
         helpers::Properties layoutProperties =
                 properties.getPropertySubset( LOG4CPLUS_TEXT("layout.") );
         try {
-            std::auto_ptr<Layout> newLayout(factory->createObject(layoutProperties));
+            std::auto_ptr<Layout> newLayout(
+                factory->createObject(layoutProperties));
             if(newLayout.get() == 0) {
                 helpers::getLogLog().error(
                     LOG4CPLUS_TEXT("Failed to create appender: ")
@@ -132,7 +133,7 @@ Appender::Appender(const log4cplus::helpers::Properties & properties)
             }
         }
         catch(std::exception const & e) {
-            helpers::getLogLog().error( 
+            helpers::getLogLog().error(
                 LOG4CPLUS_TEXT("Error while creating Layout: ")
                 + LOG4CPLUS_C_STR_TO_TSTRING(e.what()));
             return;
@@ -162,7 +163,8 @@ Appender::Appender(const log4cplus::helpers::Properties & properties)
 
         if(! factory)
         {
-            tstring err = LOG4CPLUS_TEXT("Appender::ctor()- Cannot find FilterFactory: ");
+            tstring err = LOG4CPLUS_TEXT(
+                "Appender::ctor()- Cannot find FilterFactory: ");
             helpers::getLogLog().error(err + factoryName);
             continue;
         }
@@ -170,7 +172,8 @@ Appender::Appender(const log4cplus::helpers::Properties & properties)
             filterProps.getPropertySubset(filterName + LOG4CPLUS_TEXT(".")));
         if (! tmpFilter)
         {
-            tstring err = LOG4CPLUS_TEXT("Appender::ctor()- Failed to create filter: ");
+            tstring err = LOG4CPLUS_TEXT(
+                "Appender::ctor()- Failed to create filter: ");
             helpers::getLogLog().error(err + filterName);
         }
         if (! filterChain)
@@ -244,6 +247,25 @@ bool Appender::isClosed() const
 }
 
 
+bool
+Appender::lockFileGuard (helpers::LockFileGuard & lfguard)
+{
+    if (useLockFile && lockFile.get ())
+    {
+        try
+        {
+            lfguard.attach_and_lock (*lockFile);
+        }
+        catch (std::runtime_error const &)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 void
 Appender::doAppend(const log4cplus::spi::InternalLoggingEvent& event)
 {
@@ -270,17 +292,8 @@ Appender::doAppend(const log4cplus::spi::InternalLoggingEvent& event)
     // Lock system wide lock.
 
     helpers::LockFileGuard lfguard;
-    if (useLockFile && lockFile.get ())
-    {
-        try
-        {
-            lfguard.attach_and_lock (*lockFile);
-        }
-        catch (std::runtime_error const &)
-        {
-            return;
-        }
-    }
+    if (! lockFileGuard (lfguard))
+        return;
 
     // Finally append given event.
 
@@ -355,6 +368,13 @@ Layout*
 Appender::getLayout()
 {
     return layout.get();
+}
+
+
+void
+Appender::flush ()
+{
+    // Nothing here.
 }
 
 

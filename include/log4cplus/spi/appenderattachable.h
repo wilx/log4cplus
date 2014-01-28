@@ -54,9 +54,9 @@ namespace log4cplus {
             virtual void addAppender(SharedAppenderPtr newAppender) = 0;
 
             /**
-             * Get all previously added appenders as an Enumeration.  
+             * Get all previously added appenders as an Enumeration.
              */
-            virtual SharedAppenderPtrList getAllAppenders() = 0;
+            virtual SharedAppenderPtrList getAllAppenders() const = 0;
 
             /**
              * Get an appender by name.
@@ -75,7 +75,7 @@ namespace log4cplus {
 
             /**
              * Remove the appender with the name passed as parameter from the
-             * list of appenders.  
+             * list of appenders.
              */
             virtual void removeAppender(const log4cplus::tstring& name) = 0;
 
@@ -87,4 +87,3 @@ namespace log4cplus {
 } // end namespace log4cplus
 
 #endif // LOG4CPLUS_SPI_APPENDER_ATTACHABLE_HEADER_
-

@@ -27,7 +27,7 @@
 #include <log4cplus/internal/internal.h>
 #include <log4cplus/thread/impl/tls.h>
 #include <log4cplus/thread/syncprims-pub-impl.h>
-#include <log4cplus/helpers/loglog.h>
+#include <log4cplus/helpers/forkhandler.h>
 #include <log4cplus/spi/factory.h>
 #include <log4cplus/hierarchy.h>
 #include <log4cplus/hierarchylocker.h>
@@ -35,8 +35,7 @@
 #include <cstdio>
 #include <iostream>
 #include <stdexcept>
-
-
+#include <typeinfo>
 // Forward Declarations
 namespace log4cplus
 {
@@ -359,48 +358,94 @@ threadSetup ()
 }
 
 
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
-
-struct CoreAccess
+template <typename Class>
+static
+void
+for_all_appenders_call (LoggerList const & logger_list,
+    void (Class:: * fun_ptr) ())
 {
-    static
-    log4cplus::thread::Mutex const &
-    getLogLogMutex ()
+    for (LoggerList::const_iterator it = logger_list.begin ();
+         it != logger_list.end(); ++it)
     {
-        return helpers::getLogLog ().mutex;
+        spi::AppenderAttachable const & aa = *it;
+        SharedAppenderPtrList appender_list (aa.getAllAppenders ());
+        for (SharedAppenderPtrList::iterator appender_it
+                 = appender_list.begin();
+             appender_it != appender_list.end (); ++appender_it)
+        {
+            Appender * appender = &**appender_it;
+            helpers::getLogLog ().debug (
+                LOG4CPLUS_TEXT("testing ") + appender->getName ());
+
+            Class * class_ptr;
+            helpers::getLogLog ().debug (
+                LOG4CPLUS_C_STR_TO_TSTRING (typeid (appender).name ())
+                );
+            if ((class_ptr = dynamic_cast<Class *>(appender)))
+            {
+                helpers::getLogLog ().debug (
+                    LOG4CPLUS_TEXT("calling (class_ptr->*fun_ptr) ()"));
+                log4cplus::thread::MutexGuard appender_guard(
+                    appender->access_mutex);
+                (class_ptr->*fun_ptr) ();
+            }
+        }
     }
+}
 
-    template <typename Factory>
-    static
-    log4cplus::thread::Mutex const &
-    getFactoryMutex (spi::FactoryRegistry<Factory> & reg)
-    {
-        return reg.mutex;
-    }
-};
-
-//! This mutex protects access to hierachy_locker below.
-static log4cplus::thread::Mutex fork_mutex;
-
-static std::auto_ptr<HierarchyLocker> hierarchy_locker;
 
 
 static
 void
+at_exit ()
+{
+    DefaultContext * const ctx = get_dc ();
+
+    ctx->loglog.debug (LOG4CPLUS_TEXT ("preparing exit"));
+
+    // Lock loggers hierarchy.
+
+    Hierarchy & hierarchy = ctx->hierarchy;
+    std::auto_ptr<HierarchyLocker> hl (new HierarchyLocker (hierarchy));
+
+    // Tell all appenders to flush.
+
+    LoggerList logger_list = hierarchy.getCurrentLoggers ();
+    logger_list.insert (logger_list.end (), hierarchy.getRoot ());
+    for_all_appenders_call<Appender> (logger_list,
+        &Appender::flush);
+}
+
+
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+static
+void
 prepare_fork ()
 {
-    std::auto_ptr<HierarchyLocker> hl (
-        new HierarchyLocker (getDefaultHierarchy ()));
+    DefaultContext * const ctx = get_dc ();
 
-    ConsoleAppender::getOutputMutex ().lock ();
-    CoreAccess::getLogLogMutex ().lock ();
-    CoreAccess::getFactoryMutex(spi::getLocaleFactoryRegistry ()).lock ();
-    CoreAccess::getFactoryMutex(spi::getFilterFactoryRegistry ()).lock ();
-    CoreAccess::getFactoryMutex(spi::getLayoutFactoryRegistry ()).lock ();
-    CoreAccess::getFactoryMutex(spi::getAppenderFactoryRegistry ()).lock ();
+    ctx->loglog.debug (LOG4CPLUS_TEXT ("preparing fork"));
 
-    fork_mutex.lock ();
-    hierarchy_locker = hl;
+    // Lock loggers hierarchy.
+
+    Hierarchy & hierarchy = ctx->hierarchy;
+    std::auto_ptr<HierarchyLocker> hl (new HierarchyLocker (hierarchy));
+
+    // Notify all appenders about impending fork.
+
+    LoggerList logger_list = hierarchy.getCurrentLoggers ();
+    logger_list.insert (logger_list.end (), hierarchy.getRoot ());
+    for_all_appenders_call<helpers::ForkHandler> (logger_list,
+        &helpers::ForkHandler::prepare_fork);
+
+    // Flush standard streams.
+
+    tcerr.flush ();
+    tcout.flush ();
+
+    std::fflush (0);
+
+    ctx->loglog.debug (LOG4CPLUS_TEXT ("done preparing fork"));
 }
 
 
@@ -408,32 +453,7 @@ static
 void
 after_fork_parent ()
 {
-    std::auto_ptr<HierarchyLocker> hl (hierarchy_locker);
-
-    log4cplus::thread::MutexGuard fork_guard;
-    fork_guard.attach (fork_mutex);
-
-    log4cplus::thread::MutexGuard console_guard;
-    console_guard.attach (ConsoleAppender::getOutputMutex ());
-
-    log4cplus::thread::MutexGuard loglog_guard;
-    loglog_guard.attach (CoreAccess::getLogLogMutex ());
-
-    log4cplus::thread::MutexGuard locale_guard;
-    locale_guard.attach (
-        CoreAccess::getFactoryMutex(spi::getLocaleFactoryRegistry ()));
-
-    log4cplus::thread::MutexGuard filter_guard;
-    filter_guard.attach (
-        CoreAccess::getFactoryMutex(spi::getFilterFactoryRegistry ()));
-
-    log4cplus::thread::MutexGuard layout_guard;
-    layout_guard.attach (
-        CoreAccess::getFactoryMutex(spi::getLayoutFactoryRegistry ()));
-
-    log4cplus::thread::MutexGuard appender_guard;
-    appender_guard.attach (
-        CoreAccess::getFactoryMutex(spi::getAppenderFactoryRegistry ()));
+    helpers::getLogLog ().debug (LOG4CPLUS_TEXT ("after fork in parent"));
 }
 
 
@@ -442,9 +462,7 @@ void
 after_fork_child ()
 {
     get_dc ()->TTCCLayout_time_base = helpers::Time::gettimeofday();
-
-    // Rest of the procedure is the same.
-    after_fork_parent ();
+    helpers::getLogLog ().debug (LOG4CPLUS_TEXT ("after fork in child"));
 }
 
 #endif
@@ -468,7 +486,10 @@ initializeLog4cplus()
 #if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
     int ret
         = pthread_atfork (prepare_fork, after_fork_parent, after_fork_child);
+    (void)ret;
 #endif
+
+    std::atexit (at_exit);
 
     initialized = true;
 }

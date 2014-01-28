@@ -14,6 +14,7 @@ SINGLE_THREADED_SRC = \
 	%D%/fileappender.cxx \
 	%D%/fileinfo.cxx \
 	%D%/filter.cxx \
+	%D%/forkhandler.cxx \
 	%D%/global-init.cxx \
 	%D%/hierarchy.cxx \
 	%D%/hierarchylocker.cxx \

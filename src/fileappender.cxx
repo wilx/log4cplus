@@ -67,7 +67,7 @@ namespace
 long const LOG4CPLUS_FILE_NOT_FOUND = ENOENT;
 
 
-static 
+static
 long
 file_rename (tstring const & src, tstring const & target)
 {
@@ -116,8 +116,8 @@ loglog_renaming_result (helpers::LogLog & loglog, tstring const & src,
     if (ret == 0)
     {
         loglog.debug (
-            LOG4CPLUS_TEXT("Renamed file ") 
-            + src 
+            LOG4CPLUS_TEXT("Renamed file ")
+            + src
             + LOG4CPLUS_TEXT(" to ")
             + target);
     }
@@ -143,7 +143,7 @@ loglog_opening_result (helpers::LogLog & loglog,
     if (! os)
     {
         loglog.error (
-            LOG4CPLUS_TEXT("Failed to open file ") 
+            LOG4CPLUS_TEXT("Failed to open file ")
             + filename);
     }
 }
@@ -230,7 +230,7 @@ FileAppender::FileAppender(const tstring& filename_,
 }
 
 
-FileAppender::FileAppender(const Properties& props, 
+FileAppender::FileAppender(const Properties& props,
                            std::ios_base::openmode mode_)
     : Appender(props)
     , immediateFlush(true)
@@ -269,7 +269,7 @@ FileAppender::FileAppender(const Properties& props,
 
 
 void
-FileAppender::init(const tstring& filename_, 
+FileAppender::init(const tstring& filename_,
                    std::ios_base::openmode mode_,
                    const log4cplus::tstring& lockFileName_)
 {
@@ -302,7 +302,7 @@ FileAppender::init(const tstring& filename_,
     imbue (get_locale_by_name (localeName));
 
     if(!out.good()) {
-        getErrorHandler()->error(  LOG4CPLUS_TEXT("Unable to open file: ") 
+        getErrorHandler()->error(  LOG4CPLUS_TEXT("Unable to open file: ")
                                  + filename);
         return;
     }
@@ -322,7 +322,7 @@ FileAppender::~FileAppender()
 // FileAppender public methods
 ///////////////////////////////////////////////////////////////////////////////
 
-void 
+void
 FileAppender::close()
 {
     thread::MutexGuard guard (access_mutex);
@@ -348,6 +348,24 @@ FileAppender::getloc () const
 }
 
 
+void
+FileAppender::flush ()
+{
+    thread::MutexGuard guard (access_mutex);
+
+    // Lock system wide lock.
+
+    helpers::LockFileGuard lfguard;
+    if (! lockFileGuard (lfguard))
+        return;
+
+    // Flush stream.
+
+    if (! out.bad ())
+        out.flush ();
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // FileAppender protected methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -359,11 +377,11 @@ FileAppender::append(const spi::InternalLoggingEvent& event)
 {
     if(!out.good()) {
         if(!reopen()) {
-            getErrorHandler()->error(  LOG4CPLUS_TEXT("file is not open: ") 
+            getErrorHandler()->error(  LOG4CPLUS_TEXT("file is not open: ")
                                      + filename);
             return;
         }
-        // Resets the error handler to make it 
+        // Resets the error handler to make it
         // ready to handle a future append error.
         else
             getErrorHandler()->reset();
@@ -421,6 +439,15 @@ FileAppender::reopen()
     }
     return false;
 }
+
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+void
+FileAppender::prepare_fork ()
+{
+    flush ();
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // RollingFileAppender ctors and dtor
@@ -524,7 +551,7 @@ RollingFileAppender::rollover(bool alreadyLocked)
     out.close();
     // Reset flags since the C++ standard specified that all the flags
     // should remain unchanged on a close.
-    out.clear(); 
+    out.clear();
 
     if (useLockFile)
     {
@@ -575,8 +602,8 @@ RollingFileAppender::rollover(bool alreadyLocked)
 #endif
 
         loglog.debug (
-            LOG4CPLUS_TEXT("Renaming file ") 
-            + filename 
+            LOG4CPLUS_TEXT("Renaming file ")
+            + filename
             + LOG4CPLUS_TEXT(" to ")
             + target);
         ret = file_rename (filename, target);
@@ -636,7 +663,7 @@ DailyRollingFileAppender::DailyRollingFileAppender(
             + properties.getProperty(LOG4CPLUS_TEXT("Schedule")));
         theSchedule = DAILY;
     }
-    
+
     properties.getInt (maxBackupIndex, LOG4CPLUS_TEXT("MaxBackupIndex"));
 
     init(theSchedule);
@@ -791,12 +818,12 @@ DailyRollingFileAppender::rollover(bool alreadyLocked)
     // possible to rename over existing file, e.g. "log.2009-11-07".
     ret = file_remove (scheduledFilename);
 #endif
-   
+
     // Rename filename to scheduledFilename,
     // e.g. rename "log" to "log.2009-11-07".
     loglog.debug(
         LOG4CPLUS_TEXT("Renaming file ")
-        + filename 
+        + filename
         + LOG4CPLUS_TEXT(" to ")
         + scheduledFilename);
     ret = file_rename (filename, scheduledFilename);
@@ -822,7 +849,7 @@ DailyRollingFileAppender::calculateNextRolloverTime(const Time& t) const
 {
     switch(schedule)
     {
-    case MONTHLY: 
+    case MONTHLY:
     {
         struct tm nextMonthTime;
         t.localtime(&nextMonthTime);

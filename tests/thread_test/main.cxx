@@ -1,4 +1,3 @@
-
 #include <log4cplus/consoleappender.h>
 #include <log4cplus/layout.h>
 #include <log4cplus/logger.h>
@@ -9,9 +8,11 @@
 #include <log4cplus/streams.h>
 #include <log4cplus/loggingmacros.h>
 #include <log4cplus/tracelogger.h>
+#include <log4cplus/fileappender.h>
 #include <exception>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 
 using namespace std;
@@ -21,13 +22,13 @@ using namespace log4cplus::thread;
 
 
 #define MILLIS_TO_NANOS 1000
-#define NUM_THREADS 4
-#define NUM_LOOPS 10
+#define NUM_THREADS 1
+#define NUM_LOOPS 1
 
 class SlowObject {
 public:
-    SlowObject() 
-        : logger(Logger::getInstance(LOG4CPLUS_TEXT("SlowObject"))) 
+    SlowObject()
+        : logger(Logger::getInstance(LOG4CPLUS_TEXT("SlowObject")))
     {
         logger.setLogLevel(TRACE_LOG_LEVEL);
     }
@@ -58,10 +59,10 @@ private:
 
 class TestThread : public AbstractThread {
 public:
-    TestThread (tstring const & n, SlowObject * so) 
+    TestThread (tstring const & n, SlowObject * so)
         : name(n)
         , slow(so)
-        , logger(Logger::getInstance(LOG4CPLUS_TEXT("test.TestThread"))) 
+        , logger(Logger::getInstance(LOG4CPLUS_TEXT("test.TestThread")))
      { }
 
     virtual void run();
@@ -74,11 +75,11 @@ private:
 
 
 int
-main() 
+main()
 {
     log4cplus::initialize();
     try
-    {    
+    {
         auto_ptr<SlowObject> slowObject(new SlowObject());
         log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(true);
         Logger logger = Logger::getInstance(LOG4CPLUS_TEXT("main"));
@@ -86,12 +87,13 @@ main()
         LogLevel ll = logger.getLogLevel();
         tcout << "main Priority: " << getLogLevelManager().toString(ll) << endl;
 
-        helpers::SharedObjectPtr<Appender> append_1(new ConsoleAppender());
+        //helpers::SharedObjectPtr<Appender> append_1(new ConsoleAppender());
+        helpers::SharedObjectPtr<Appender> append_1(
+            new FileAppender(LOG4CPLUS_TEXT("test.log")));
         append_1->setLayout( std::auto_ptr<Layout>(new log4cplus::TTCCLayout()) );
         Logger::getRoot().addAppender(append_1);
         append_1->setName(LOG4CPLUS_TEXT("cout"));
-
-	    append_1 = 0;
+        append_1 = 0;
 
         log4cplus::helpers::SharedObjectPtr<TestThread> threads[NUM_THREADS];
         int i = 0;
@@ -114,10 +116,10 @@ main()
         LOG4CPLUS_INFO(logger, "Exiting main()...");
     }
     catch(std::exception &e) {
-        LOG4CPLUS_FATAL(Logger::getRoot(), "main()- Exception occured: " << e.what());
+        LOG4CPLUS_FATAL(Logger::getRoot(), "main()- Exception occurred: " << e.what());
     }
     catch(...) {
-        LOG4CPLUS_FATAL(Logger::getRoot(), "main()- Exception occured");
+        LOG4CPLUS_FATAL(Logger::getRoot(), "main()- Exception occurred");
     }
 
     log4cplus::Logger::shutdown();
@@ -135,6 +137,20 @@ TestThread::run()
         LOG4CPLUS_DEBUG(logger, "Entering Run()...");
         for(int i=0; i<NUM_LOOPS; ++i) {
             NDCContextCreator _ndc(LOG4CPLUS_TEXT("loop"));
+
+            if (fork () == 0)
+            {
+                // child
+                sleep(0, 200 * MILLIS_TO_NANOS);
+                LOG4CPLUS_DEBUG(logger, "in child...");
+                std::exit (0);
+            }
+            else
+            {
+                // parent
+                LOG4CPLUS_DEBUG(logger, "in parent...");
+            }
+
             slow->doSomething();
         }
         LOG4CPLUS_DEBUG(logger, "Exiting run()...");

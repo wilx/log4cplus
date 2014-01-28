@@ -167,13 +167,8 @@ namespace log4cplus
 //! automatically by other means.
 LOG4CPLUS_EXPORT void threadCleanup ();
 
+//! XXX Remove after testing is done.
 #define LOG4CPLUS_WITH_ATFORK_HANDLERS
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
-//! Nothing to see here, move along. CoreAccess is just an internal
-//! detail and this is just a convenient place declare it.
-struct CoreAccess;
-
-#endif
 
 //! Initializes log4cplus.
 LOG4CPLUS_EXPORT void initialize ();

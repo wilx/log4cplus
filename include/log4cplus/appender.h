@@ -151,7 +151,7 @@ namespace log4cplus {
         /**
          * Release any resources allocated within the appender such as file
          * handles, network connections, etc.
-         * 
+         *
          * It is a programming error to append to a closed appender.
          */
         virtual void close() = 0;
@@ -168,6 +168,16 @@ namespace log4cplus {
          */
         void doAppend(const log4cplus::spi::InternalLoggingEvent& event);
 
+    protected:
+        /**
+         * Subclasses of <code>Appender</code> should implement this
+         * method to perform actual logging.
+         * @see doAppend method.
+         */
+        virtual void append(const log4cplus::spi::InternalLoggingEvent& event)
+          = 0;
+
+    public:
         /**
          * Get the name of this appender. The name uniquely identifies the
          * appender.
@@ -200,7 +210,7 @@ namespace log4cplus {
 
         /**
          * Returns the layout of this appender. The value may be NULL.
-         * 
+         *
          * This class owns the returned pointer.
          */
         virtual Layout* getLayout();
@@ -224,7 +234,7 @@ namespace log4cplus {
         /**
          * Set the threshold LogLevel. All log events with lower LogLevel
          * than the threshold LogLevel are ignored by the appender.
-         * 
+         *
          * In configuration files this option is specified by setting the
          * value of the <b>Threshold</b> option to a LogLevel
          * string, such as "DEBUG", "INFO" and so on.
@@ -240,16 +250,18 @@ namespace log4cplus {
             return ((ll != NOT_SET_LOG_LEVEL) && (ll >= threshold));
         }
 
-    protected:
-      // Methods
         /**
-         * Subclasses of <code>Appender</code> should implement this
-         * method to perform actual logging.
-         * @see doAppend method.
+         * Flush any appender's buffers. This function does nothing by
+         * default. Appenders should override it if they are able to / need to
+         * flush state, e.g., before <code>fork()</code> or before process
+         * exits.
          */
-        virtual void append(const log4cplus::spi::InternalLoggingEvent& event) = 0;
+        virtual void flush ();
 
-        tstring & formatEvent (const log4cplus::spi::InternalLoggingEvent& event) const;
+    protected:
+        tstring & formatEvent (const log4cplus::spi::InternalLoggingEvent &
+            event) const;
+        bool lockFileGuard (helpers::LockFileGuard & lfguard);
 
       // Data
         /** The layout variable does not need to be set if the appender
@@ -286,4 +298,3 @@ namespace log4cplus {
 } // end namespace log4cplus
 
 #endif // LOG4CPLUS_APPENDER_HEADER_
-

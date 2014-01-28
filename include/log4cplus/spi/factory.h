@@ -138,11 +138,11 @@ namespace log4cplus {
 
         /**
          * This template class is used as a "Factory Registry".  Objects are
-         * "entered" into the registry with a "name" using the 
-         * <code>put()</code> method.  (The registry then owns the object.)  
-         * These object can then be retrieved using the <code>get()</code> 
+         * "entered" into the registry with a "name" using the
+         * <code>put()</code> method.  (The registry then owns the object.)
+         * These object can then be retrieved using the <code>get()</code>
          * method.
-         * 
+         *
          * <b>Note:</b>  This class is Thread-safe.
          */
         template<class T>
@@ -164,7 +164,7 @@ namespace log4cplus {
             bool put(std::auto_ptr<T> object) {
                  bool putValResult = putVal(object->getTypeName(), object.get());
                  object.release();
-                 return putValResult; 
+                 return putValResult;
             }
 
             /**
@@ -179,10 +179,6 @@ namespace log4cplus {
             virtual void deleteObject(void *object) const {
                 delete static_cast<T*>(object);
             }
-
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
-            friend struct log4cplus::CoreAccess;
-#endif
         };
 
 
@@ -259,7 +255,7 @@ namespace log4cplus {
 
         #define LOG4CPLUS_REG_APPENDER(reg, appendername)                             \
         LOG4CPLUS_REG_PRODUCT (reg, "log4cplus::", appendername, log4cplus::,         \
-            log4cplus::spi::AppenderFactory) 
+            log4cplus::spi::AppenderFactory)
 
         #define LOG4CPLUS_REG_LAYOUT(reg, layoutname)                                 \
         LOG4CPLUS_REG_PRODUCT (reg, "log4cplus::", layoutname, log4cplus::,           \

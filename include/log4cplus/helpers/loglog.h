@@ -70,7 +70,7 @@ namespace log4cplus {
 
             /**
              * In quite mode no LogLog generates strictly no output, not even
-             * for errors. 
+             * for errors.
              *
              * @param quietMode A true for not
              */
@@ -133,10 +133,6 @@ namespace log4cplus {
 
             LOG4CPLUS_PRIVATE LogLog(const LogLog&);
             LOG4CPLUS_PRIVATE LogLog & operator = (LogLog const &);
-
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
-            friend struct log4cplus::CoreAccess;
-#endif
         };
 
         LOG4CPLUS_EXPORT LogLog & getLogLog ();
@@ -146,4 +142,3 @@ namespace log4cplus {
 
 
 #endif // LOG4CPLUS_HELPERS_LOGLOG
-

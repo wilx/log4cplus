@@ -34,6 +34,7 @@
 #include <log4cplus/fstreams.h>
 #include <log4cplus/helpers/timehelper.h>
 #include <log4cplus/helpers/lockfile.h>
+#include <log4cplus/helpers/forkhandler.h>
 #include <fstream>
 #include <locale>
 #include <memory>
@@ -43,13 +44,13 @@ namespace log4cplus
 {
 
     /**
-     * Appends log events to a file. 
-     * 
+     * Appends log events to a file.
+     *
      * <h3>Properties</h3>
      * <dl>
      * <dt><tt>File</tt></dt>
      * <dd>This property specifies output file name.</dd>
-     * 
+     *
      * <dt><tt>ImmediateFlush</tt></dt>
      * <dd>When it is set true, output stream will be flushed after
      * each appended event.</dd>
@@ -106,10 +107,15 @@ namespace log4cplus
      * </dd>
      * </dl>
      */
-    class LOG4CPLUS_EXPORT FileAppender : public Appender {
+    class LOG4CPLUS_EXPORT FileAppender
+      : public Appender
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+      , virtual protected helpers::ForkHandler
+#endif
+    {
     public:
       // Ctors
-        FileAppender(const log4cplus::tstring& filename, 
+        FileAppender(const log4cplus::tstring& filename,
                      std::ios_base::openmode mode = std::ios_base::trunc,
                      bool immediateFlush = true, bool createDirs = false);
         FileAppender(const log4cplus::helpers::Properties& properties,
@@ -125,11 +131,17 @@ namespace log4cplus
       //! provide UTF-8 locale in case UNICODE macro is defined.
         virtual std::locale imbue(std::locale const& loc);
 
-      //! \returns Locale imbued in fstream. 
+      //! \returns Locale imbued in fstream.
         virtual std::locale getloc () const;
+
+        virtual void flush ();
 
     protected:
         virtual void append(const spi::InternalLoggingEvent& event);
+
+#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+        virtual void prepare_fork ();
+#endif
 
         void open(std::ios_base::openmode mode);
         bool reopen();
@@ -143,7 +155,7 @@ namespace log4cplus
          * <code>false</code>, then there is a good chance that the last few
          * logs events are not actually written to persistent media if and
          * when the application crashes.
-         *  
+         *
          * The <code>immediateFlush</code> variable is set to
          * <code>true</code> by default.
          */
@@ -158,10 +170,10 @@ namespace log4cplus
         bool createDirs;
 
         /**
-         * When any append operation fails, <code>reopenDelay</code> says 
-         * for how many seconds the next attempt to re-open the log file and 
-         * resume logging will be delayed. If <code>reopenDelay</code> is zero, 
-         * each failed append operation will cause log file to be re-opened. 
+         * When any append operation fails, <code>reopenDelay</code> says
+         * for how many seconds the next attempt to re-open the log file and
+         * resume logging will be delayed. If <code>reopenDelay</code> is zero,
+         * each failed append operation will cause log file to be re-opened.
          * By default, <code>reopenDelay</code> is 1 second.
          */
         int reopenDelay;
@@ -276,7 +288,7 @@ namespace log4cplus
 
       // Dtor
         virtual ~DailyRollingFileAppender();
-        
+
       // Methods
         virtual void close();
 
@@ -302,4 +314,3 @@ namespace log4cplus
 } // end namespace log4cplus
 
 #endif // LOG4CPLUS_FILE_APPENDER_HEADER_
-
