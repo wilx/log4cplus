@@ -379,8 +379,8 @@ for_all_appenders_call (LoggerList const & logger_list,
 
             Class * class_ptr;
             helpers::getLogLog ().debug (
-                LOG4CPLUS_C_STR_TO_TSTRING (typeid (appender).name ())
-                );
+                LOG4CPLUS_C_STR_TO_TSTRING (
+                    typeid (*appender).name ()));
             if ((class_ptr = dynamic_cast<Class *>(appender)))
             {
                 helpers::getLogLog ().debug (
@@ -393,28 +393,6 @@ for_all_appenders_call (LoggerList const & logger_list,
     }
 }
 
-
-
-static
-void
-at_exit ()
-{
-    DefaultContext * const ctx = get_dc ();
-
-    ctx->loglog.debug (LOG4CPLUS_TEXT ("preparing exit"));
-
-    // Lock loggers hierarchy.
-
-    Hierarchy & hierarchy = ctx->hierarchy;
-    std::auto_ptr<HierarchyLocker> hl (new HierarchyLocker (hierarchy));
-
-    // Tell all appenders to flush.
-
-    LoggerList logger_list = hierarchy.getCurrentLoggers ();
-    logger_list.insert (logger_list.end (), hierarchy.getRoot ());
-    for_all_appenders_call<Appender> (logger_list,
-        &Appender::flush);
-}
 
 
 #if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
@@ -488,8 +466,6 @@ initializeLog4cplus()
         = pthread_atfork (prepare_fork, after_fork_parent, after_fork_child);
     (void)ret;
 #endif
-
-    std::atexit (at_exit);
 
     initialized = true;
 }
