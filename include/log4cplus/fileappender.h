@@ -110,7 +110,7 @@ namespace log4cplus
     class LOG4CPLUS_EXPORT FileAppender
       : public Appender
 #if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
-      , virtual protected helpers::ForkHandler
+      , public virtual helpers::ForkHandler
 #endif
     {
     public:
