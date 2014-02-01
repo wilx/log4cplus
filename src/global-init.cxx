@@ -35,7 +35,7 @@
 #include <cstdio>
 #include <iostream>
 #include <stdexcept>
-#include <typeinfo>
+
 // Forward Declarations
 namespace log4cplus
 {
@@ -374,18 +374,10 @@ for_all_appenders_call (LoggerList const & logger_list,
              appender_it != appender_list.end (); ++appender_it)
         {
             Appender * appender = &**appender_it;
-            helpers::getLogLog ().debug (
-                LOG4CPLUS_TEXT("testing ") + appender->getName ());
-
             Class * class_ptr;
-            helpers::getLogLog ().debug (
-                LOG4CPLUS_C_STR_TO_TSTRING (
-                    typeid (*appender).name ()));
             if ((class_ptr = dynamic_cast<Class *>(appender)))
             {
-                helpers::getLogLog ().debug (
-                    LOG4CPLUS_TEXT("calling (class_ptr->*fun_ptr) ()"));
-                log4cplus::thread::MutexGuard appender_guard(
+                log4cplus::thread::MutexGuard appender_guard (
                     appender->access_mutex);
                 (class_ptr->*fun_ptr) ();
             }
@@ -402,7 +394,7 @@ prepare_fork ()
 {
     DefaultContext * const ctx = get_dc ();
 
-    ctx->loglog.debug (LOG4CPLUS_TEXT ("preparing fork"));
+    ctx->loglog.debug (LOG4CPLUS_TEXT ("preparing for fork"));
 
     // Lock loggers hierarchy.
 
@@ -423,16 +415,14 @@ prepare_fork ()
 
     std::fflush (0);
 
-    ctx->loglog.debug (LOG4CPLUS_TEXT ("done preparing fork"));
+    ctx->loglog.debug (LOG4CPLUS_TEXT ("done preparing for fork"));
 }
 
 
 static
 void
 after_fork_parent ()
-{
-    helpers::getLogLog ().debug (LOG4CPLUS_TEXT ("after fork in parent"));
-}
+{ }
 
 
 static
@@ -440,7 +430,6 @@ void
 after_fork_child ()
 {
     get_dc ()->TTCCLayout_time_base = helpers::Time::gettimeofday();
-    helpers::getLogLog ().debug (LOG4CPLUS_TEXT ("after fork in child"));
 }
 
 #endif

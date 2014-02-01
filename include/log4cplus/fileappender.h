@@ -141,6 +141,8 @@ namespace log4cplus
 
 #if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
         virtual void prepare_fork ();
+        using ForkHandler::after_fork_in_parent;
+        using ForkHandler::after_fork_in_child;
 #endif
 
         void open(std::ios_base::openmode mode);
