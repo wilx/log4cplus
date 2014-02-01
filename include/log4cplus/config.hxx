@@ -167,9 +167,6 @@ namespace log4cplus
 //! automatically by other means.
 LOG4CPLUS_EXPORT void threadCleanup ();
 
-//! XXX Remove after testing is done.
-#define LOG4CPLUS_WITH_ATFORK_HANDLERS
-
 //! Initializes log4cplus.
 LOG4CPLUS_EXPORT void initialize ();
 

@@ -440,7 +440,7 @@ FileAppender::reopen()
     return false;
 }
 
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+#if defined (LOG4CPLUS_USE_PTHREADS)
 void
 FileAppender::prepare_fork ()
 {

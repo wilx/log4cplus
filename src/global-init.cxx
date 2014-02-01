@@ -386,8 +386,7 @@ for_all_appenders_call (LoggerList const & logger_list,
 }
 
 
-
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+#if defined (LOG4CPLUS_USE_PTHREADS)
 static
 void
 prepare_fork ()
@@ -432,7 +431,7 @@ after_fork_child ()
     get_dc ()->TTCCLayout_time_base = helpers::Time::gettimeofday();
 }
 
-#endif
+#endif // LOG4CPLUS_USE_PTHREADS
 
 
 void
@@ -450,7 +449,7 @@ initializeLog4cplus()
     Logger::getRoot();
     initializeFactoryRegistry();
 
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+#if defined (LOG4CPLUS_USE_PTHREADS)
     int ret
         = pthread_atfork (prepare_fork, after_fork_parent, after_fork_child);
     (void)ret;

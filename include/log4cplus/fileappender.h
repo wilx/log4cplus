@@ -109,7 +109,7 @@ namespace log4cplus
      */
     class LOG4CPLUS_EXPORT FileAppender
       : public Appender
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+#if defined (LOG4CPLUS_USE_PTHREADS)
       , public virtual helpers::ForkHandler
 #endif
     {
@@ -139,7 +139,7 @@ namespace log4cplus
     protected:
         virtual void append(const spi::InternalLoggingEvent& event);
 
-#if defined (LOG4CPLUS_WITH_ATFORK_HANDLERS)
+#if defined (LOG4CPLUS_USE_PTHREADS)
         virtual void prepare_fork ();
         using ForkHandler::after_fork_in_parent;
         using ForkHandler::after_fork_in_child;
