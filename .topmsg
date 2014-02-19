@@ -1,0 +1,6 @@
+From: Vaclav Zeman <wilx@users.sourceforge.net>
+Subject: [PATCH] fix-snprintf-on-EILSEQ
+
+Fix bug SF#295.
+
+Signed-off-by: Vaclav Zeman <wilx@users.sourceforge.net>
