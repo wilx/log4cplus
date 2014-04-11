@@ -37,6 +37,7 @@
 #include <log4cplus/tracelogger.h>
 #include <sstream>
 #include <utility>
+#include <type_traits>
 
 
 #if defined(_MSC_VER)
@@ -121,6 +122,24 @@ macros_get_logger (tchar const * logger)
 }
 
 
+template <typename T>
+inline
+T const &
+get_return_type (T const &);
+
+template <typename T>
+inline
+T
+get_return_type (T &&);
+
+// This covers string literals, reference to character array decays to a
+// pointer.
+template <typename T>
+inline
+T const *
+get_return_type (T const *);
+
+
 LOG4CPLUS_EXPORT void clear_tostringstream (tostringstream &);
 
 
@@ -133,6 +152,76 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
     log4cplus::LogLevel, log4cplus::tchar const *, char const *, int,
     char const *);
 
+
+// Either use temporary instances of ostringstream
+// and snprintf_buf, or use thread-local instances.
+#if defined (LOG4CPLUS_MACRO_DISABLE_TLS)
+#  define LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(var)    \
+    log4cplus::tostringstream var
+
+#  define LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(var)     \
+    log4cplus::helpers::snprintf_buf var
+
+#else
+#  define LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(var)    \
+    log4cplus::tostringstream & var                         \
+        = log4cplus::detail::get_macro_body_oss ()
+
+#  define LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(var)     \
+    log4cplus::helpers::snprintf_buf & var                  \
+        = log4cplus::detail::get_macro_body_snprintf_buf ()
+
+#endif
+
+
+template <typename MaybeLogger>
+using MacroBodyConstraints =
+typename
+std::enable_if<
+    std::is_convertible<
+        typename std::remove_reference<MaybeLogger>::type,
+        tstring>::value
+    || std::is_convertible<
+        typename std::remove_reference<MaybeLogger>::type,
+        tchar const *>::value
+    || std::is_convertible<
+        typename std::remove_reference<MaybeLogger>::type,
+        Logger>::value
+    ,
+    void>::type;
+
+
+template <typename MaybeLogger, typename FormattingFunc>
+inline
+MacroBodyConstraints<MaybeLogger>
+macro_body (MaybeLogger && maybeLogger, LogLevel ll, char const * file,
+    char const * func, int line, FormattingFunc const & formattingFunc)
+{
+    Logger const & _logger = macros_get_logger (
+        std::forward<MaybeLogger>(maybeLogger));
+    if (_logger.isEnabledFor (ll))
+    {
+        LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (log4cplus_buf);
+        formattingFunc (log4cplus_buf);
+        macro_forced_log (_logger, ll, log4cplus_buf.str(), file, line, func);
+    }
+}
+
+
+template <typename MaybeLogger, typename FormattingFunc>
+inline
+MacroBodyConstraints<MaybeLogger>
+macro_body_str (MaybeLogger && maybeLogger, LogLevel ll, char const * file,
+    char const * func, int line, FormattingFunc const & formattingFunc)
+{
+    Logger const & _logger = macros_get_logger (
+        std::forward<MaybeLogger>(maybeLogger));
+    if (_logger.isEnabledFor (ll))
+    {
+        log4cplus::detail::macro_forced_log (_logger, ll, formattingFunc (),
+            file, line, func);
+    }
+}
 
 
 } // namespace detail
@@ -180,40 +269,16 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
     LOG4CPLUS_MACRO_ ## logLevel (pred)
 
 
-// Either use temporary instances of ostringstream
-// and snprintf_buf, or use thread-local instances.
-#if defined (LOG4CPLUS_MACRO_DISABLE_TLS)
-#  define LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(var)    \
-    log4cplus::tostringstream var
-
-#  define LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(var)     \
-    log4cplus::helpers::snprintf_buf var
-
-#else
-#  define LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM(var)    \
-    log4cplus::tostringstream & var                         \
-        = log4cplus::detail::get_macro_body_oss ()
-
-#  define LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF(var)     \
-    log4cplus::helpers::snprintf_buf & var                  \
-        = log4cplus::detail::get_macro_body_snprintf_buf ()
-
-#endif
-
-
 #define LOG4CPLUS_MACRO_BODY(logger, logEvent, logLevel)                \
     LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()                                \
     do {                                                                \
-        log4cplus::Logger const & _l                                    \
-            = log4cplus::detail::macros_get_logger (logger);            \
-        if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
-                _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_OSTRINGSTREAM (_log4cplus_buf); \
+        auto _formattingFunc =                                          \
+            [&] (log4cplus::tostream & _log4cplus_buf) {                \
             _log4cplus_buf << logEvent;                                 \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _log4cplus_buf.str(),              \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
-        }                                                               \
+        };                                                              \
+        log4cplus::detail::macro_body ((logger), log4cplus::logLevel,   \
+            __FILE__, LOG4CPLUS_MACRO_FUNCTION (), __LINE__,            \
+            _formattingFunc);                                           \
     } while (0)                                                         \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
 
@@ -221,16 +286,18 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
 #define LOG4CPLUS_MACRO_STR_BODY(logger, logEvent, logLevel)            \
     LOG4CPLUS_SUPPRESS_DOWHILE_WARNING()                                \
     do {                                                                \
-        log4cplus::Logger const & _l                                    \
-            = log4cplus::detail::macros_get_logger (logger);            \
-        if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
-                _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, logEvent,                          \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
-        }                                                               \
+        using FMTFuncReturnValue2 =                                     \
+            decltype (log4cplus::detail::get_return_type (logEvent));   \
+        auto _formattingFunc =                                          \
+            [&] () -> FMTFuncReturnValue2 {                             \
+            return (logEvent);                                          \
+        };                                                              \
+        log4cplus::detail::macro_body_str ((logger),                    \
+            log4cplus::logLevel, __FILE__, LOG4CPLUS_MACRO_FUNCTION (), \
+            __LINE__, _formattingFunc);                                 \
     } while(0)                                                          \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
+
 
 #if defined (LOG4CPLUS_HAVE_C99_VARIADIC_MACROS)
 #define LOG4CPLUS_MACRO_FMT_BODY(logger, logLevel, logFmt, ...)         \
@@ -240,12 +307,14 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
             = log4cplus::detail::macros_get_logger (logger);            \
         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
                 _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);         \
-            log4cplus::tchar const * _logEvent                          \
-                = _snpbuf.print (logFmt, __VA_ARGS__);                  \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _logEvent,                         \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
+            [&] (char const * _func) {                                  \
+                LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);     \
+                log4cplus::tchar const * _logEvent                      \
+                    = _snpbuf.print (logFmt, __VA_ARGS__);              \
+                log4cplus::detail::macro_forced_log (_l,                \
+                    log4cplus::logLevel, _logEvent,                     \
+                    __FILE__, __LINE__, _func);                         \
+            } (LOG4CPLUS_MACRO_FUNCTION ());                            \
         }                                                               \
     } while(0)                                                          \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
@@ -258,12 +327,14 @@ LOG4CPLUS_EXPORT void macro_forced_log (log4cplus::Logger const &,
             = log4cplus::detail::macros_get_logger (logger);            \
         if (LOG4CPLUS_MACRO_LOGLEVEL_PRED (                             \
                 _l.isEnabledFor (log4cplus::logLevel), logLevel)) {     \
-            LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);         \
-            log4cplus::tchar const * _logEvent                          \
-                = _snpbuf.print (logFmt, logArgs);                      \
-            log4cplus::detail::macro_forced_log (_l,                    \
-                log4cplus::logLevel, _logEvent,                         \
-                __FILE__, __LINE__, LOG4CPLUS_MACRO_FUNCTION ());       \
+            [&] (char const * _func) {                                  \
+                LOG4CPLUS_MACRO_INSTANTIATE_SNPRINTF_BUF (_snpbuf);     \
+                log4cplus::tchar const * _logEvent                      \
+                    = _snpbuf.print (logFmt, logArgs);                  \
+                log4cplus::detail::macro_forced_log (_l,                \
+                    log4cplus::logLevel, _logEvent,                     \
+                    __FILE__, __LINE__, _func);                         \
+            } (LOG4CPLUS_MACRO_FUNCTION ());                            \
         }                                                               \
     } while(0)                                                          \
     LOG4CPLUS_RESTORE_DOWHILE_WARNING()
