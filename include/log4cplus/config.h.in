@@ -248,6 +248,9 @@
    or __hidden construct. */
 #undef LOG4CPLUS_DECLSPEC_PRIVATE
 
+/* enable ipv6 */
+#undef LOG4CPLUS_ENABLE_IPV6
+
 /* */
 #undef LOG4CPLUS_HAVE_ARPA_INET_H
 

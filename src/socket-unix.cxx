@@ -51,7 +51,7 @@
 #if defined (LOG4CPLUS_HAVE_ARPA_INET_H)
 #include <arpa/inet.h>
 #endif
- 
+
 #if defined (LOG4CPLUS_HAVE_ERRNO_H)
 #include <errno.h>
 #endif
@@ -76,7 +76,7 @@
 namespace log4cplus { namespace helpers {
 
 // from lockfile.cxx
-LOG4CPLUS_PRIVATE bool trySetCloseOnExec (int fd, 
+LOG4CPLUS_PRIVATE bool trySetCloseOnExec (int fd,
     helpers::LogLog & loglog = helpers::getLogLog ());
 
 
@@ -115,7 +115,7 @@ get_host_by_name (char const * hostname, std::string * name,
 
     struct addrinfo const & ai = *res;
     assert (ai.ai_family == AF_INET);
-    
+
     if (name)
         *name = ai.ai_canonname;
 
@@ -162,19 +162,30 @@ get_host_by_name (char const * hostname, std::string * name,
 SOCKET_TYPE
 openSocket(unsigned short port, SocketState& state)
 {
+#if defined (LOG4CPLUS_ENABLE_IPV6)
+    int sock = ::socket(AF_INET6, SOCK_STREAM, 0);
+#else
     int sock = ::socket(AF_INET, SOCK_STREAM, 0);
+#endif
     if(sock < 0) {
         return INVALID_SOCKET_VALUE;
     }
 
+#if defined (LOG4CPLUS_ENABLE_IPV6)
+    struct sockaddr_in6 server = sockaddr_in6 ();
+    server.sin6_family = AF_INET6;
+    server.sin6_addr = in6addr_any;
+    server.sin6_port = htons(port);
+#else
     struct sockaddr_in server = sockaddr_in ();
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(port);
+#endif
 
     int optval = 1;
     socklen_t optlen = sizeof (optval);
-    int ret = setsockopt( sock, SOL_SOCKET, SO_REUSEADDR, &optval, optlen );
+    int ret = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
     if (ret != 0)
     {
         int const eno = errno;
@@ -200,12 +211,57 @@ error:
 
 
 SOCKET_TYPE
-connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& state)
+connectSocket(const tstring& hostn, unsigned short port, bool udp,
+    SocketState& state)
 {
-    struct sockaddr_in server;
-    int sock;
+    int sock = INVALID_OS_SOCKET_VALUE;
     int retval;
 
+#if defined (LOG4CPLUS_ENABLE_IPV6) \
+    && defined (LOG4CPLUS_HAVE_GETADDRINFO)
+    struct addrinfo *rp, *result = NULL, hints;
+    std::string port_name;
+    convertIntegerToString (port_name, port);
+
+    std::memset (&hints, 0, sizeof (hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = (udp ? SOCK_DGRAM : SOCK_STREAM);
+#if defined (AI_ADDRCONFIG)
+    hints.ai_flags |= AI_ADDRCONFIG;
+#endif
+#if defined (AI_NUMERICSERV)
+    hints.ai_flags |= AI_NUMERICSERV;
+#endif
+
+    retval = getaddrinfo(LOG4CPLUS_TSTRING_TO_STRING(hostn).c_str(),
+        port_name.c_str (), &hints, &result);
+    if (retval != 0)
+        return INVALID_SOCKET_VALUE;
+
+    for (rp = result; rp != NULL; rp = rp->ai_next)
+    {
+        sock = ::socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (sock < 0)
+            continue;
+
+        while (
+            (retval = ::connect (sock,
+                reinterpret_cast<sockaddr *>(rp->ai_addr),
+                rp->ai_addrlen))
+            == -1
+            && (errno == EINTR))
+            ;
+        if (retval == 0)
+            break;
+        ::close(sock);
+    }
+    freeaddrinfo(result);
+    if (rp == NULL)
+        // No address succeeded.
+        return INVALID_SOCKET_VALUE;
+
+#else
+    struct sockaddr_in server;
     std::memset (&server, 0, sizeof (server));
     retval = get_host_by_name (LOG4CPLUS_TSTRING_TO_STRING(hostn).c_str(),
         0, &server);
@@ -227,11 +283,12 @@ connectSocket(const tstring& hostn, unsigned short port, bool udp, SocketState& 
         == -1
         && (errno == EINTR))
         ;
-    if (retval == INVALID_OS_SOCKET_VALUE) 
+    if (retval == INVALID_OS_SOCKET_VALUE)
     {
         ::close(sock);
         return INVALID_SOCKET_VALUE;
     }
+#endif
 
     state = ok;
     return to_log4cplus_socket (sock);
@@ -290,7 +347,7 @@ acceptSocket(SOCKET_TYPE sock, SocketState& state)
 
     while(
         (clientSock = accept_wrap (accept, to_os_socket (sock),
-            reinterpret_cast<struct sockaddr*>(&net_client), &len)) 
+            reinterpret_cast<struct sockaddr*>(&net_client), &len))
         == -1
         && (errno == EINTR))
         ;
@@ -322,9 +379,9 @@ long
 read(SOCKET_TYPE sock, SocketBuffer& buffer)
 {
     long res, readbytes = 0;
- 
+
     do
-    { 
+    {
         res = ::read(to_os_socket (sock), buffer.getBuffer() + readbytes,
             buffer.getMaxSize() - readbytes);
         if( res <= 0 ) {
@@ -332,7 +389,7 @@ read(SOCKET_TYPE sock, SocketBuffer& buffer)
         }
         readbytes += res;
     } while( readbytes < static_cast<long>(buffer.getMaxSize()) );
- 
+
     return readbytes;
 }
 
@@ -417,7 +474,7 @@ setTCPNoDelay (SOCKET_TYPE sock, bool val)
     if ((result = setsockopt(sock, level, TCP_NODELAY, &enabled,
                 sizeof(enabled))) != 0)
         set_last_socket_error (errno);
-    
+
     return result;
 
 #else
@@ -495,7 +552,7 @@ ServerSocket::accept ()
     {
         interrupt_pipe.revents = 0;
         accept_fd.revents = 0;
-        
+
         int ret = poll (pollfds, 2, -1);
         switch (ret)
         {
@@ -504,7 +561,7 @@ ServerSocket::accept ()
             if (errno == EINTR)
                 // Signal has interrupted the call. Just re-run it.
                 continue;
-            
+
             set_last_socket_error (errno);
             return Socket (INVALID_SOCKET_VALUE, not_opened, errno);
 
@@ -536,7 +593,7 @@ ServerSocket::accept ()
                 }
 
                 // Return Socket with state set to accept_interrupted.
-                
+
                 return Socket (INVALID_SOCKET_VALUE, accept_interrupted, 0);
             }
             else if ((accept_fd.revents & POLLIN) == POLLIN)
@@ -550,7 +607,7 @@ ServerSocket::accept ()
                 int eno = 0;
                 if (clientSock == INVALID_SOCKET_VALUE)
                     eno = get_last_socket_error ();
-                
+
                 return Socket (clientSock, st, eno);
             }
             else
