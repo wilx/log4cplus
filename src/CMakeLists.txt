@@ -47,7 +47,8 @@ set (log4cplus_sources
   threads.cxx
   timehelper.cxx
   tls.cxx
-  version.cxx)
+  version.cxx
+  ${log4cplus_SOURCE_DIR}/signals-lib/src/signals.cxx)
 
 #message (STATUS "Type: ${UNIX}|${CYGWIN}|${WIN32}")
 
