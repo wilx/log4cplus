@@ -54,7 +54,8 @@ SINGLE_THREADED_SRC = \
 	%D%/tls.cxx \
 	%D%/version.cxx \
 	%D%/win32consoleappender.cxx \
-	%D%/win32debugappender.cxx
+	%D%/win32debugappender.cxx \
+	signals-lib/src/signals.cxx
 
 LIB_SRC = $(SINGLE_THREADED_SRC)
 
