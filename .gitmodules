@@ -6,4 +6,4 @@
 	url = https://github.com/log4cplus/Catch.git
 [submodule "signals-lib"]
 	path = signals-lib
-	url = git@github.com:wilx/signals-lib.git
+	url = https://github.com/wilx/signals-lib.git
