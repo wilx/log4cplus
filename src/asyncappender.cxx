@@ -164,6 +164,9 @@ AsyncAppender::close ()
         queue_thread->join ();
 
     removeAllAppenders();
+
+    queue_thread = 0;
+    queue = 0;
 }
 
 
