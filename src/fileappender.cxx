@@ -1414,7 +1414,9 @@ TimeBasedRollingFileAppender::calculateNextRolloverTime(const Time& t) const
         next.tm_sec = 0;
         next.tm_isdst = 0;
         if (result.setTime(&next) == -1) {
-            result = t + Time(getRolloverPeriodDuration());
+            Time next_ = round_time (t, 24 * 60 * 60)
+                + Time (getRolloverPeriodDuration());
+            result = adjust_for_time_zone (next_, local_time_offset (next_));
         }
         break;
 
@@ -1426,20 +1428,25 @@ TimeBasedRollingFileAppender::calculateNextRolloverTime(const Time& t) const
         next.tm_sec = 0;
         next.tm_isdst = 0;
         if (result.setTime(&next) == -1) {
-            result = t + Time(getRolloverPeriodDuration());
+            Time next_ = round_time (t, 24 * 60 * 60)
+                + Time (getRolloverPeriodDuration());
+            result = adjust_for_time_zone (next_, local_time_offset (next_));
         }
         break;
 
     default:
     case DAILY:
+    {
+        Time next_ = round_time_and_add (t, Time (getRolloverPeriodDuration()));
+        result = adjust_for_time_zone (next_, local_time_offset (next_));
+        break;
+    }
+
     case HOURLY:
     case MINUTELY:
     {
         int periodDuration = getRolloverPeriodDuration();
-        result = t + Time(periodDuration);
-        time_t seconds = result.sec();
-        int remainder = seconds % periodDuration;
-        result.sec(seconds - remainder);
+        result = round_time_and_add (t, Time (periodDuration));
         break;
     }
     };
