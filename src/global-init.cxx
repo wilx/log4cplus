@@ -696,7 +696,7 @@ extern const
 PIMAGE_TLS_CALLBACK log4cplus_p_thread_callback_terminator = log4cplus::thread_callback_terminator;
 #pragma data_seg (pop, old_seg)
 
-#ifdef _WIN64
+#if defined(_WIN64) || defined (_M_ARM)
 #pragma comment (linker, "/INCLUDE:_tls_used")
 #pragma comment (linker, "/INCLUDE:log4cplus_p_thread_callback_initializer")
 #pragma comment (linker, "/INCLUDE:log4cplus_p_thread_callback_terminator")
