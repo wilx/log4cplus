@@ -59,7 +59,7 @@
 #include <log4cplus/helpers/loglog.h>
 #include <log4cplus/internal/env.h>
 
-#if defined (_WIN32)
+#if defined (_WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #  define LOG4CPLUS_USE_WIN32_LOCKFILEEX
 #else
 #  if defined (O_EXLOCK)
@@ -132,7 +132,7 @@ LOG4CPLUS_PRIVATE
 bool
 trySetCloseOnExec (int fd)
 {
-#if defined (WIN32)
+#if defined (WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     int ret = SetHandleInformation (get_os_HANDLE (fd), HANDLE_FLAG_INHERIT, 0);
     if (! ret)
     {
@@ -146,7 +146,7 @@ trySetCloseOnExec (int fd)
         return false;
     }
 
-#elif defined (FD_CLOEXEC)
+#elif !defined(WIN32) && defined (FD_CLOEXEC)
     int ret = fcntl (fd, F_SETFD, FD_CLOEXEC);
     if (ret == -1)
     {

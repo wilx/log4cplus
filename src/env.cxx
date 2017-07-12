@@ -82,7 +82,8 @@ struct free_deleter
 } // namespace
 
 
-#if defined (_WIN32) && defined (_MSC_VER)
+#if defined (_WIN32) && defined (_MSC_VER) \
+    && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 static inline
 errno_t
 dup_env_var (wchar_t ** buf, std::size_t * buf_len, wchar_t const * name)
@@ -103,7 +104,8 @@ dup_env_var (char ** buf, std::size_t * buf_len, char const * name)
 bool
 get_env_var (tstring & value, tstring const & name)
 {
-#if defined (_WIN32) && defined (_MSC_VER)
+#if defined (_WIN32) && defined (_MSC_VER) \
+    && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     tchar * buf = nullptr;
     std::size_t buf_len = 0;
     errno_t eno = dup_env_var (&buf, &buf_len, name.c_str ());
@@ -131,20 +133,24 @@ get_env_var (tstring & value, tstring const & name)
 
     return !! buf;
 
-#elif defined (_WIN32) && defined (UNICODE)
+#elif defined (_WIN32) && defined (UNICODE) \
+    && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     tchar const * val = _wgetenv (name.c_str ());
     if (val)
         value = val;
 
     return !! val;
 
-#else
+#elif defined (_WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     char const * val
         = std::getenv (LOG4CPLUS_TSTRING_TO_STRING (name).c_str ());
     if (val)
         value = LOG4CPLUS_STRING_TO_TSTRING (val);
 
     return !! val;
+
+#else
+    return false;
 
 #endif
 }
@@ -247,8 +253,9 @@ is_drive_letter (tchar ch)
     tchar dl = helpers::toUpper (ch);
     return LOG4CPLUS_TEXT ('A') <= dl && dl <= LOG4CPLUS_TEXT ('Z');
 }
+#endif
 
-
+#if defined(_WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 static
 tstring
 get_drive_cwd (tchar drive)
@@ -284,21 +291,23 @@ get_drive_cwd (tchar drive)
     return cstr.get ();
 }
 
-#endif
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 
 
+#if (defined (WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)) \
+    || !defined (WIN32)
 static
 tstring
 get_current_dir ()
 {
-#if defined (WIN32)
+#if defined (WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     tstring result (0x8000, LOG4CPLUS_TEXT ('\0'));
     DWORD len = GetCurrentDirectory (static_cast<DWORD>(result.size ()),
         &result[0]);
     if (len == 0 || len >= result.size())
         throw std::runtime_error ("GetCurrentDirectory");
 
-    result.resize (len);
+    result.resize(len);
     return result;
 
 #else
@@ -328,9 +337,10 @@ get_current_dir ()
 
 #endif
 }
+#endif
 
 
-#if defined (WIN32)
+#if defined (WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 static
 tchar
 get_current_drive ()
@@ -343,6 +353,7 @@ get_current_drive ()
         return 0;
 }
 #endif
+
 
 
 template <typename PathSepPred, typename Container>
@@ -364,6 +375,7 @@ split_into_components(Container & components, tstring const & path,
 }
 
 
+#if defined (WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 template <typename PathSepPred, typename Container>
 static
 void
@@ -395,14 +407,18 @@ expand_drive_relative_path (Container & components, std::size_t rel_path_index,
         drive_cwd_components.begin (),
         drive_cwd_components.end ());
 }
+#endif
 
 
+#if (defined (WIN32) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)) \
+    || !defined (WIN32)
 template <typename PathSepPred, typename Container>
 static
 void
 expand_relative_path (Container & components,
     PathSepPred is_sep = PathSepPred ())
 {
+
     // Get the current working director.
 
     tstring const cwd = get_current_dir ();
@@ -419,6 +435,7 @@ expand_relative_path (Container & components,
     components.insert (components.begin (), cwd_components.begin (),
         cwd_components.end ());
 }
+#endif
 
 
 bool
@@ -474,6 +491,7 @@ retry_recognition:;
     {
         remove_empty (components, 2);
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
         std::size_t const comp_3_size = components[3].size ();
         // "C:"
         if (comp_3_size >= 2
@@ -487,6 +505,7 @@ retry_recognition:;
         }
         // "hostname" "share"
         else
+#endif
             special = 5;
 
         return components.size () >= special + 1;
@@ -510,6 +529,7 @@ retry_recognition:;
         special = 3;
         return components.size () >= special + 1;
     }
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     // "" "file", i.e. "\path\to\file"
     else if (comp_count >= 2
         && components[0].empty ()
@@ -530,6 +550,7 @@ retry_recognition:;
 
         return true;
     }
+#endif // WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     // comp_count >= 2: "C:" "file"
     // comp_count >= 2: "C:relpath" "file"
     // comp_count >= 1: "C:relpath"
@@ -540,9 +561,11 @@ retry_recognition:;
     {
         remove_empty (components, 1);
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
         // "C:relpath"
         if (comp_0_size > 2)
             expand_drive_relative_path (components, 0, is_sep);
+#endif
 
         special = 1;
         return components.size () >= special + 1;
@@ -576,9 +599,13 @@ retry_recognition:;
     // "relative\path\to\some\file.log
     else
     {
+#if defined(WIN32) && !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+        throw std::runtime_error("unrecogniezed path: " + LOG4CPLUS_TSTRING_TO_STRING(path));
+#else
         remove_empty (components, 0);
         expand_relative_path (components, is_sep);
         goto retry_recognition;
+#endif
     }
 }
 

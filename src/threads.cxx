@@ -89,7 +89,9 @@ yield()
 #if defined(LOG4CPLUS_USE_PTHREADS)
     sched_yield();
 #elif defined(_WIN32)
+#  if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
     if (! SwitchToThread ())
+#  endif
         Sleep (0);
 #endif
 }

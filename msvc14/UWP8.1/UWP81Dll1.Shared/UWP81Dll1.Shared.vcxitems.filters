@@ -1,0 +1,385 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)targetver.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\callbackappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\log4judpappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\asyncappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\consoleappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\boost\deviceappender.hxx">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\fileappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\nullappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\socketappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\win32debugappender.h">
+      <Filter>Appenders</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\config\win32.h">
+      <Filter>config</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\config\windowsh-inc.h">
+      <Filter>config</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\connectorthread.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\fileinfo.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\lockfile.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\appenderattachableimpl.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\loglog.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\pointer.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\property.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\queue.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\snprintf.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\socket.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\socketbuffer.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\stringhelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\thread-config.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\helpers\timehelper.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\internal\env.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\internal\internal.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\internal\socket.h">
+      <Filter>internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\appender.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\clogger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\config.hxx">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\configurator.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\fstreams.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\hierarchy.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\hierarchylocker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\initializer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\layout.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\log4cplus.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\logger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\loggingevent.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\loggingmacros.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\mdc.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\ndc.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\streams.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\tchar.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\tracelogger.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\tstring.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\version.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\appenderattachable.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\factory.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\filter.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\loggerfactory.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\loggerimpl.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\loglevel.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\objectregistry.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\spi\rootlogger.h">
+      <Filter>spi</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\syncprims-pub-impl.h">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\syncprims.h">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\threads.h">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\impl\syncprims-cxx11.h">
+      <Filter>thread\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\impl\syncprims-impl.h">
+      <Filter>thread\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\impl\syncprims-pmsm.h">
+      <Filter>thread\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\impl\threads-impl.h">
+      <Filter>thread\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\include\log4cplus\thread\impl\tls.h">
+      <Filter>thread\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\threadpool\ThreadPool.h">
+      <Filter>threadpool</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\callbackappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\log4judpappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\asyncappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\consoleappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\fileappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\nullappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\socketappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\syslogappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\win32debugappender.cxx">
+      <Filter>Appenders</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\connectorthread.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\fileinfo.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\lockfile.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\appenderattachableimpl.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\loglog.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\pointer.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\property.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\queue.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\snprintf.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\socket-unix.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\socket-win32.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\socket.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\socketbuffer.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\stringhelper-clocale.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\stringhelper-cxxlocale.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\stringhelper-iconv.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\stringhelper.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\timehelper.cxx">
+      <Filter>helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\env.cxx">
+      <Filter>internal</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\appender.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\clogger.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\configurator.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\global-init.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\hierarchy.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\hierarchylocker.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\layout.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\logger.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\loggingevent.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\loggingmacros.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\mdc.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\ndc.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\patternlayout.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\version.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\factory.cxx">
+      <Filter>spi</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\filter.cxx">
+      <Filter>spi</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\loggerimpl.cxx">
+      <Filter>spi</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\loglevel.cxx">
+      <Filter>spi</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\objectregistry.cxx">
+      <Filter>spi</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\rootlogger.cxx">
+      <Filter>spi</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\syncprims.cxx">
+      <Filter>thread</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\threads.cxx">
+      <Filter>thread</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\..\src\tls.cxx">
+      <Filter>thread\impl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Appenders">
+      <UniqueIdentifier>{4010bb6e-fa6b-4d5f-ad84-47fd9f60a410}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="config">
+      <UniqueIdentifier>{37aa956f-21fd-416f-aef4-601790a73529}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helpers">
+      <UniqueIdentifier>{2de5d6ec-fce1-4f20-b6e3-ad81661f5cea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="internal">
+      <UniqueIdentifier>{00b5c4e7-e118-4c6b-bc4b-323335c70410}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{b34c8239-1685-41c4-94a3-89f2aeeabcfd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="spi">
+      <UniqueIdentifier>{e11f8118-68ec-4738-95dd-4ee047c591e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thread">
+      <UniqueIdentifier>{4695a337-7fea-4248-add4-bdac9bbc2eb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thread\impl">
+      <UniqueIdentifier>{3b5615d4-fd67-4aed-931a-3b04b6e65b55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="threadpool">
+      <UniqueIdentifier>{5370e50e-5870-466b-812a-f2aa822f5011}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

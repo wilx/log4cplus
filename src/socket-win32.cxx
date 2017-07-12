@@ -399,6 +399,7 @@ write(SOCKET_TYPE sock, const std::string & buffer)
 }
 
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 static
 bool
 verifyWindowsVersionAtLeast (DWORD major, DWORD minor)
@@ -417,6 +418,7 @@ verifyWindowsVersionAtLeast (DWORD major, DWORD minor)
         VER_MAJORVERSION | VER_MINORVERSION, cond_mask);
     return result;
 }
+#endif
 
 
 tstring
@@ -461,7 +463,13 @@ getHostname (bool fqdn)
     addr_info_hints.ai_family = AF_INET;
     // The AI_FQDN flag is available only on Windows 7 and later.
 #if defined (AI_FQDN)
-    if (verifyWindowsVersionAtLeast (6, 1))
+    if (
+#  if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+        verifyWindowsVersionAtLeast(6, 1)
+#  else
+        true
+#  endif
+        )
         addr_info_hints.ai_flags = AI_FQDN;
     else
 #endif

@@ -33,6 +33,7 @@
 #endif
 
 #ifdef _WIN32
+#include <winapifamily.h>
 
 #if (defined (_MSC_VER) && _MSC_VER > 1400) \
     || (defined (__MINGW64_VERSION_MAJOR) && __MINGW64_VERSION_MAJOR >= 3)
@@ -54,7 +55,9 @@
 #define LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING
 
 // Enable Win32ConsoleAppender.
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #define LOG4CPLUS_HAVE_WIN32_CONSOLE
+#endif
 
 #define LOG4CPLUS_HAVE_SYS_TYPES_H
 #define LOG4CPLUS_HAVE_SYS_LOCKING_H
@@ -111,7 +114,9 @@
 #define LOG4CPLUS_HAVE__TSOPEN
 
 #define LOG4CPLUS_DLLMAIN_HINSTANCE HINSTANCE
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #define LOG4CPLUS_HAVE_NT_EVENT_LOG
+#endif
 
 // log4cplus_EXPORTS is used by the CMake build system.  DLL_EXPORT is
 // used by the autotools build system.
