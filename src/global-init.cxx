@@ -677,7 +677,7 @@ extern "C"
 // - `internal_shared.h` in CRT source in Visual Studio 2015
 
 #pragma data_seg (push, old_seg)
-#ifdef _WIN64
+#if defined(_WIN64) || defined (_M_ARM)
 #pragma const_seg (".CRT$XLY")
 extern const
 #else
@@ -687,7 +687,7 @@ PIMAGE_TLS_CALLBACK log4cplus_p_thread_callback_initializer = log4cplus::thread_
 #pragma data_seg (pop, old_seg)
 
 #pragma data_seg (push, old_seg)
-#ifdef _WIN64
+#if defined(_WIN64) || defined (_M_ARM)
 #pragma const_seg (".CRT$XLAA")
 extern const
 #else
