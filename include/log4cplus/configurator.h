@@ -69,9 +69,29 @@ namespace log4cplus
     public:
         enum PCFlags
         {
-            fRecursiveExpansion   = (1 << 0)
-            , fShadowEnvironment  = (1 << 1)
-            , fAllowEmptyVars     = (1 << 2)
+            /**
+             * With this flag, after a property is expanded, cursor is not
+             * moved beyond the substituted string but the same point is used
+             * to search for `${` again. The default is to not do recursive
+             * expansion.
+             */
+            fRecursiveExpansion = (1 << 0),
+            /**
+             * With this flag, replacement is first tried from known properties
+             * and only if none is found, replacement is retried from
+             * environment variables. The default is not to shadow environment
+             * variables and to always use environment variables instead.
+             */
+            fShadowEnvironment  = (1 << 1),
+            /**
+             * With this flag, properties expanding to empty strings are
+             * allowed and no further search is done to expand even after empty
+             * replacement string is found or property is unknown, given
+             * property is then expanded to empty replacement. When
+             * `fShadowEnvironment` is also used at the same time, unknown
+             * properties will also result in expansion to empty string.
+             */
+            fAllowEmptyVars     = (1 << 2)
 
             // These encoding related options occupy 2 bits of the flags
             // and are mutually exclusive. These flags are synchronized with
