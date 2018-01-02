@@ -556,7 +556,6 @@ VOID CALLBACK
 initializeLog4cplusApcProc (ULONG_PTR /*dwParam*/)
 {
     initializeLog4cplus ();
-    threadSetup ();
 }
 
 
@@ -585,7 +584,9 @@ thread_callback (LPVOID /*hinstDLL*/, DWORD fdwReason, LPVOID /*lpReserved*/)
         // DllMain() is called under loader lock. When we are using C++11
         // threads and synchronization primitives then there is a deadlock
         // somewhere in internals of std::mutex::lock().
+#if ! defined (LOG4CPLUS_DISABLE_AUTO_INIT)
         queueLog4cplusInitializationThroughAPC ();
+#endif
         break;
     }
 
@@ -720,7 +721,7 @@ struct _static_log4cplus_initializer
         // when we are using Visual Studio and C++11 threads
         // and synchronization primitives. It would result into a deadlock
         // on loader lock.
-#if ! defined (_MSC_VER)
+#if ! defined (_MSC_VER) && ! defined (LOG4CPLUS_DISABLE_AUTO_INIT)
         log4cplus::initializeLog4cplus ();
 #endif
     }
@@ -739,6 +740,7 @@ struct _static_log4cplus_initializer
 #else // defined (WIN32)
 namespace {
 
+#if ! defined (LOG4CPLUS_DISABLE_AUTO_INIT)
 static void
 _log4cplus_initializer_func ()
     LOG4CPLUS_CONSTRUCTOR_FUNC (LOG4CPLUS_INIT_PRIORITY_BASE);
@@ -747,12 +749,15 @@ _log4cplus_initializer_func ()
 {
     log4cplus::initializeLog4cplus();
 }
+#endif // ! defined (LOG4CPLUS_DISABLE_AUTO_INIT)
 
 struct _static_log4cplus_initializer
 {
     _static_log4cplus_initializer ()
     {
+#if ! defined (LOG4CPLUS_DISABLE_AUTO_INIT)
         log4cplus::initializeLog4cplus();
+#endif
     }
 
     ~_static_log4cplus_initializer ()
