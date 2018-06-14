@@ -296,7 +296,7 @@ namespace log4cplus {
             Logger const & logger);
 
      // Data
-        thread::Mutex hashtable_mutex;
+        thread::SharedMutex hashtable_mutex;
         std::unique_ptr<spi::LoggerFactory> defaultFactory;
         ProvisionNodeMap provisionNodes;
         LoggerMap loggerPtrs;

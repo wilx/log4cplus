@@ -70,7 +70,7 @@ namespace log4cplus
     private:
       // Data
         Hierarchy& h;
-        log4cplus::thread::MutexGuard hierarchyLocker;
+        log4cplus::thread::SharedMutexWriterGuard hierarchyLocker;
         LoggerList loggerList;
     };
 
