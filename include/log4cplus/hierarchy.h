@@ -241,12 +241,35 @@ namespace log4cplus {
         typedef std::map<log4cplus::tstring, Logger> LoggerMap;
 
       // Methods
+
         /**
-         * This is the implementation of the <code>getInstance()</code> method.
-         * NOTE: This method does not lock the <code>hashtable_mutex</code>.
+         * Locked implementation of `Hierarchy::getInstance()`.
          */
         LOG4CPLUS_PRIVATE
         Logger getInstanceImpl(const log4cplus::tstring& name,
+            spi::LoggerFactory& factory);
+
+        /**
+         * Unlocked implementation of `Hierarchy::getInstance()` used by
+         * `HierarchLocker`.
+         */
+        LOG4CPLUS_PRIVATE
+        Logger getInstanceImplUnlocked(const tstring& name,
+            spi::LoggerFactory& factory);
+
+        /**
+         * Unlocked implementation of `Hierarchy::getInstance()` only returning
+         * valid `Logger` if it exists.
+         */
+        LOG4CPLUS_PRIVATE
+        Logger getInstanceImplReturnExisting(const tstring& name);
+
+        /**
+         * Unlocked implementation of `Hierarchy::getInstance()` that either
+         * returns existing `Logger` instance or creates new one.
+         */
+        LOG4CPLUS_PRIVATE
+        Logger getInstanceImplMaybeCreateNew(const tstring& name,
             spi::LoggerFactory& factory);
 
         /**

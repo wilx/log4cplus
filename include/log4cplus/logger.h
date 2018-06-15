@@ -279,6 +279,13 @@ namespace log4cplus
          */
         Logger getParent() const;
 
+        /**
+         * Check for initialized `Logger`.
+         *
+         * @return true if `Logger` instance is initialized, false otherwise
+         */
+        explicit operator bool () const;
+
     protected:
       // Data
         /** This is a pointer to the implementation class. */

@@ -100,14 +100,14 @@ HierarchyLocker::resetConfiguration()
 Logger
 HierarchyLocker::getInstance(const tstring& name)
 {
-    return h.getInstanceImpl(name, *h.getLoggerFactory());
+    return h.getInstanceImplUnlocked(name, *h.getLoggerFactory());
 }
 
 
 Logger
 HierarchyLocker::getInstance(const tstring& name, spi::LoggerFactory& factory)
 {
-    return h.getInstanceImpl(name, factory);
+    return h.getInstanceImplUnlocked(name, factory);
 }
 
 

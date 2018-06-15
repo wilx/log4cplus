@@ -167,8 +167,6 @@ Hierarchy::getInstance(const tstring& name)
 Logger
 Hierarchy::getInstance(const tstring& name, spi::LoggerFactory& factory)
 {
-    thread::SharedMutexWriterGuard guard (hashtable_mutex);
-
     return getInstanceImpl(name, factory);
 }
 
@@ -278,11 +276,61 @@ Logger
 Hierarchy::getInstanceImpl(const tstring& name, spi::LoggerFactory& factory)
 {
     Logger logger;
-    LoggerMap::iterator lm_it;
 
     if (name.empty ())
         logger = root;
-    else if ((lm_it = loggerPtrs.find(name)) != loggerPtrs.end())
+    else
+    {
+        {
+            thread::SharedMutexReaderGuard guard (hashtable_mutex);
+            logger = getInstanceImplReturnExisting (name);
+        }
+
+        if (! logger)
+        {
+            thread::SharedMutexWriterGuard guard (hashtable_mutex);
+            logger = getInstanceImplMaybeCreateNew (name, factory);
+        }
+    }
+
+    return logger;
+}
+
+
+Logger
+Hierarchy::getInstanceImplUnlocked(const tstring& name, spi::LoggerFactory& factory)
+{
+    Logger logger;
+
+    if (name.empty ())
+        logger = root;
+    else
+        logger = getInstanceImplMaybeCreateNew (name, factory);
+
+    return logger;
+}
+
+
+Logger
+Hierarchy::getInstanceImplReturnExisting(const tstring& name)
+{
+    Logger logger;
+    LoggerMap::iterator lm_it;
+
+    if ((lm_it = loggerPtrs.find(name)) != loggerPtrs.end())
+        logger = lm_it->second;
+
+    return logger;
+}
+
+
+Logger
+Hierarchy::getInstanceImplMaybeCreateNew(const tstring& name, spi::LoggerFactory& factory)
+{
+    Logger logger;
+    LoggerMap::iterator lm_it;
+
+    if ((lm_it = loggerPtrs.find(name)) != loggerPtrs.end())
         logger = lm_it->second;
     else
     {
