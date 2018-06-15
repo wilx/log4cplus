@@ -63,10 +63,9 @@ SharedMutex::rdlock () const
     MutexGuard m3_guard (m3);
     SemaphoreGuard r_guard (r);
     MutexGuard m1_guard (m1);
-    if (reader_count + 1 == 1)
-        w.lock ();
-
     reader_count += 1;
+    if (reader_count == 1)
+        w.lock ();
 }
 
 
@@ -75,10 +74,9 @@ void
 SharedMutex::rdunlock () const
 {
     MutexGuard m1_guard (m1);
-    if (reader_count - 1 == 0)
-        w.unlock ();
-
     reader_count -= 1;
+    if (reader_count == 0)
+        w.unlock ();
 }
 
 
@@ -88,10 +86,9 @@ SharedMutex::wrlock () const
 {
     {
         MutexGuard m2_guard (m2);
-        if (writer_count + 1 == 1)
-            r.lock ();
-
         writer_count += 1;
+        if (writer_count == 1)
+            r.lock ();
     }
     try
     {
@@ -112,8 +109,7 @@ SharedMutex::wrunlock () const
 {
     w.unlock ();
     MutexGuard m2_guard (m2);
-    if (writer_count - 1 == 0)
-        r.unlock ();
-
     writer_count -= 1;
+    if (writer_count == 0)
+        r.unlock ();
 }
