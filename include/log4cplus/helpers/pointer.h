@@ -102,87 +102,104 @@ namespace log4cplus {
         public:
             // Ctor
             explicit
-            SharedObjectPtr(T* realPtr = 0) LOG4CPLUS_NOEXCEPT
+            SharedObjectPtr(T* realPtr = nullptr) LOG4CPLUS_NOEXCEPT
                 : pointee(realPtr)
             {
                 addref ();
             }
 
             SharedObjectPtr(const SharedObjectPtr& rhs) LOG4CPLUS_NOEXCEPT
-                : pointee(rhs.pointee)
+                : pointee(rhs.get ())
             {
                 addref ();
             }
 
             SharedObjectPtr(SharedObjectPtr && rhs) LOG4CPLUS_NOEXCEPT
-                : pointee (std::move (rhs.pointee))
-            {
-                rhs.pointee = 0;
-            }
+                : pointee (rhs.pointee.exchange (nullptr, std::memory_order_consume))
+            { }
 
             SharedObjectPtr & operator = (SharedObjectPtr && rhs) LOG4CPLUS_NOEXCEPT
             {
-                rhs.swap (*this);
+                if (LOG4CPLUS_UNLIKELY (this == &rhs))
+                    return *this;
+
+                T * const local = pointee.exchange (
+                    rhs.pointee.exchange (nullptr, std::memory_order_consume),
+                    std::memory_order_consume);
+
+                if (LOG4CPLUS_LIKELY (local))
+                    local->removeReference ();
+
                 return *this;
             }
 
             // Dtor
             ~SharedObjectPtr()
             {
-                if (pointee)
-                    pointee->removeReference();
+                T * const ptr = get ();
+                if (LOG4CPLUS_LIKELY (ptr))
+                    ptr->removeReference();
             }
 
             // Operators
             bool operator==(const SharedObjectPtr& rhs) const
-            { return (pointee == rhs.pointee); }
+            { return (get () == rhs.get ()); }
             bool operator!=(const SharedObjectPtr& rhs) const
-            { return (pointee != rhs.pointee); }
-            bool operator==(const T* rhs) const { return (pointee == rhs); }
-            bool operator!=(const T* rhs) const { return (pointee != rhs); }
-            T* operator->() const {assert (pointee); return pointee; }
-            T& operator*() const {assert (pointee); return *pointee; }
+            { return (get () != rhs.get ()); }
+            bool operator==(const T* rhs) const { return (get () == rhs); }
+            bool operator!=(const T* rhs) const { return (get () != rhs); }
+            T* operator->() const { T * ptr = get (); assert (ptr); return ptr; }
+            T& operator*() const { T * ptr = get (); assert (ptr); return *ptr; }
 
             SharedObjectPtr& operator=(const SharedObjectPtr& rhs)
             {
-                return this->operator = (rhs.pointee);
+                if (this == &rhs)
+                    return *this;
+
+                return this->operator = (rhs.get ());
             }
 
             SharedObjectPtr& operator=(T* rhs)
             {
-                SharedObjectPtr<T> (rhs).swap (*this);
+                if (LOG4CPLUS_LIKELY (rhs))
+                    rhs->addReference ();
+
+                T * const local = pointee.exchange (rhs, std::memory_order_consume);
+
+                if (LOG4CPLUS_LIKELY (local))
+                    local->removeReference ();
+
                 return *this;
             }
 
           // Methods
-            T* get() const { return pointee; }
-
-            void swap (SharedObjectPtr & other) LOG4CPLUS_NOEXCEPT
+            T* get() const
             {
-                std::swap (pointee, other.pointee);
+                return pointee.load (std::memory_order_consume);
             }
 
             typedef T * (SharedObjectPtr:: * unspec_bool_type) () const;
             operator unspec_bool_type () const
             {
-                return pointee ? &SharedObjectPtr::get : 0;
+                return get () ? &SharedObjectPtr::get : 0;
             }
 
             bool operator ! () const
             {
-                return ! pointee;
+                return ! get ();
             }
 
         private:
           // Methods
             void addref() const LOG4CPLUS_NOEXCEPT
             {
-                if (pointee)
-                    pointee->addReference();
+                T * const ptr = get ();
+                if (LOG4CPLUS_LIKELY (ptr))
+                    ptr->addReference();
             }
 
           // Data
-            T* pointee;
+            std::atomic<T*> pointee;
         };
 
 
