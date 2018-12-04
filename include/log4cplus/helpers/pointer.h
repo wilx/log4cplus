@@ -38,9 +38,8 @@
 #include <log4cplus/thread/syncprims.h>
 #include <algorithm>
 #include <cassert>
-#if ! defined (LOG4CPLUS_SINGLE_THREADED)
 #include <atomic>
-#endif
+#include <memory>
 
 
 namespace log4cplus {
