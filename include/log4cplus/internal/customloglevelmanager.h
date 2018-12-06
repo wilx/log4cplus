@@ -3,6 +3,7 @@
 // File:    customloglevelmanager.h
 // Created: 12/2018
 // Author:  Jens Rehsack
+// Author:  Václav Haisman
 //
 //
 //  Copyright (C) 2018, Jens Rehsack. All rights reserved.
