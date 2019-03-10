@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwilx%2Flog4cplus.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwilx%2Flog4cplus?ref=badge_shield)
+
 % log4cplus README
 
 Short Description
@@ -741,3 +743,7 @@ and its master branch files are always generated using the latest available
 version of the tools.
 
 [12]: http://www.gnu.org/software/autogen/
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwilx%2Flog4cplus.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwilx%2Flog4cplus?ref=badge_large)
