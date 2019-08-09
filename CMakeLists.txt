@@ -122,7 +122,7 @@ if ("${UNIX}" OR "${CYGWIN}")
     src/socket-unix.cxx)
   set (log4cplus_headers ${log4cplus_headers}
     include/log4cplus/config/defines.hxx
-    include/log4cplus/helpers/syncprims-pthreads.h)
+    include/log4cplus/thread/impl/syncprims-pthreads.h)
 elseif (WIN32)
   set (log4cplus_sources ${log4cplus_sources}
     src/socket-win32.cxx
@@ -130,12 +130,12 @@ elseif (WIN32)
     src/nteventlogappender.cxx
     src/win32consoleappender.cxx)
   set (log4cplus_headers ${log4cplus_headers}
-    include/log4cplus/helpers/syncprims-win32.h)
+    include/log4cplus/thread/impl/syncprims-win32.h)
 
   # Comment out the following lines if you want non-Unicode version.
   add_definitions (-DUNICODE -D_UNICODE -UMBCS -U_MBCS)
   set (log4cplus_postfix "${log4cplus_postfix}U")
-  
+
   #add_definitions (-DLOG4CPLUS_STATIC)
   #set (log4cplus_postfix "${log4cplus_postfix}S")
 endif ()
