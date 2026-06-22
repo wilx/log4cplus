@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl This version of log4cplus requires the following autotools versions:
-dnl autoconf-2.69
-dnl automake-1.16.1
-dnl libtool-2.4.6
+dnl autoconf-2.73
+dnl automake-1.18.1
+dnl libtool-2.5.4
 
 AC_INIT([log4cplus],[3.0.0])
 AC_CANONICAL_TARGET
@@ -182,8 +182,6 @@ AC_LANG([C++])
 AX_CXX_COMPILE_STDCXX([23],[],[mandatory])
 
 AS_VAR_APPEND([CPPFLAGS], [" -D_GNU_SOURCE=1"])
-
-AC_SYS_YEAR2038
 
 AS_CASE(["$target_os"],
   [mingw*],
