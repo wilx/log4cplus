@@ -749,16 +749,14 @@ timeformat_testU_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(timeformat_testU_LDFLAGS) \
 	$(LDFLAGS) -o $@
 @ENABLE_TESTS_TRUE@am__objects_50 =  \
-@ENABLE_TESTS_TRUE@	tests/unit_tests/unit_tests.$(OBJEXT) \
-@ENABLE_TESTS_TRUE@	tests/unit_tests/win32fstream_tests.$(OBJEXT)
+@ENABLE_TESTS_TRUE@	tests/unit_tests/unit_tests.$(OBJEXT)
 @ENABLE_TESTS_TRUE@am_unit_tests_OBJECTS = $(am__objects_50)
 unit_tests_OBJECTS = $(am_unit_tests_OBJECTS)
 @ENABLE_TESTS_TRUE@unit_tests_DEPENDENCIES = $(liblog4cplus_la_file)
 unit_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(unit_tests_LDFLAGS) $(LDFLAGS) -o $@
-@ENABLE_TESTS_TRUE@am__objects_51 = tests/unit_tests/unit_testsU-unit_tests.$(OBJEXT) \
-@ENABLE_TESTS_TRUE@	tests/unit_tests/unit_testsU-win32fstream_tests.$(OBJEXT)
+@ENABLE_TESTS_TRUE@am__objects_51 = tests/unit_tests/unit_testsU-unit_tests.$(OBJEXT)
 @BUILD_WITH_WCHAR_T_SUPPORT_TRUE@@ENABLE_TESTS_TRUE@am_unit_testsU_OBJECTS = $(am__objects_51)
 unit_testsU_OBJECTS = $(am_unit_testsU_OBJECTS)
 @BUILD_WITH_WCHAR_T_SUPPORT_TRUE@@ENABLE_TESTS_TRUE@unit_testsU_DEPENDENCIES = $(liblog4cplusU_la_file)
@@ -941,9 +939,7 @@ am__depfiles_remade = ./$(DEPDIR)/_log4cplusU_la-python_wrapU.Plo \
 	tests/unit_tests/$(DEPDIR)/liblog4cplusU_la-win32fstream_tests.Plo \
 	tests/unit_tests/$(DEPDIR)/liblog4cplus_la-win32fstream_tests.Plo \
 	tests/unit_tests/$(DEPDIR)/unit_tests.Po \
-	tests/unit_tests/$(DEPDIR)/unit_testsU-unit_tests.Po \
-	tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Po \
-	tests/unit_tests/$(DEPDIR)/win32fstream_tests.Po
+	tests/unit_tests/$(DEPDIR)/unit_testsU-unit_tests.Po
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -1614,8 +1610,7 @@ liblog4cplus_la_LDFLAGS = $(common_liblog4cplus_la_ldflags)
 @BUILD_WITH_WCHAR_T_SUPPORT_TRUE@@ENABLE_TESTS_TRUE@timeformat_testU_LDADD = $(liblog4cplusU_la_file)
 @BUILD_WITH_WCHAR_T_SUPPORT_TRUE@@ENABLE_TESTS_TRUE@timeformat_testU_LDFLAGS = -no-install
 @ENABLE_TESTS_TRUE@unit_tests_sources = \
-@ENABLE_TESTS_TRUE@	tests/unit_tests/unit_tests.cxx \
-@ENABLE_TESTS_TRUE@	tests/unit_tests/win32fstream_tests.cxx
+@ENABLE_TESTS_TRUE@	tests/unit_tests/unit_tests.cxx
 
 @ENABLE_TESTS_TRUE@unit_tests_SOURCES = $(unit_tests_sources)
 @ENABLE_TESTS_TRUE@unit_tests_LDADD = $(liblog4cplus_la_file)
@@ -2414,17 +2409,11 @@ timeformat_testU$(EXEEXT): $(timeformat_testU_OBJECTS) $(timeformat_testU_DEPEND
 tests/unit_tests/unit_tests.$(OBJEXT):  \
 	tests/unit_tests/$(am__dirstamp) \
 	tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
-tests/unit_tests/win32fstream_tests.$(OBJEXT):  \
-	tests/unit_tests/$(am__dirstamp) \
-	tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
 
 unit_tests$(EXEEXT): $(unit_tests_OBJECTS) $(unit_tests_DEPENDENCIES) $(EXTRA_unit_tests_DEPENDENCIES) 
 	@rm -f unit_tests$(EXEEXT)
 	$(AM_V_CXXLD)$(unit_tests_LINK) $(unit_tests_OBJECTS) $(unit_tests_LDADD) $(LIBS)
 tests/unit_tests/unit_testsU-unit_tests.$(OBJEXT):  \
-	tests/unit_tests/$(am__dirstamp) \
-	tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
-tests/unit_tests/unit_testsU-win32fstream_tests.$(OBJEXT):  \
 	tests/unit_tests/$(am__dirstamp) \
 	tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
 
@@ -2625,8 +2614,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@tests/unit_tests/$(DEPDIR)/liblog4cplus_la-win32fstream_tests.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/unit_tests/$(DEPDIR)/unit_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/unit_tests/$(DEPDIR)/unit_testsU-unit_tests.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@tests/unit_tests/$(DEPDIR)/win32fstream_tests.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -3792,20 +3779,6 @@ tests/unit_tests/unit_testsU-unit_tests.obj: tests/unit_tests/unit_tests.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit_testsU_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/unit_tests/unit_testsU-unit_tests.obj `if test -f 'tests/unit_tests/unit_tests.cxx'; then $(CYGPATH_W) 'tests/unit_tests/unit_tests.cxx'; else $(CYGPATH_W) '$(srcdir)/tests/unit_tests/unit_tests.cxx'; fi`
 
-tests/unit_tests/unit_testsU-win32fstream_tests.o: tests/unit_tests/win32fstream_tests.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit_testsU_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/unit_tests/unit_testsU-win32fstream_tests.o -MD -MP -MF tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Tpo -c -o tests/unit_tests/unit_testsU-win32fstream_tests.o `test -f 'tests/unit_tests/win32fstream_tests.cxx' || echo '$(srcdir)/'`tests/unit_tests/win32fstream_tests.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Tpo tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/unit_tests/win32fstream_tests.cxx' object='tests/unit_tests/unit_testsU-win32fstream_tests.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit_testsU_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/unit_tests/unit_testsU-win32fstream_tests.o `test -f 'tests/unit_tests/win32fstream_tests.cxx' || echo '$(srcdir)/'`tests/unit_tests/win32fstream_tests.cxx
-
-tests/unit_tests/unit_testsU-win32fstream_tests.obj: tests/unit_tests/win32fstream_tests.cxx
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit_testsU_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT tests/unit_tests/unit_testsU-win32fstream_tests.obj -MD -MP -MF tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Tpo -c -o tests/unit_tests/unit_testsU-win32fstream_tests.obj `if test -f 'tests/unit_tests/win32fstream_tests.cxx'; then $(CYGPATH_W) 'tests/unit_tests/win32fstream_tests.cxx'; else $(CYGPATH_W) '$(srcdir)/tests/unit_tests/win32fstream_tests.cxx'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Tpo tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='tests/unit_tests/win32fstream_tests.cxx' object='tests/unit_tests/unit_testsU-win32fstream_tests.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit_testsU_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o tests/unit_tests/unit_testsU-win32fstream_tests.obj `if test -f 'tests/unit_tests/win32fstream_tests.cxx'; then $(CYGPATH_W) 'tests/unit_tests/win32fstream_tests.cxx'; else $(CYGPATH_W) '$(srcdir)/tests/unit_tests/win32fstream_tests.cxx'; fi`
-
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -4244,8 +4217,6 @@ distclean: distclean-recursive
 	-rm -f tests/unit_tests/$(DEPDIR)/liblog4cplus_la-win32fstream_tests.Plo
 	-rm -f tests/unit_tests/$(DEPDIR)/unit_tests.Po
 	-rm -f tests/unit_tests/$(DEPDIR)/unit_testsU-unit_tests.Po
-	-rm -f tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Po
-	-rm -f tests/unit_tests/$(DEPDIR)/win32fstream_tests.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -4455,8 +4426,6 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f tests/unit_tests/$(DEPDIR)/liblog4cplus_la-win32fstream_tests.Plo
 	-rm -f tests/unit_tests/$(DEPDIR)/unit_tests.Po
 	-rm -f tests/unit_tests/$(DEPDIR)/unit_testsU-unit_tests.Po
-	-rm -f tests/unit_tests/$(DEPDIR)/unit_testsU-win32fstream_tests.Po
-	-rm -f tests/unit_tests/$(DEPDIR)/win32fstream_tests.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
