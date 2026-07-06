@@ -1,8 +1,23 @@
-# log4cplus 2.1.3
+# log4cplus 2.2.0
+
+  **IMPORTANT**: Use a custom Win32-backed file stream for file-based appenders
+  on Windows, allowing log files to be renamed while they are open by another
+  process. This change is source compatible but ABI-changing.
 
   - Remove `LOG4CPLUS_ASSERT_FORMAT()`. It is not implemented in 2.x branch.
 
   - Fix compilation of Python bindings with Python 3.12+.
+
+  - Fix Win32 lock file handling by matching `LockFileEx()` with
+    `UnlockFileEx()` and preserving `GetLastError()` before cleanup.
+
+  - Use `PRIVATE` linkage in CMake `target_link_libraries()` calls. GitHub
+    issue #659.
+
+  - Regenerate the Autotools build system with newer Automake and Libtool
+    versions.
+
+  - Remove unsupported macOS versions from the GitHub Actions build matrix.
 
 
 # log4cplus 2.1.2
