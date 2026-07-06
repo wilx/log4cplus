@@ -369,6 +369,9 @@
     <ClInclude Include="..\include\log4cplus\helpers\timehelper.h">
       <Filter>helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\log4cplus\helpers\win32fstream.h">
+      <Filter>helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\log4cplus\helpers\fileinfo.h">
       <Filter>helpers</Filter>
     </ClInclude>

@@ -31,6 +31,9 @@
 #endif
 
 #include <log4cplus/tchar.h>
+#if defined (_WIN32)
+#include <log4cplus/helpers/win32fstream.h>
+#endif
 #include <iosfwd>
 
 
@@ -38,13 +41,19 @@ namespace log4cplus
 {
 
 
+#if defined (_WIN32)
+typedef helpers::basic_win32_fstream<tchar> tofstream;
+#else
 typedef std::basic_ofstream<tchar> tofstream;
+#endif
 typedef std::basic_ifstream<tchar> tifstream;
 
 //! \def LOG4CPLUS_FSTREAM_PREFERED_FILE_NAME(X)
 //! \brief Expands into expression that picks the right type for
 //! std::fstream file name parameter.
-#if defined (LOG4CPLUS_FSTREAM_ACCEPTS_WCHAR_T) && defined (UNICODE)
+#if defined (_WIN32)
+#  define LOG4CPLUS_FSTREAM_PREFERED_FILE_NAME(X) (X)
+#elif defined (LOG4CPLUS_FSTREAM_ACCEPTS_WCHAR_T) && defined (UNICODE)
 #  define LOG4CPLUS_FSTREAM_PREFERED_FILE_NAME(X) (X)
 #else
 #  define LOG4CPLUS_FSTREAM_PREFERED_FILE_NAME(X) (LOG4CPLUS_TSTRING_TO_STRING(X))

@@ -241,6 +241,7 @@ install(FILES ../include/log4cplus/helpers/appenderattachableimpl.h
               ../include/log4cplus/helpers/stringhelper.h
               ../include/log4cplus/helpers/thread-config.h
               ../include/log4cplus/helpers/timehelper.h
+              ../include/log4cplus/helpers/win32fstream.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/log4cplus/helpers )
 
 install(FILES ../include/log4cplus/internal/env.h

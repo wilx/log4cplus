@@ -973,6 +973,7 @@
     <ClInclude Include="..\include\log4cplus\helpers\stringhelper.h" />
     <ClInclude Include="..\include\log4cplus\helpers\thread-config.h" />
     <ClInclude Include="..\include\log4cplus\helpers\timehelper.h" />
+    <ClInclude Include="..\include\log4cplus\helpers\win32fstream.h" />
     <ClInclude Include="..\include\log4cplus\spi\appenderattachable.h" />
     <ClInclude Include="..\include\log4cplus\spi\factory.h" />
     <ClInclude Include="..\include\log4cplus\spi\filter.h" />
