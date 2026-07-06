@@ -40,6 +40,14 @@ function require_archiver
     fi
 }
 
+function require_nonempty_file
+{
+    if [[ ! -s "$1" ]] ; then
+        echo "$THIS_SCRIPT: missing or empty artifact: $1" >&2
+        exit 1
+    fi
+}
+
 GIT_URL="$1"
 if [[ -z "$GIT_URL" ]] ; then
     usage
@@ -117,6 +125,16 @@ $XZ -e -c "$TAR_FILE" >"$DEST_DIR/$TAR_FILE".xz \
 echo waiting for tarballs...
 wait
 echo done waiting
+
+require_nonempty_file "$DEST_DIR/$SRC_DIR".7z
+require_nonempty_file "$DEST_DIR/$SRC_DIR".zip
+require_nonempty_file "$DEST_DIR/$TAR_FILE".xz
+require_nonempty_file "$DEST_DIR/$TAR_FILE".bz2
+require_nonempty_file "$DEST_DIR/$TAR_FILE".gz
+
+if [[ -e "$DEST_DIR/$TAR_FILE".lrz ]] ; then
+    require_nonempty_file "$DEST_DIR/$TAR_FILE".lrz
+fi
 
 if [[ ! -z "$GPG_KEY" ]] ; then
     maybe_gpg_sign "$DEST_DIR/$SRC_DIR".7z
