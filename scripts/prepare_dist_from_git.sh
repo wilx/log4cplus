@@ -32,6 +32,14 @@ function find_archiver
     command_exists "$1" && echo "$1" || echo ':'
 }
 
+function require_archiver
+{
+    if [[ "$2" = ":" ]] ; then
+        echo "$THIS_SCRIPT: required archiver '$1' not found" >&2
+        exit 1
+    fi
+}
+
 GIT_URL="$1"
 if [[ -z "$GIT_URL" ]] ; then
     usage
@@ -68,10 +76,20 @@ TMP_DIR=$(mktemp -d -t log4cplus.XXXXXXX)
 pushd "$TMP_DIR"
 
 TAR=${TAR:-$(find_archiver tar)}
+require_archiver tar "$TAR"
+
 XZ=${XZ:-$(find_archiver xz)}
+require_archiver xz "$XZ"
+
 BZIP2=${BZIP2:-$(find_archiver bzip2)}
+require_archiver bzip2 "$BZIP2"
+
 GZIP=${GZIP:-$(find_archiver gzip)}
+require_archiver gzip "$GZIP"
+
 SEVENZA=${SEVENZA:-$(find_archiver 7za)}
+require_archiver 7za "$SEVENZA"
+
 LRZIP=${LRZIP:-$(find_archiver lrzip)}
 GIT=${GIT:-git}
 GPG=${GPG:-gpg}
