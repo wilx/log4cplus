@@ -67,6 +67,11 @@ elseif (WIN32)
   #set (log4cplus_postfix "${log4cplus_postfix}S")
 endif ()
 
+if (WIN32 AND WITH_UNIT_TESTS)
+  set (log4cplus_sources ${log4cplus_sources}
+    ../tests/unit_tests/win32fstream_tests.cxx)
+endif ()
+
 # Define _GNU_SOURCE so that functions like `pipe2()` are visible.
 add_compile_definitions (_GNU_SOURCE=1)
 if (WIN32)

@@ -3,7 +3,8 @@
 noinst_PROGRAMS += unit_tests
 
 unit_tests_sources = \
-	%D%/unit_tests.cxx
+	%D%/unit_tests.cxx \
+	%D%/win32fstream_tests.cxx
 
 unit_tests_SOURCES = $(unit_tests_sources)
 
