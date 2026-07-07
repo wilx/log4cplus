@@ -324,4 +324,4 @@ FATAL - This is a FATAL message
 See sources in `tests/` directory in [log4cplus] source distribution for more
 examples of [log4cplus] usage.
 
-[log4cplus]: https://sourceforge.net/projects/log4cplus/
+[log4cplus]: https://github.com/log4cplus/log4cplus
