@@ -1,8 +1,16 @@
+# log4cplus 2.2.0.1
+
+  This release has the same code and features as 2.2.0, with updated
+  documentation for the Windows file appender changes.
+
 # log4cplus 2.2.0
 
   **IMPORTANT**: Use a custom Win32-backed file stream for file-based appenders
   on Windows, allowing log files to be renamed while they are open by another
-  process. This change is source compatible but ABI-changing.
+  process. File-based appenders on Windows now store log files as UTF-8,
+  converting `wchar_t` log messages directly and narrow `char` log messages
+  through the stream locale's Windows code page. This change is source
+  compatible but ABI-changing.
 
   - Remove `LOG4CPLUS_ASSERT_FORMAT()`. It is not implemented in 2.x branch.
 

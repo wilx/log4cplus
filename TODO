@@ -1,10 +1,6 @@
 Possible enhancements and directions of development, in no particular
 order:
 
-- Rewrite FileAppender to use OS specific file handling to allow
-  RollingFileAppender to roll log files shared between multiple
-  processes even on Windows.
-
 - Improve error handling
   - allow not to throw exceptions
   - create hooks to allow users to override behaviour
@@ -20,9 +16,6 @@ order:
 
 - Modular PatternLayout; public PatternConverter classes; user defined
   format specifiers.
-
-- More flexible log file rotation, like keeping only last 31 days of
-  logs produced by DailyRollingFileAppender, rotate at midnight, etc.
 
 - Installers for Debian, Ubuntu, Windows/Qt Creator.
 
@@ -44,4 +37,3 @@ order:
 
 - Graylog2/GELF appender. See
   <https://github.com/Graylog2/graylog2-docs/wiki/GELF>.
-

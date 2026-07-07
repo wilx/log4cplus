@@ -293,17 +293,21 @@ and/or on DLL load, and will not tear down until all `log4cplus:Initializer`
 instances are destroyed.
 
 
-Windows and rolling file Appenders
-----------------------------------
+Windows and file Appenders
+--------------------------
 
-On Windows, the standard C++ file streams open files in way that underlying
-Win32 file `HANDLE` is not open with `FILE_SHARE_DELETE` flag. This flag,
-beside shared delete, allows renaming files that have handles open to
-them. This issue manifests as error code 13 when the file needs to be rolled
-over and it is still open by another process.
+On Windows, file-based appenders use [log4cplus]' Win32-backed file stream
+instead of the standard C++ file streams. The Win32-backed stream opens files
+using `CreateFileW()` with read, write, and delete sharing. This allows log
+files to be renamed or deleted while they are open by another process and lets
+rolling file appenders roll over files in that situation. It stores file
+contents as UTF-8.
 
-This is also [bug #167](https://sourceforge.net/p/log4cplus/bugs/167/) on
-SourceForge.
+Older [log4cplus] releases used the standard C++ file streams on Windows. Those
+streams did not open the underlying Win32 file `HANDLE` with
+`FILE_SHARE_DELETE`, which could make rollover fail with error code 13 if
+another process still had the log file open. This was tracked as
+[bug #167](https://sourceforge.net/p/log4cplus/bugs/167/) on SourceForge.
 
 
 Windows and TLS
