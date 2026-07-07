@@ -7,17 +7,18 @@ Short Description
 flexible, and arbitrarily granular control over log management and
 configuration.  It is modeled after the Java log4j API.
 
-[log4cplus]: https://sourceforge.net/projects/log4cplus/
+[log4cplus]: https://github.com/log4cplus/log4cplus
 
 
 Latest Project Information
 ==========================
 
-The latest up-to-date information for this project can be found at
-[log4cplus] SourceForge project pages or [log4cplus wiki][4] on
-SourceForge.  Please submit bugs, patches, feature requests, etc.,
-there, or on [GitHub][13]. Public key used to sign release artifacts is
-available on [log4cplus wiki at GitHub][14].
+The latest up-to-date information for this project can be found on
+[GitHub][13]. Please submit bugs, patches, feature requests, etc.,
+there. The older [log4cplus] SourceForge project pages and
+[SourceForge wiki][4] remain available for historical information.
+Public key used to sign release artifacts is available on
+[log4cplus wiki at GitHub][14].
 
 [4]: https://sourceforge.net/p/log4cplus/wiki/Home/
 [13]: https://github.com/log4cplus/log4cplus
