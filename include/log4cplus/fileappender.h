@@ -195,6 +195,13 @@ namespace log4cplus
     /**
      * Appends log events to a file.
      *
+     * \anchor FileAppenderWindowsFileSharing
+     * \note On Windows, FileAppender and the file-based appenders use
+     * log4cplus' Win32-backed file stream. The stream opens files using
+     * <code>CreateFileW()</code> with read, write, and delete sharing, which
+     * allows log files to be renamed or deleted while they are open by another
+     * process. The external file encoding used by this stream is UTF-8.
+     *
      * <h3>Properties</h3>
      * <p>It has no properties additional to {@link FileAppenderBase}.
      */
@@ -238,6 +245,8 @@ namespace log4cplus
      * files; e.g. how many <tt>log.1</tt>, <tt>log.2</tt> etc. files
      * will be kept.</dd>
      * </dl>
+     *
+     * \sa \ref FileAppenderWindowsFileSharing "FileAppender Windows file sharing note"
      */
     class LOG4CPLUS_EXPORT RollingFileAppender : public FileAppender {
     public:
@@ -307,6 +316,8 @@ namespace log4cplus
      * schedule type is used.</dd>
      *
      * </dl>
+     *
+     * \sa \ref FileAppenderWindowsFileSharing "FileAppender Windows file sharing note"
      */
     class LOG4CPLUS_EXPORT DailyRollingFileAppender : public FileAppender {
     public:
@@ -381,6 +392,8 @@ namespace log4cplus
      * as described in the github issue #120.</dd>
      *
      * </dl>
+     *
+     * \sa \ref FileAppenderWindowsFileSharing "FileAppender Windows file sharing note"
      */
     class LOG4CPLUS_EXPORT TimeBasedRollingFileAppender : public FileAppenderBase {
     public:
