@@ -5,9 +5,9 @@ Release: 1
 Summary: log4cplus, C++ logging library
 License: Apache
 Group: Development/Libraries
-Vendor: log4cplus project 
+Vendor: log4cplus project
 Packager: Yusuke SATO <y-sato@y-sa.to>
-Url: http://log4cplus.sourceforge.net/
+Url: https://github.com/log4cplus/log4cplus
 
 Source: %name-%version.tar.gz
 
@@ -15,8 +15,8 @@ Prefix: %_prefix
 BuildRoot: %_tmppath/%name-%version-root
 
 %description
-log4cplus is a simple to use C++ logging API providing thread-safe, 
-flexible, and arbitrarily granular control over log management and 
+log4cplus is a simple to use C++ logging API providing thread-safe,
+flexible, and arbitrarily granular control over log management and
 configuration. It is modeled after the Java log4j API.
 
 %package devel
@@ -25,8 +25,8 @@ Group: Development/Libraries
 Requires: %name = %version
 
 %description devel
-log4cplus is a simple to use C++ logging API providing thread-safe, 
-flexible, and arbitrarily granular control over log management and 
+log4cplus is a simple to use C++ logging API providing thread-safe,
+flexible, and arbitrarily granular control over log management and
 configuration. It is modeled after the Java log4j API.
 
 %prep
@@ -75,6 +75,6 @@ rm -rf $RPM_BUILD_ROOT
 %prefix/include/log4cplus/internal/*.h
 %prefix/include/log4cplus/thread/impl/*.h
 %prefix/include/log4cplus/thread/*.h
-%attr(644,root,root) 
+%attr(644,root,root)
 %_libdir/*.a
 %_libdir/pkgconfig/log4cplus.pc
