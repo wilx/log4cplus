@@ -676,12 +676,13 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     ~basic_win32_filebuf () override {
-        close ();
+        (void) close ();
     }
 
     basic_win32_filebuf (basic_win32_filebuf const &) = delete;
     basic_win32_filebuf & operator= (basic_win32_filebuf const &) = delete;
 
+    [[nodiscard]]
     basic_win32_filebuf *
     open (wchar_t const * path, openmode mode,
           win32_open_options const & opts = win32_open_options ()) {
@@ -746,6 +747,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
         return this;
     }
 
+    [[nodiscard]]
     basic_win32_filebuf *
     open (char const * path, openmode mode,
           win32_open_options const & opts = win32_open_options ()) {
@@ -758,24 +760,28 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
         return open (wide.c_str (), mode, opts);
     }
 
+    [[nodiscard]]
     basic_win32_filebuf *
     open (std::wstring const & p, openmode m,
           win32_open_options const & o = win32_open_options ()) {
         return open (p.c_str (), m, o);
     }
 
+    [[nodiscard]]
     basic_win32_filebuf *
     open (std::string const & p, openmode m,
           win32_open_options const & o = win32_open_options ()) {
         return open (p.c_str (), m, o);
     }
 #if defined(LOG4CPLUS_HELPERS_WIN32_FSTREAM_HAS_FILESYSTEM)
+    [[nodiscard]]
     basic_win32_filebuf *
     open (std::filesystem::path const & p, openmode m,
           win32_open_options const & o = win32_open_options ()) {
         return open (p.c_str (), m, o);
     }
 #endif
+    [[nodiscard]]
     basic_win32_filebuf * close () {
         if (!is_open ()) {
             return nullptr;
@@ -793,14 +799,17 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
         return ok ? this : nullptr;
     }
 
+    [[nodiscard]]
     bool is_open () const {
         return handle_ != INVALID_HANDLE_VALUE;
     }
 
+    [[nodiscard]]
     native_handle_type native_handle () const {
         return handle_;
     }
 
+    [[nodiscard]]
     std::error_code last_error () const {
         return last_error_;
     }
@@ -1027,20 +1036,25 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     enum direction { none, reading, writing };
 
     /** @brief Returns the stream position used to report seek failure. */
-    pos_type bad_pos () const {
+    [[nodiscard]]
+    static pos_type bad_pos () {
         return pos_type (off_type (-1));
     }
 
     /** @brief Tests whether a byte offset fits in the stream position type. */
-    bool position_representable (std::uint64_t position) const {
+    [[nodiscard]]
+    static constexpr bool
+    position_representable (std::uint64_t position) noexcept {
         return static_cast<std::uintmax_t> (position)
                <= static_cast<std::uintmax_t> (
                    (std::numeric_limits<off_type>::max) ());
     }
 
     /** @brief Adds a signed byte displacement without wrapping. */
-    bool add_offset (std::uint64_t & target, std::uint64_t base,
-                     off_type displacement) const {
+    [[nodiscard]]
+    static constexpr bool
+    add_offset (std::uint64_t & target, std::uint64_t base,
+                off_type displacement) noexcept {
         if (displacement >= 0) {
             std::uintmax_t const amount =
                 static_cast<std::uintmax_t> (displacement);
@@ -1062,6 +1076,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Advances a byte target to a syntactic UTF-8 boundary. */
+    [[nodiscard]]
     bool resynchronize_position (std::uint64_t & target) {
         if (target == 0) {
             return true;
@@ -1119,6 +1134,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Returns the safe external offset represented by the get area. */
+    [[nodiscard]]
     bool current_position (std::uint64_t & position) const {
         if (!this->gptr ()) {
             position = offset_;
@@ -1158,6 +1174,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Changes direction to output while preserving a safe cursor. */
+    [[nodiscard]]
     bool prepare_write () {
         if (direction_ == reading) {
             std::uint64_t position = 0;
@@ -1175,6 +1192,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Changes direction to input after flushing pending output. */
+    [[nodiscard]]
     bool prepare_read () {
         if (direction_ == writing && sync () != 0) {
             return false;
@@ -1187,6 +1205,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Encodes Unicode scalars into the pending UTF-8 byte buffer. */
+    [[nodiscard]]
     bool emit (std::vector<std::uint32_t> const & cps) {
         for (std::size_t i = 0; i < cps.size (); ++i) {
             if (!(mode_ & std::ios_base::binary) && cps[i] == '\n') {
@@ -1206,6 +1225,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
 
     /** @brief Copies bytes into the bounded output buffer, flushing as needed.
      */
+    [[nodiscard]]
     bool queue_bytes (char const * bytes, std::size_t count) {
         std::size_t copied = 0;
         while (copied != count) {
@@ -1222,6 +1242,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Writes all pending UTF-8 bytes using positional Win32 I/O. */
+    [[nodiscard]]
     bool flush_bytes () {
         std::size_t done = 0;
         while (done < byte_size_) {
@@ -1261,6 +1282,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Refills the raw input cache from an explicit file offset. */
+    [[nodiscard]]
     bool fill_read_buffer (std::uint64_t at) {
         OVERLAPPED ov = {};
         ov.Offset = static_cast<DWORD> (at);
@@ -1280,6 +1302,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Reads one byte from the cached positional input window. */
+    [[nodiscard]]
     bool read_byte (unsigned char & b, std::uint64_t at) {
         if (at < read_buffer_begin_
             || at - read_buffer_begin_ >= read_buffer_size_) {
@@ -1293,6 +1316,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Reads and validates one UTF-8 scalar at a byte offset. */
+    [[nodiscard]]
     bool read_scalar (std::uint32_t & cp, std::uint64_t & at) {
         unsigned char b[4];
         if (!read_byte (b[0], at)) {
@@ -1337,6 +1361,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
     }
 
     /** @brief Queries the current 64-bit file size. */
+    [[nodiscard]]
     bool file_size (std::uint64_t & size) {
         LARGE_INTEGER s = {};
         if (!GetFileSizeEx (handle_, &s)) {
@@ -1448,6 +1473,7 @@ class basic_win32_fstream
         return const_cast<filebuf_type *> (&this->buf);
     }
 
+    [[nodiscard]]
     bool is_open () const {
         return this->buf.is_open ();
     }
@@ -1500,10 +1526,12 @@ class basic_win32_fstream
         }
     }
 
+    [[nodiscard]]
     HANDLE native_handle () const {
         return this->buf.native_handle ();
     }
 
+    [[nodiscard]]
     std::error_code last_error () const {
         return this->buf.last_error ();
     }
