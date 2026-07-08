@@ -640,34 +640,35 @@ at_help_all="1;headers.at:1;separate compilation of log4cplus/appender.h;headers
 47;headers.at:1;separate compilation of log4cplus/helpers/socketbuffer.h;headers-compilation;
 48;headers.at:1;separate compilation of log4cplus/helpers/stringhelper.h;headers-compilation;
 49;headers.at:1;separate compilation of log4cplus/helpers/timehelper.h;headers-compilation;
-50;headers.at:1;separate compilation of log4cplus/spi/appenderattachable.h;headers-compilation;
-51;headers.at:1;separate compilation of log4cplus/spi/factory.h;headers-compilation;
-52;headers.at:1;separate compilation of log4cplus/spi/filter.h;headers-compilation;
-53;headers.at:1;separate compilation of log4cplus/spi/loggerfactory.h;headers-compilation;
-54;headers.at:1;separate compilation of log4cplus/spi/loggerimpl.h;headers-compilation;
-55;headers.at:1;separate compilation of log4cplus/spi/loggingevent.h;headers-compilation;
-56;headers.at:1;separate compilation of log4cplus/spi/objectregistry.h;headers-compilation;
-57;headers.at:1;separate compilation of log4cplus/spi/rootlogger.h;headers-compilation;
-58;headers.at:1;separate compilation of log4cplus/thread/syncprims-pub-impl.h;headers-compilation;
-59;headers.at:1;separate compilation of log4cplus/thread/syncprims.h;headers-compilation;
-60;headers.at:1;separate compilation of log4cplus/thread/threads.h;headers-compilation;
-61;appender_test.at:1;appender_test;appenders;
-62;configandwatch_test.at:1;configandwatch_test;appenders;
-63;customloglevel_test.at:1;customloglevel_test;appenders;
-64;fileappender_test.at:1;fileappender_test;appenders;
-65;filter_test.at:1;filter_test;appenders;
-66;hierarchy_test.at:1;hierarchy_test;appenders;
-67;loglog_test.at:1;loglog_test;appenders;
-68;ndc_test.at:1;ndc_test;appenders;
-69;ostream_test.at:1;ostream_test;appenders;
-70;patternlayout_test.at:1;patternlayout_test;appenders;
-71;performance_test.at:1;performance_test;appenders;
-72;priority_test.at:1;priority_test;appenders;
-73;propertyconfig_test.at:1;propertyconfig_test;appenders;
-74;qt6messagehandler_test.at:1;qt6messagehandler_test;appenders;
-75;thread_test.at:1;thread_test;appenders;
-76;timeformat_test.at:1;timeformat_test;appenders;
-77;unit_tests.at:1;unit_tests;unit-tests;
+50;headers.at:1;separate compilation of log4cplus/helpers/win32fstream.h;headers-compilation;
+51;headers.at:1;separate compilation of log4cplus/spi/appenderattachable.h;headers-compilation;
+52;headers.at:1;separate compilation of log4cplus/spi/factory.h;headers-compilation;
+53;headers.at:1;separate compilation of log4cplus/spi/filter.h;headers-compilation;
+54;headers.at:1;separate compilation of log4cplus/spi/loggerfactory.h;headers-compilation;
+55;headers.at:1;separate compilation of log4cplus/spi/loggerimpl.h;headers-compilation;
+56;headers.at:1;separate compilation of log4cplus/spi/loggingevent.h;headers-compilation;
+57;headers.at:1;separate compilation of log4cplus/spi/objectregistry.h;headers-compilation;
+58;headers.at:1;separate compilation of log4cplus/spi/rootlogger.h;headers-compilation;
+59;headers.at:1;separate compilation of log4cplus/thread/syncprims-pub-impl.h;headers-compilation;
+60;headers.at:1;separate compilation of log4cplus/thread/syncprims.h;headers-compilation;
+61;headers.at:1;separate compilation of log4cplus/thread/threads.h;headers-compilation;
+62;appender_test.at:1;appender_test;appenders;
+63;configandwatch_test.at:1;configandwatch_test;appenders;
+64;customloglevel_test.at:1;customloglevel_test;appenders;
+65;fileappender_test.at:1;fileappender_test;appenders;
+66;filter_test.at:1;filter_test;appenders;
+67;hierarchy_test.at:1;hierarchy_test;appenders;
+68;loglog_test.at:1;loglog_test;appenders;
+69;ndc_test.at:1;ndc_test;appenders;
+70;ostream_test.at:1;ostream_test;appenders;
+71;patternlayout_test.at:1;patternlayout_test;appenders;
+72;performance_test.at:1;performance_test;appenders;
+73;priority_test.at:1;priority_test;appenders;
+74;propertyconfig_test.at:1;propertyconfig_test;appenders;
+75;qt6messagehandler_test.at:1;qt6messagehandler_test;appenders;
+76;thread_test.at:1;thread_test;appenders;
+77;timeformat_test.at:1;timeformat_test;appenders;
+78;unit_tests.at:1;unit_tests;unit-tests;
 "
 # List of the all the test groups.
 at_groups_all=`printf '%s\n' "$at_help_all" | sed 's/;.*//'`
@@ -681,7 +682,7 @@ at_fn_validate_ranges ()
   for at_grp
   do
     eval at_value=\$$at_grp
-    if test $at_value -lt 1 || test $at_value -gt 77; then
+    if test $at_value -lt 1 || test $at_value -gt 78; then
       printf '%s\n' "invalid test group: $at_value" >&2
       exit 1
     fi
@@ -1040,7 +1041,7 @@ esac
 # Category starts at test group 1.
 at_banner_text_1="separate headers compilation"
 # Banner 2. testsuite.at:14
-# Category starts at test group 61.
+# Category starts at test group 62.
 at_banner_text_2="other tests"
 
 # Take any -C into account.
@@ -5280,10 +5281,76 @@ read at_status <"$at_status_file"
 #AT_STOP_49
 #AT_START_50
 at_fn_group_banner 50 'headers.at:1' \
-  "separate compilation of log4cplus/spi/appenderattachable.h" "" 1
+  "separate compilation of log4cplus/helpers/win32fstream.h" "" 1
 at_xfail=no
 (
   printf '%s\n' "50. $at_setup_line: testing $at_desc ..."
+  $at_traceon
+
+
+
+  { set +x
+printf '%s\n' "$at_srcdir/headers.at:1: printf '%s\\n' \"#include \\\"log4cplus/helpers/win32fstream.h\\\"\">test.cxx"
+at_fn_check_prepare_trace "headers.at:1"
+( $at_check_trace; printf '%s\n' "#include \"log4cplus/helpers/win32fstream.h\"">test.cxx
+) >>"$at_stdout" 2>>"$at_stderr" 5>&-
+at_status=$? at_failed=false
+$at_check_filter
+at_fn_diff_devnull "$at_stderr" || at_failed=:
+at_fn_diff_devnull "$at_stdout" || at_failed=:
+at_fn_check_status 0 $at_status "$at_srcdir/headers.at:1"
+$at_failed && at_fn_log_failure
+$at_traceon; }
+
+
+
+  { set +x
+printf '%s\n' "$at_srcdir/headers.at:1: \$CXX \$CPPFLAGS \$CXXFLAGS -c \"test.cxx\""
+at_fn_check_prepare_dynamic "$CXX $CPPFLAGS $CXXFLAGS -c \"test.cxx\"" "headers.at:1"
+( $at_check_trace; $CXX $CPPFLAGS $CXXFLAGS -c "test.cxx"
+) >>"$at_stdout" 2>>"$at_stderr" 5>&-
+at_status=$? at_failed=false
+$at_check_filter
+echo stderr:; tee stderr <"$at_stderr"
+echo stdout:; tee stdout <"$at_stdout"
+at_fn_check_status 0 $at_status "$at_srcdir/headers.at:1"
+$at_failed && at_fn_log_failure  \
+"test.cxx"
+$at_traceon; }
+
+
+  if test "x$BUILD_WITH_WCHAR_T_SUPPORT" = "xyes"
+then :
+
+    { set +x
+printf '%s\n' "$at_srcdir/headers.at:1: \$CXX \$CPPFLAGS \$CXXFLAGS -DUNICODE=1 -D_UNICODE=1 -c \"test.cxx\""
+at_fn_check_prepare_dynamic "$CXX $CPPFLAGS $CXXFLAGS -DUNICODE=1 -D_UNICODE=1 -c \"test.cxx\"" "headers.at:1"
+( $at_check_trace; $CXX $CPPFLAGS $CXXFLAGS -DUNICODE=1 -D_UNICODE=1 -c "test.cxx"
+) >>"$at_stdout" 2>>"$at_stderr" 5>&-
+at_status=$? at_failed=false
+$at_check_filter
+echo stderr:; tee stderr <"$at_stderr"
+echo stdout:; tee stdout <"$at_stdout"
+at_fn_check_status 0 $at_status "$at_srcdir/headers.at:1"
+$at_failed && at_fn_log_failure  \
+"test.cxx"
+$at_traceon; }
+
+fi
+
+
+
+    set +x
+  $at_times_p && times >"$at_times_file"
+) 5>&1 2>&1 7>&- | eval $at_tee_pipe
+read at_status <"$at_status_file"
+#AT_STOP_50
+#AT_START_51
+at_fn_group_banner 51 'headers.at:1' \
+  "separate compilation of log4cplus/spi/appenderattachable.h" "" 1
+at_xfail=no
+(
+  printf '%s\n' "51. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5343,13 +5410,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_50
-#AT_START_51
-at_fn_group_banner 51 'headers.at:1' \
+#AT_STOP_51
+#AT_START_52
+at_fn_group_banner 52 'headers.at:1' \
   "separate compilation of log4cplus/spi/factory.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "51. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "52. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5409,13 +5476,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_51
-#AT_START_52
-at_fn_group_banner 52 'headers.at:1' \
+#AT_STOP_52
+#AT_START_53
+at_fn_group_banner 53 'headers.at:1' \
   "separate compilation of log4cplus/spi/filter.h" " " 1
 at_xfail=no
 (
-  printf '%s\n' "52. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "53. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5475,13 +5542,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_52
-#AT_START_53
-at_fn_group_banner 53 'headers.at:1' \
+#AT_STOP_53
+#AT_START_54
+at_fn_group_banner 54 'headers.at:1' \
   "separate compilation of log4cplus/spi/loggerfactory.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "53. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "54. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5541,13 +5608,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_53
-#AT_START_54
-at_fn_group_banner 54 'headers.at:1' \
+#AT_STOP_54
+#AT_START_55
+at_fn_group_banner 55 'headers.at:1' \
   "separate compilation of log4cplus/spi/loggerimpl.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "54. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "55. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5607,13 +5674,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_54
-#AT_START_55
-at_fn_group_banner 55 'headers.at:1' \
+#AT_STOP_55
+#AT_START_56
+at_fn_group_banner 56 'headers.at:1' \
   "separate compilation of log4cplus/spi/loggingevent.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "55. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "56. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5673,13 +5740,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_55
-#AT_START_56
-at_fn_group_banner 56 'headers.at:1' \
+#AT_STOP_56
+#AT_START_57
+at_fn_group_banner 57 'headers.at:1' \
   "separate compilation of log4cplus/spi/objectregistry.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "56. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "57. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5739,13 +5806,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_56
-#AT_START_57
-at_fn_group_banner 57 'headers.at:1' \
+#AT_STOP_57
+#AT_START_58
+at_fn_group_banner 58 'headers.at:1' \
   "separate compilation of log4cplus/spi/rootlogger.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "57. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "58. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5805,13 +5872,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_57
-#AT_START_58
-at_fn_group_banner 58 'headers.at:1' \
+#AT_STOP_58
+#AT_START_59
+at_fn_group_banner 59 'headers.at:1' \
   "separate compilation of log4cplus/thread/syncprims-pub-impl.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "58. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "59. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5871,13 +5938,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_58
-#AT_START_59
-at_fn_group_banner 59 'headers.at:1' \
+#AT_STOP_59
+#AT_START_60
+at_fn_group_banner 60 'headers.at:1' \
   "separate compilation of log4cplus/thread/syncprims.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "59. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "60. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -5937,13 +6004,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_59
-#AT_START_60
-at_fn_group_banner 60 'headers.at:1' \
+#AT_STOP_60
+#AT_START_61
+at_fn_group_banner 61 'headers.at:1' \
   "separate compilation of log4cplus/thread/threads.h" "" 1
 at_xfail=no
 (
-  printf '%s\n' "60. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "61. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6003,13 +6070,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_60
-#AT_START_61
-at_fn_group_banner 61 'appender_test.at:1' \
+#AT_STOP_61
+#AT_START_62
+at_fn_group_banner 62 'appender_test.at:1' \
   "appender_test" "                                  " 2
 at_xfail=no
 (
-  printf '%s\n' "61. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "62. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6065,13 +6132,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_61
-#AT_START_62
-at_fn_group_banner 62 'configandwatch_test.at:1' \
+#AT_STOP_62
+#AT_START_63
+at_fn_group_banner 63 'configandwatch_test.at:1' \
   "configandwatch_test" "                            " 2
 at_xfail=no
 (
-  printf '%s\n' "62. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "63. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6157,13 +6224,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_62
-#AT_START_63
-at_fn_group_banner 63 'customloglevel_test.at:1' \
+#AT_STOP_63
+#AT_START_64
+at_fn_group_banner 64 'customloglevel_test.at:1' \
   "customloglevel_test" "                            " 2
 at_xfail=no
 (
-  printf '%s\n' "63. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "64. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6219,13 +6286,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_63
-#AT_START_64
-at_fn_group_banner 64 'fileappender_test.at:1' \
+#AT_STOP_64
+#AT_START_65
+at_fn_group_banner 65 'fileappender_test.at:1' \
   "fileappender_test" "                              " 2
 at_xfail=no
 (
-  printf '%s\n' "64. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "65. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6320,13 +6387,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_64
-#AT_START_65
-at_fn_group_banner 65 'filter_test.at:1' \
+#AT_STOP_65
+#AT_START_66
+at_fn_group_banner 66 'filter_test.at:1' \
   "filter_test" "                                    " 2
 at_xfail=no
 (
-  printf '%s\n' "65. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "66. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6602,13 +6669,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_65
-#AT_START_66
-at_fn_group_banner 66 'hierarchy_test.at:1' \
+#AT_STOP_66
+#AT_START_67
+at_fn_group_banner 67 'hierarchy_test.at:1' \
   "hierarchy_test" "                                 " 2
 at_xfail=no
 (
-  printf '%s\n' "66. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "67. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6664,13 +6731,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_66
-#AT_START_67
-at_fn_group_banner 67 'loglog_test.at:1' \
+#AT_STOP_67
+#AT_START_68
+at_fn_group_banner 68 'loglog_test.at:1' \
   "loglog_test" "                                    " 2
 at_xfail=no
 (
-  printf '%s\n' "67. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "68. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6739,13 +6806,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_67
-#AT_START_68
-at_fn_group_banner 68 'ndc_test.at:1' \
+#AT_STOP_68
+#AT_START_69
+at_fn_group_banner 69 'ndc_test.at:1' \
   "ndc_test" "                                       " 2
 at_xfail=no
 (
-  printf '%s\n' "68. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "69. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6801,13 +6868,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_68
-#AT_START_69
-at_fn_group_banner 69 'ostream_test.at:1' \
+#AT_STOP_69
+#AT_START_70
+at_fn_group_banner 70 'ostream_test.at:1' \
   "ostream_test" "                                   " 2
 at_xfail=no
 (
-  printf '%s\n' "69. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "70. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6863,13 +6930,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_69
-#AT_START_70
-at_fn_group_banner 70 'patternlayout_test.at:1' \
+#AT_STOP_70
+#AT_START_71
+at_fn_group_banner 71 'patternlayout_test.at:1' \
   "patternlayout_test" "                             " 2
 at_xfail=no
 (
-  printf '%s\n' "70. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "71. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -6961,13 +7028,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_70
-#AT_START_71
-at_fn_group_banner 71 'performance_test.at:1' \
+#AT_STOP_71
+#AT_START_72
+at_fn_group_banner 72 'performance_test.at:1' \
   "performance_test" "                               " 2
 at_xfail=no
 (
-  printf '%s\n' "71. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "72. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7049,13 +7116,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_71
-#AT_START_72
-at_fn_group_banner 72 'priority_test.at:1' \
+#AT_STOP_72
+#AT_START_73
+at_fn_group_banner 73 'priority_test.at:1' \
   "priority_test" "                                  " 2
 at_xfail=no
 (
-  printf '%s\n' "72. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "73. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7111,13 +7178,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_72
-#AT_START_73
-at_fn_group_banner 73 'propertyconfig_test.at:1' \
+#AT_STOP_73
+#AT_START_74
+at_fn_group_banner 74 'propertyconfig_test.at:1' \
   "propertyconfig_test" "                            " 2
 at_xfail=no
 (
-  printf '%s\n' "73. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "74. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7251,13 +7318,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_73
-#AT_START_74
-at_fn_group_banner 74 'qt6messagehandler_test.at:1' \
+#AT_STOP_74
+#AT_START_75
+at_fn_group_banner 75 'qt6messagehandler_test.at:1' \
   "qt6messagehandler_test" "                         " 2
 at_xfail=no
 (
-  printf '%s\n' "74. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "75. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7317,13 +7384,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_74
-#AT_START_75
-at_fn_group_banner 75 'thread_test.at:1' \
+#AT_STOP_75
+#AT_START_76
+at_fn_group_banner 76 'thread_test.at:1' \
   "thread_test" "                                    " 2
 at_xfail=no
 (
-  printf '%s\n' "75. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "76. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7369,13 +7436,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_75
-#AT_START_76
-at_fn_group_banner 76 'timeformat_test.at:1' \
+#AT_STOP_76
+#AT_START_77
+at_fn_group_banner 77 'timeformat_test.at:1' \
   "timeformat_test" "                                " 2
 at_xfail=no
 (
-  printf '%s\n' "76. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "77. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7444,13 +7511,13 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_76
-#AT_START_77
-at_fn_group_banner 77 'unit_tests.at:1' \
+#AT_STOP_77
+#AT_START_78
+at_fn_group_banner 78 'unit_tests.at:1' \
   "unit_tests" "                                     " 2
 at_xfail=no
 (
-  printf '%s\n' "77. $at_setup_line: testing $at_desc ..."
+  printf '%s\n' "78. $at_setup_line: testing $at_desc ..."
   $at_traceon
 
 
@@ -7493,4 +7560,4 @@ fi
   $at_times_p && times >"$at_times_file"
 ) 5>&1 2>&1 7>&- | eval $at_tee_pipe
 read at_status <"$at_status_file"
-#AT_STOP_77
+#AT_STOP_78

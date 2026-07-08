@@ -31,6 +31,9 @@
 #endif
 
 #include <log4cplus/tchar.h>
+#if defined (_WIN32)
+#include <log4cplus/helpers/win32fstream.h>
+#endif
 #include <iosfwd>
 
 
@@ -38,7 +41,11 @@ namespace log4cplus
 {
 
 
+#if defined (_WIN32)
+typedef helpers::basic_win32_fstream<tchar> tofstream;
+#else
 typedef std::basic_ofstream<tchar> tofstream;
+#endif
 typedef std::basic_ifstream<tchar> tifstream;
 
 
