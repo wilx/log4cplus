@@ -85,14 +85,13 @@ enum class conversion_error_policy {
  * and reject lossy text conversion.
  */
 struct win32_open_options {
-    DWORD share_mode; ///< `CreateFileW` sharing flags.
-    conversion_error_policy
-        conversion_errors; ///< Policy for invalid or unrepresentable text.
+    /// `CreateFileW` sharing flags.
+    DWORD share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE
+                       | FILE_SHARE_DELETE;
+    /// Policy for invalid or unrepresentable text.
+    conversion_error_policy conversion_errors = conversion_error_policy::fail;
 
-    win32_open_options ()
-        : share_mode (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE),
-          conversion_errors (conversion_error_policy::fail) {
-    }
+    constexpr win32_open_options () noexcept = default;
 };
 
 namespace detail {
@@ -124,28 +123,28 @@ inline std::error_code text_error () {
 }
 
 /** @brief Tests whether a code unit is a UTF-16 high surrogate. */
-inline bool is_high_surrogate (std::uint32_t c) {
+constexpr bool is_high_surrogate (std::uint32_t c) noexcept {
     return high_surrogate_first <= c && c <= high_surrogate_last;
 }
 
 /** @brief Tests whether a code unit is a UTF-16 low surrogate. */
-inline bool is_low_surrogate (std::uint32_t c) {
+constexpr bool is_low_surrogate (std::uint32_t c) noexcept {
     return low_surrogate_first <= c && c <= low_surrogate_last;
 }
 
 /** @brief Tests whether a value is a Unicode scalar value. */
-inline bool is_scalar (std::uint32_t c) {
+constexpr bool is_scalar (std::uint32_t c) noexcept {
     return c <= 0x10ffff && !is_high_surrogate (c) && !is_low_surrogate (c);
 }
 
 /** @brief Tests whether a byte is a UTF-8 continuation code unit. */
-inline bool is_utf8_continuation (unsigned char c) {
+constexpr bool is_utf8_continuation (unsigned char c) noexcept {
     return (c & 0xc0) == 0x80;
 }
 
 /** @brief Combines a UTF-16 surrogate pair into a Unicode scalar value. */
-inline std::uint32_t surrogate_pair_to_scalar (std::uint32_t high,
-                                               std::uint32_t low) {
+constexpr std::uint32_t surrogate_pair_to_scalar (std::uint32_t high,
+                                                  std::uint32_t low) noexcept {
     // Reassemble the surrogate pair's two ten-bit payloads.
     return supplementary_code_point_first
            + ((high - high_surrogate_first) << 10)
@@ -153,7 +152,7 @@ inline std::uint32_t surrogate_pair_to_scalar (std::uint32_t high,
 }
 
 /** @brief Encodes one Unicode scalar value as UTF-8 bytes. */
-inline std::size_t encode_utf8 (char * out, std::uint32_t c) {
+constexpr std::size_t encode_utf8 (char * out, std::uint32_t c) noexcept {
     // Distribute the scalar's payload bits across UTF-8 code units.
     if (c <= 0x7f) {
         out[0] = static_cast<char> (c);
@@ -177,7 +176,7 @@ inline std::size_t encode_utf8 (char * out, std::uint32_t c) {
 }
 
 /** @brief Returns the length indicated by a valid UTF-8 leading byte. */
-inline std::size_t utf8_sequence_length (unsigned char lead) {
+constexpr std::size_t utf8_sequence_length (unsigned char lead) noexcept {
     if (lead < 0x80) {
         return 1;
     }
@@ -194,8 +193,8 @@ inline std::size_t utf8_sequence_length (unsigned char lead) {
 }
 
 /** @brief Decodes and validates one complete UTF-8 sequence. */
-inline bool decode_utf8 (unsigned char const * p, std::size_t n,
-                         std::uint32_t & cp, std::size_t & used) {
+constexpr bool decode_utf8 (unsigned char const * p, std::size_t n,
+                            std::uint32_t & cp, std::size_t & used) noexcept {
     if (!n) {
         return false;
     }
@@ -268,7 +267,7 @@ inline UINT locale_code_page (std::locale const & loc) {
 
 /** @brief Encodes a Unicode scalar value as one or two UTF-16 code units. */
 template <typename CharT>
-inline std::size_t scalar_to_utf16 (CharT * out, std::uint32_t cp) {
+constexpr std::size_t scalar_to_utf16 (CharT * out, std::uint32_t cp) noexcept {
     if (cp <= 0xffff) {
         out[0] = static_cast<CharT> (cp);
         return 1;
@@ -655,13 +654,13 @@ template <typename CharT, typename Traits = std::char_traits<CharT>,
  */
 class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
   public:
-    typedef CharT char_type;
-    typedef Traits traits_type;
-    typedef typename Traits::int_type int_type;
-    typedef typename Traits::pos_type pos_type;
-    typedef typename Traits::off_type off_type;
-    typedef std::ios_base::openmode openmode;
-    typedef HANDLE native_handle_type;
+    using char_type = CharT;
+    using traits_type = Traits;
+    using int_type = typename Traits::int_type;
+    using pos_type = typename Traits::pos_type;
+    using off_type = typename Traits::off_type;
+    using openmode = std::ios_base::openmode;
+    using native_handle_type = HANDLE;
 
     basic_win32_filebuf ()
         : handle_ (INVALID_HANDLE_VALUE), mode_ (openmode (0)), options_ (),
@@ -1397,11 +1396,11 @@ template <typename CharT, typename Traits = std::char_traits<CharT>,
 class basic_win32_fstream
     : private detail::streambuf_holder<CharT, Traits, Codec>,
       public std::basic_iostream<CharT, Traits> {
-    typedef detail::streambuf_holder<CharT, Traits, Codec> holder;
+    using holder = detail::streambuf_holder<CharT, Traits, Codec>;
 
   public:
-    typedef basic_win32_filebuf<CharT, Traits, Codec> filebuf_type;
-    typedef std::ios_base::openmode openmode;
+    using filebuf_type = basic_win32_filebuf<CharT, Traits, Codec>;
+    using openmode = std::ios_base::openmode;
 
     basic_win32_fstream ()
         : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
@@ -1511,16 +1510,16 @@ class basic_win32_fstream
 };
 
 /** @brief Locale-encoded narrow-character Win32 stream. */
-typedef basic_win32_fstream<char> win32_fstream;
+using win32_fstream = basic_win32_fstream<char>;
 /** @brief Windows wide-character Win32 stream. */
-typedef basic_win32_fstream<wchar_t> win32_wfstream;
+using win32_wfstream = basic_win32_fstream<wchar_t>;
 /** @brief UTF-16 Win32 stream. */
-typedef basic_win32_fstream<char16_t> win32_u16fstream;
+using win32_u16fstream = basic_win32_fstream<char16_t>;
 /** @brief UTF-32 Win32 stream. */
-typedef basic_win32_fstream<char32_t> win32_u32fstream;
+using win32_u32fstream = basic_win32_fstream<char32_t>;
 #if defined(__cpp_char8_t)
 /** @brief C++20 UTF-8 character Win32 stream. */
-typedef basic_win32_fstream<char8_t> win32_u8fstream;
+using win32_u8fstream = basic_win32_fstream<char8_t>;
 #endif
 
 } } // namespace log4cplus::helpers
