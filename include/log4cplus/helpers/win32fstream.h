@@ -105,7 +105,7 @@ constexpr std::size_t maximum_decoded_code_units = 8;
  * @brief Windows code page identifier for 7-bit US-ASCII.
  * @see https://learn.microsoft.com/windows/win32/intl/code-page-identifiers
  */
-constexpr UINT windows_us_ascii_code_page = 20127;
+constexpr unsigned int windows_us_ascii_code_page = 20127;
 constexpr std::uint32_t high_surrogate_first = 0xd800;
 constexpr std::uint32_t high_surrogate_last = 0xdbff;
 constexpr std::uint32_t low_surrogate_first = 0xdc00;
@@ -120,6 +120,22 @@ inline std::error_code windows_error (DWORD value = GetLastError ()) {
 inline std::error_code text_error () {
     return std::make_error_code (std::errc::illegal_byte_sequence);
 }
+
+LOG4CPLUS_EXPORT unsigned int win32_acp_code_page ();
+LOG4CPLUS_EXPORT unsigned int win32_utf8_code_page ();
+LOG4CPLUS_EXPORT bool win32_is_utf8_code_page (unsigned int);
+LOG4CPLUS_EXPORT std::size_t
+win32_code_page_max_char_size (unsigned int, std::error_code &);
+LOG4CPLUS_EXPORT bool win32_is_dbcs_lead_byte (unsigned int, unsigned char);
+LOG4CPLUS_EXPORT bool win32_acp_path (char const *, std::wstring &,
+                                      std::error_code &);
+LOG4CPLUS_EXPORT bool win32_multibyte_to_wide (
+    unsigned int, char const *, int, wchar_t *, int, int &, std::error_code &);
+LOG4CPLUS_EXPORT bool win32_wide_to_multibyte (
+    unsigned int, wchar_t const *, int, char *, int, bool, bool &, int &,
+    std::error_code &);
+LOG4CPLUS_EXPORT unsigned char
+win32_code_page_default_char (unsigned int, std::error_code &);
 
 /** @brief Tests whether a code unit is a UTF-16 high surrogate. */
 constexpr bool is_high_surrogate (std::uint32_t c) noexcept {
@@ -223,25 +239,15 @@ constexpr bool decode_utf8 (unsigned char const * p, std::size_t n,
 
 /** @brief Converts an ACP-encoded path to UTF-16 for Win32. */
 inline std::wstring acp_path (std::error_code & ec, char const * path) {
-    if (!path) {
-        ec = std::make_error_code (std::errc::invalid_argument);
+    std::wstring result;
+    if (!win32_acp_path (path, result, ec)) {
         return std::wstring ();
     }
-    int const n = MultiByteToWideChar (CP_ACP, 0, path, -1, nullptr, 0);
-    if (!n) {
-        ec = windows_error ();
-        return std::wstring ();
-    }
-    std::vector<wchar_t> buf (static_cast<std::size_t> (n));
-    if (!MultiByteToWideChar (CP_ACP, 0, path, -1, &buf[0], n)) {
-        ec = windows_error ();
-        return std::wstring ();
-    }
-    return std::wstring (&buf[0]);
+    return result;
 }
 
 /** @brief Selects the Windows code page represented by a C++ locale. */
-inline UINT locale_code_page (std::locale const & loc) {
+inline unsigned int locale_code_page (std::locale const & loc) {
     std::string const name = loc.name ();
     if (name == "C" || name == "POSIX") {
         return windows_us_ascii_code_page;
@@ -253,15 +259,15 @@ inline UINT locale_code_page (std::locale const & loc) {
         std::transform (lower.begin (), lower.end (), lower.begin (),
                         ::tolower);
         if (lower == "utf8" || lower == "utf-8") {
-            return CP_UTF8;
+            return win32_utf8_code_page ();
         }
         char * end = nullptr;
         unsigned long const cp = std::strtoul (suffix.c_str (), &end, 10);
         if (end && !*end && cp) {
-            return static_cast<UINT> (cp);
+            return static_cast<unsigned int> (cp);
         }
     }
-    return GetACP ();
+    return win32_acp_code_page ();
 }
 
 /** @brief Encodes a Unicode scalar value as one or two UTF-16 code units. */
@@ -296,12 +302,12 @@ template <typename CharT> class utf8_codec;
  * @brief Codec for locale-encoded narrow characters.
  *
  * The code page is derived from the stream locale. UTF-8 locales are validated
- * directly; Windows code pages use `MultiByteToWideChar` and
- * `WideCharToMultiByte`.
+ * directly; Windows code pages use Win32 conversion helpers.
  */
 template <> class utf8_codec<char> {
   public:
-    utf8_codec () : cp_ (0), cp_info_ (), code_page_error_ (), expected_ (0) {
+    utf8_codec ()
+        : cp_ (0), max_char_size_ (0), code_page_error_ (), expected_ (0) {
         set_code_page (detail::locale_code_page (std::locale ()));
     }
 
@@ -316,7 +322,7 @@ template <> class utf8_codec<char> {
     bool encode (char ch, std::vector<std::uint32_t> & out,
                  conversion_error_policy policy, std::error_code & ec) {
         pending_.push_back (static_cast<unsigned char> (ch));
-        if (cp_ == CP_UTF8) {
+        if (detail::win32_is_utf8_code_page (cp_)) {
             if (pending_.size () == 1) {
                 unsigned char const b = pending_[0];
                 expected_ = detail::utf8_sequence_length (b);
@@ -344,16 +350,18 @@ template <> class utf8_codec<char> {
             ec = code_page_error_;
             return false;
         }
-        if (pending_.size () == 1 && cp_info_.MaxCharSize > 1
-            && IsDBCSLeadByteEx (cp_, pending_[0])) {
+        if (pending_.size () == 1 && max_char_size_ > 1
+            && detail::win32_is_dbcs_lead_byte (cp_, pending_[0])) {
             return true;
         }
         wchar_t w[2] = {};
-        int const n = MultiByteToWideChar (
-            cp_, 0, reinterpret_cast<char const *> (&pending_[0]),
-            static_cast<int> (pending_.size ()), w, 2);
-        if (!n) {
-            if (pending_.size () < cp_info_.MaxCharSize) {
+        int n = 0;
+        std::error_code ignored_error;
+        if (!detail::win32_multibyte_to_wide (
+                cp_, reinterpret_cast<char const *> (&pending_[0]),
+                static_cast<int> (pending_.size ()), w, 2, n,
+                ignored_error)) {
+            if (pending_.size () < max_char_size_) {
                 return true;
             }
             if (policy == conversion_error_policy::replace) {
@@ -392,16 +400,12 @@ template <> class utf8_codec<char> {
                  conversion_error_policy policy, std::error_code & ec) {
         wchar_t w[2];
         std::size_t const wn = detail::scalar_to_utf16 (w, cp);
-        BOOL used_default = FALSE;
-        DWORD const flags =
-            cp_ == CP_UTF8 ? WC_ERR_INVALID_CHARS : WC_NO_BEST_FIT_CHARS;
-        BOOL * const used = cp_ == CP_UTF8 ? nullptr : &used_default;
-        int const count = WideCharToMultiByte (
-            cp_, flags, w, static_cast<int> (wn), out,
-            static_cast<int> (detail::maximum_decoded_code_units), nullptr,
-            used);
-        if (!count) {
-            ec = detail::windows_error ();
+        bool used_default = false;
+        int count = 0;
+        if (!detail::win32_wide_to_multibyte (
+                cp_, w, static_cast<int> (wn), out,
+                static_cast<int> (detail::maximum_decoded_code_units), true,
+                used_default, count, ec)) {
             return false;
         }
         if (used_default && policy == conversion_error_policy::fail) {
@@ -414,18 +418,14 @@ template <> class utf8_codec<char> {
 
   private:
     /** @brief Caches conversion metadata for a Windows code page. */
-    void set_code_page (UINT code_page) {
+    void set_code_page (unsigned int code_page) {
         cp_ = code_page;
-        cp_info_ = CPINFO ();
-        if (!GetCPInfo (cp_, &cp_info_)) {
-            code_page_error_ = detail::windows_error ();
-        } else {
-            code_page_error_.clear ();
-        }
+        max_char_size_ =
+            detail::win32_code_page_max_char_size (cp_, code_page_error_);
     }
 
-    UINT cp_;
-    CPINFO cp_info_;
+    unsigned int cp_;
+    std::size_t max_char_size_;
     std::error_code code_page_error_;
     std::vector<unsigned char> pending_;
     std::size_t expected_;
