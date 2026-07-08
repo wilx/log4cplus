@@ -1,4 +1,8 @@
 # log4cplus 3.0.0
 
+  - **IMPORTANT**: File-based appenders on Windows now use a custom
+    Win32-backed file stream. Log files can be renamed or deleted while open by
+    another process, and file contents are stored as UTF-8.
+
   - **IMPORTANT**: Implementation language is now C++17.
   

@@ -35,16 +35,12 @@ built-in).
 Unicode and File Appenders
 --------------------------
 
-Another limitation related to Unicode support is the inability to
-write `wchar_t` messages that contain national characters, which do not
-map to any code point in a single-byte code page, to log files using
-`FileAppender`. This is mainly a problem on Windows. Linux and other
-Unix-like systems can avoid it because they do not need to use
-`wchar_t` interfaces to have Unicode-aware applications. They usually
-(as of 2012) use UTF-8 based locales. With proper C++ locale
-setup in client applications, national characters can be written to
-log files unharmed. However, if they choose to use `wchar_t` strings,
-they face the same problem.
+Another limitation related to Unicode support is the need to convert
+between the application's character type and the file's external byte
+encoding when writing log files using `FileAppender`. On Unix-like
+systems this usually means choosing a suitable locale for the standard
+C++ file stream. On Windows, file-based appenders use log4cplus'
+Win32-backed file stream and the external file encoding is UTF-8.
 
 
 Unix-like Platforms
@@ -69,21 +65,16 @@ std::locale::global (     // set global locale
 Windows
 -------
 
-Windows does not support UTF-8 based locales. The above approach will
-yield a `std::locale` instance converting `wchar_t`s to the current
-process's code page. Such a locale will not be able to convert Unicode
-code points outside the process's code page. This is true at least with
-the `std::codecvt` facet implemented in Visual Studio 2010. Instead,
-with Visual Studio 2010 and later, it is possible to use the
-`std::codecvt_utf8` facet:
+Windows does not support UTF-8 based locales. With the standard C++ file
+streams this used to mean that a `std::locale` instance commonly
+converted `wchar_t`s to the current process's code page, and code points
+outside that code page could not be written by `FileAppender` without a
+custom `std::codecvt_utf8` facet.
 
-~~~~{.cpp}
-std::locale::global (     // set global locale
-    std::locale (         // using std::locale constructed from
-        std::locale (),   // global locale
-                          // and codecvt_utf8 facet
-        new std::codecvt_utf8<tchar, 0x10FFFF,
-            static_cast<std::codecvt_mode>(std::consume_header
-                | std::little_endian)>));
-~~~~
-
+File-based appenders no longer use the standard C++ file streams on
+Windows. They use log4cplus' Win32-backed file stream, which stores log
+files as UTF-8. In UNICODE builds, `wchar_t` log messages are converted
+to UTF-8 directly. In non-UNICODE builds, narrow `char` log messages are
+interpreted using the stream locale's Windows code page and are then
+stored as UTF-8. The `TextMode` property controls text-mode newline and
+BOM handling, but the file contents remain UTF-8.
