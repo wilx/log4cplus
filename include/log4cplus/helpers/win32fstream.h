@@ -57,8 +57,7 @@
 #include <string>
 #include <system_error>
 #include <vector>
-#include <winsock2.h>
-#include <windows.h>
+#include <log4cplus/config/windowsh-inc.h>
 
 #if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
 #include <filesystem>
