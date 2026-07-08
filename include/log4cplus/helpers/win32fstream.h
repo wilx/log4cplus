@@ -736,7 +736,7 @@ class basic_win32_filebuf : public std::basic_streambuf<CharT, Traits> {
         direction_ = none;
         conversion_started_ = false;
         codec_.imbue (this->getloc ());
-        if (mode & std::ios_base::ate) {
+        if (mode & (std::ios_base::ate | std::ios_base::app)) {
             if (!file_size (offset_)) {
                 CloseHandle (handle_);
                 handle_ = INVALID_HANDLE_VALUE;

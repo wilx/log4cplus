@@ -1863,6 +1863,11 @@ CATCH_TEST_CASE ("Sharing and append modes preserve Win32 semantics",
     log4cplus::helpers::win32_fstream b (append_name, std::ios_base::out
                                                       | std::ios_base::app
                                                       | std::ios_base::binary);
+    CATCH_INFO ("app-mode streams report the existing EOF before writing");
+    CATCH_CHECK ((static_cast<std::streamoff> (a.tellp ())
+                  == static_cast<std::streamoff> (sizeof (prefix))
+                  && static_cast<std::streamoff> (b.tellp ())
+                         == static_cast<std::streamoff> (sizeof (prefix))));
     a << 'A' << std::flush;
     b << 'B' << std::flush;
 
