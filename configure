@@ -9353,7 +9353,7 @@ case "$target_os" in #(
 then :
 
 else case e in #(
-  e) as_fn_append CPPFLAGS " -D_WIN32_WINNT=0x600" ;;
+  e) as_fn_append CPPFLAGS " -D_WIN32_WINNT=0x0A00" ;;
 esac
 fi ;; #(
   cygwin*) :

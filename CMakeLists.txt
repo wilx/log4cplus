@@ -135,7 +135,7 @@ if (WITH_UNIT_TESTS)
   endif (WIN32)
 endif (WITH_UNIT_TESTS)
 
-set(_WIN32_WINNT 0x0600 CACHE STRING "Define Windows API version to use.")
+set(_WIN32_WINNT 0x0A00 CACHE STRING "Define Windows API version to use.")
 
 option(LOG4CPLUS_ENABLE_DECORATED_LIBRARY_NAME
   "Turns on resulting file name decoration for static and UNICODE builds." ON)
