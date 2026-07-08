@@ -1886,6 +1886,35 @@ CATCH_TEST_CASE ("Sharing and append modes preserve Win32 semantics",
     erase (append_name);
 }
 
+CATCH_TEST_CASE ("tofstream preserves output file defaults",
+                 "[open][output]") {
+    wchar_t const * const name = L"tofstream-default.txt";
+    erase (name);
+
+    {
+        log4cplus::tofstream out {std::filesystem::path (name)};
+        CATCH_INFO ("default tofstream creates a new file");
+        CATCH_REQUIRE (out.is_open ());
+        out << LOG4CPLUS_TEXT ("created");
+        out.close ();
+    }
+    std::vector<char> created = raw_read (name);
+    CATCH_CHECK (std::string (created.begin (), created.end ()) == "created");
+
+    char const old[] = {'o', 'l', 'd'};
+    CATCH_REQUIRE (raw_write (name, old, sizeof (old)));
+    {
+        log4cplus::tofstream out {std::filesystem::path (name)};
+        CATCH_INFO ("default tofstream truncates an existing file");
+        CATCH_REQUIRE (out.is_open ());
+        out << LOG4CPLUS_TEXT ("new");
+        out.close ();
+    }
+    std::vector<char> truncated = raw_read (name);
+    CATCH_CHECK (std::string (truncated.begin (), truncated.end ()) == "new");
+    erase (name);
+}
+
 CATCH_TEST_CASE ("Byte positions can be saved and restored", "[seek]") {
     // Create a bidirectional binary stream with known contents.
     wchar_t const * const name = L"seek.txt";

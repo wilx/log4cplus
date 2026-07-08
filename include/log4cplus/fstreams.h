@@ -42,7 +42,7 @@ namespace log4cplus
 
 
 #if defined (_WIN32)
-typedef helpers::basic_win32_fstream<tchar> tofstream;
+typedef helpers::basic_win32_ofstream<tchar> tofstream;
 #else
 typedef std::basic_ofstream<tchar> tofstream;
 #endif

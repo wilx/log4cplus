@@ -1398,6 +1398,84 @@ template <typename CharT, typename Traits, typename Codec>
 struct streambuf_holder {
     basic_win32_filebuf<CharT, Traits, Codec> buf;
 };
+
+template <typename CharT, typename Traits, typename Codec, typename StreamT>
+class basic_win32_stream_base
+    : private streambuf_holder<CharT, Traits, Codec>,
+      public StreamT {
+    using holder = streambuf_holder<CharT, Traits, Codec>;
+
+  public:
+    using filebuf_type = basic_win32_filebuf<CharT, Traits, Codec>;
+    using openmode = std::ios_base::openmode;
+
+    basic_win32_stream_base () : holder (), StreamT (&this->buf) {
+    }
+
+    filebuf_type * rdbuf () const {
+        return const_cast<filebuf_type *> (&this->buf);
+    }
+
+    [[nodiscard]]
+    bool is_open () const {
+        return this->buf.is_open ();
+    }
+
+    void close () {
+        if (!this->buf.close ()) {
+            this->setstate (std::ios_base::failbit);
+        }
+    }
+
+    [[nodiscard]]
+    HANDLE native_handle () const {
+        return this->buf.native_handle ();
+    }
+
+    [[nodiscard]]
+    std::error_code last_error () const {
+        return this->buf.last_error ();
+    }
+
+  protected:
+    void open_file (wchar_t const * p, openmode m,
+                    win32_open_options const & o) {
+        if (!this->buf.open (p, m, o)) {
+            this->setstate (std::ios_base::failbit);
+        } else {
+            this->clear ();
+        }
+    }
+
+    void open_file (char const * p, openmode m,
+                    win32_open_options const & o) {
+        if (!this->buf.open (p, m, o)) {
+            this->setstate (std::ios_base::failbit);
+        } else {
+            this->clear ();
+        }
+    }
+
+    void open_file (std::wstring const & p, openmode m,
+                    win32_open_options const & o) {
+        open_file (p.c_str (), m, o);
+    }
+
+    void open_file (std::string const & p, openmode m,
+                    win32_open_options const & o) {
+        open_file (p.c_str (), m, o);
+    }
+#if defined(LOG4CPLUS_HELPERS_WIN32_FSTREAM_HAS_FILESYSTEM)
+    void open_file (std::filesystem::path const & p, openmode m,
+                    win32_open_options const & o) {
+        if (!this->buf.open (p, m, o)) {
+            this->setstate (std::ios_base::failbit);
+        } else {
+            this->clear ();
+        }
+    }
+#endif
+};
 } // namespace detail
 
 template <typename CharT, typename Traits = std::char_traits<CharT>,
@@ -1419,29 +1497,29 @@ template <typename CharT, typename Traits = std::char_traits<CharT>,
  * @tparam Codec Converter used by the owned stream buffer.
  */
 class basic_win32_fstream
-    : private detail::streambuf_holder<CharT, Traits, Codec>,
-      public std::basic_iostream<CharT, Traits> {
-    using holder = detail::streambuf_holder<CharT, Traits, Codec>;
+    : public detail::basic_win32_stream_base<
+          CharT, Traits, Codec, std::basic_iostream<CharT, Traits>> {
+    using base = detail::basic_win32_stream_base<
+        CharT, Traits, Codec, std::basic_iostream<CharT, Traits>>;
 
   public:
-    using filebuf_type = basic_win32_filebuf<CharT, Traits, Codec>;
-    using openmode = std::ios_base::openmode;
+    using filebuf_type = typename base::filebuf_type;
+    using openmode = typename base::openmode;
 
-    basic_win32_fstream ()
-        : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
+    basic_win32_fstream () : base () {
     }
 
     explicit basic_win32_fstream (
         wchar_t const * p, openmode m = std::ios_base::in | std::ios_base::out,
         win32_open_options const & o = win32_open_options ())
-        : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
+        : base () {
         open (p, m, o);
     }
 
     explicit basic_win32_fstream (
         char const * p, openmode m = std::ios_base::in | std::ios_base::out,
         win32_open_options const & o = win32_open_options ())
-        : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
+        : base () {
         open (p, m, o);
     }
 
@@ -1449,7 +1527,7 @@ class basic_win32_fstream
         std::wstring const & p,
         openmode m = std::ios_base::in | std::ios_base::out,
         win32_open_options const & o = win32_open_options ())
-        : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
+        : base () {
         open (p, m, o);
     }
 
@@ -1457,7 +1535,7 @@ class basic_win32_fstream
         std::string const & p,
         openmode m = std::ios_base::in | std::ios_base::out,
         win32_open_options const & o = win32_open_options ())
-        : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
+        : base () {
         open (p, m, o);
     }
 #if defined(LOG4CPLUS_HELPERS_WIN32_FSTREAM_HAS_FILESYSTEM)
@@ -1465,89 +1543,151 @@ class basic_win32_fstream
         std::filesystem::path const & p,
         openmode m = std::ios_base::in | std::ios_base::out,
         win32_open_options const & o = win32_open_options ())
-        : holder (), std::basic_iostream<CharT, Traits> (&this->buf) {
+        : base () {
         open (p, m, o);
     }
 #endif
-    filebuf_type * rdbuf () const {
-        return const_cast<filebuf_type *> (&this->buf);
-    }
-
-    [[nodiscard]]
-    bool is_open () const {
-        return this->buf.is_open ();
-    }
-
     void open (wchar_t const * p,
                openmode m = std::ios_base::in | std::ios_base::out,
                win32_open_options const & o = win32_open_options ()) {
-        if (!this->buf.open (p, m, o)) {
-            this->setstate (std::ios_base::failbit);
-        } else {
-            this->clear ();
-        }
+        this->open_file (p, m, o);
     }
 
     void open (char const * p,
                openmode m = std::ios_base::in | std::ios_base::out,
                win32_open_options const & o = win32_open_options ()) {
-        if (!this->buf.open (p, m, o)) {
-            this->setstate (std::ios_base::failbit);
-        } else {
-            this->clear ();
-        }
+        this->open_file (p, m, o);
     }
 
     void open (std::wstring const & p,
                openmode m = std::ios_base::in | std::ios_base::out,
                win32_open_options const & o = win32_open_options ()) {
-        open (p.c_str (), m, o);
+        this->open_file (p, m, o);
     }
 
     void open (std::string const & p,
                openmode m = std::ios_base::in | std::ios_base::out,
                win32_open_options const & o = win32_open_options ()) {
-        open (p.c_str (), m, o);
+        this->open_file (p, m, o);
     }
 #if defined(LOG4CPLUS_HELPERS_WIN32_FSTREAM_HAS_FILESYSTEM)
     void open (std::filesystem::path const & p,
                openmode m = std::ios_base::in | std::ios_base::out,
                win32_open_options const & o = win32_open_options ()) {
-        if (!this->buf.open (p, m, o)) {
-            this->setstate (std::ios_base::failbit);
-        } else {
-            this->clear ();
-        }
+        this->open_file (p, m, o);
     }
 #endif
-    void close () {
-        if (!this->buf.close ()) {
-            this->setstate (std::ios_base::failbit);
-        }
+};
+
+template <typename CharT, typename Traits = std::char_traits<CharT>,
+          typename Codec = utf8_codec<CharT>>
+/**
+ * @brief Owning output stream built on `basic_win32_filebuf`.
+ *
+ * This class follows the familiar `std::basic_ofstream` interface while adding
+ * configurable Win32 sharing, `native_handle()`, and `last_error()`.
+ *
+ * @tparam CharT Character type exposed by the stream.
+ * @tparam Traits Character traits for `CharT`.
+ * @tparam Codec Converter used by the owned stream buffer.
+ */
+class basic_win32_ofstream
+    : public detail::basic_win32_stream_base<
+          CharT, Traits, Codec, std::basic_ostream<CharT, Traits>> {
+    using base = detail::basic_win32_stream_base<
+        CharT, Traits, Codec, std::basic_ostream<CharT, Traits>>;
+
+  public:
+    using filebuf_type = typename base::filebuf_type;
+    using openmode = typename base::openmode;
+
+    basic_win32_ofstream () : base () {
     }
 
-    [[nodiscard]]
-    HANDLE native_handle () const {
-        return this->buf.native_handle ();
+    explicit basic_win32_ofstream (
+        wchar_t const * p, openmode m = std::ios_base::out,
+        win32_open_options const & o = win32_open_options ())
+        : base () {
+        open (p, m, o);
     }
 
-    [[nodiscard]]
-    std::error_code last_error () const {
-        return this->buf.last_error ();
+    explicit basic_win32_ofstream (
+        char const * p, openmode m = std::ios_base::out,
+        win32_open_options const & o = win32_open_options ())
+        : base () {
+        open (p, m, o);
     }
+
+    explicit basic_win32_ofstream (
+        std::wstring const & p, openmode m = std::ios_base::out,
+        win32_open_options const & o = win32_open_options ())
+        : base () {
+        open (p, m, o);
+    }
+
+    explicit basic_win32_ofstream (
+        std::string const & p, openmode m = std::ios_base::out,
+        win32_open_options const & o = win32_open_options ())
+        : base () {
+        open (p, m, o);
+    }
+#if defined(LOG4CPLUS_HELPERS_WIN32_FSTREAM_HAS_FILESYSTEM)
+    explicit basic_win32_ofstream (
+        std::filesystem::path const & p, openmode m = std::ios_base::out,
+        win32_open_options const & o = win32_open_options ())
+        : base () {
+        open (p, m, o);
+    }
+#endif
+    void open (wchar_t const * p, openmode m = std::ios_base::out,
+               win32_open_options const & o = win32_open_options ()) {
+        this->open_file (p, m | std::ios_base::out, o);
+    }
+
+    void open (char const * p, openmode m = std::ios_base::out,
+               win32_open_options const & o = win32_open_options ()) {
+        this->open_file (p, m | std::ios_base::out, o);
+    }
+
+    void open (std::wstring const & p, openmode m = std::ios_base::out,
+               win32_open_options const & o = win32_open_options ()) {
+        this->open_file (p, m | std::ios_base::out, o);
+    }
+
+    void open (std::string const & p, openmode m = std::ios_base::out,
+               win32_open_options const & o = win32_open_options ()) {
+        this->open_file (p, m | std::ios_base::out, o);
+    }
+#if defined(LOG4CPLUS_HELPERS_WIN32_FSTREAM_HAS_FILESYSTEM)
+    void open (std::filesystem::path const & p,
+               openmode m = std::ios_base::out,
+               win32_open_options const & o = win32_open_options ()) {
+        this->open_file (p, m | std::ios_base::out, o);
+    }
+#endif
 };
 
 /** @brief Locale-encoded narrow-character Win32 stream. */
 using win32_fstream = basic_win32_fstream<char>;
+/** @brief Locale-encoded narrow-character Win32 output stream. */
+using win32_ofstream = basic_win32_ofstream<char>;
 /** @brief Windows wide-character Win32 stream. */
 using win32_wfstream = basic_win32_fstream<wchar_t>;
+/** @brief Windows wide-character Win32 output stream. */
+using win32_wofstream = basic_win32_ofstream<wchar_t>;
 /** @brief UTF-16 Win32 stream. */
 using win32_u16fstream = basic_win32_fstream<char16_t>;
+/** @brief UTF-16 Win32 output stream. */
+using win32_u16ofstream = basic_win32_ofstream<char16_t>;
 /** @brief UTF-32 Win32 stream. */
 using win32_u32fstream = basic_win32_fstream<char32_t>;
+/** @brief UTF-32 Win32 output stream. */
+using win32_u32ofstream = basic_win32_ofstream<char32_t>;
 #if defined(__cpp_char8_t)
 /** @brief C++20 UTF-8 character Win32 stream. */
 using win32_u8fstream = basic_win32_fstream<char8_t>;
+/** @brief C++20 UTF-8 character Win32 output stream. */
+using win32_u8ofstream = basic_win32_ofstream<char8_t>;
 #endif
 
 } } // namespace log4cplus::helpers
