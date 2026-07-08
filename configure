@@ -15597,6 +15597,49 @@ done ;; #(
      ;;
 esac
 
+case "$target_os" in #(
+  cygwin*|mingw*) :
+
+    { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for TraceLoggingProvider.h" >&5
+printf %s "checking for TraceLoggingProvider.h... " >&6; }
+if test ${log4cplus_cv_have_traceloggingprovider_h+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <windows.h>
+            #include <traceloggingprovider.h>
+            #include <winmeta.h>
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  log4cplus_cv_have_traceloggingprovider_h=yes
+else case e in #(
+  e) log4cplus_cv_have_traceloggingprovider_h=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $log4cplus_cv_have_traceloggingprovider_h" >&5
+printf '%s\n' "$log4cplus_cv_have_traceloggingprovider_h" >&6; }
+       if test "x$log4cplus_cv_have_traceloggingprovider_h" = "xyes"
+then :
+  printf '%s\n' "#define LOG4CPLUS_HAVE_WIN32_TRACELOGGING 1" >>confdefs.h
+
+fi ;; #(
+  *) :
+     ;;
+esac
+
 { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for ENAMETOOLONG" >&5
 printf %s "checking for ENAMETOOLONG... " >&6; }
 if test ${ax_cv_have_enametoolong+y}

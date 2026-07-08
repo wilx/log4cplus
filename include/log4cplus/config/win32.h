@@ -56,6 +56,15 @@
 // Enable Win32ConsoleAppender.
 #define LOG4CPLUS_HAVE_WIN32_CONSOLE
 
+// Enable Win32TraceLoggingAppender when TraceLoggingProvider.h is available.
+#if ! defined (LOG4CPLUS_HAVE_WIN32_TRACELOGGING)
+#  if defined (__has_include)
+#    if __has_include (<TraceLoggingProvider.h>)
+#      define LOG4CPLUS_HAVE_WIN32_TRACELOGGING
+#    endif
+#  endif
+#endif
+
 #define LOG4CPLUS_HAVE_SYS_TYPES_H
 #define LOG4CPLUS_HAVE_SYS_LOCKING_H
 #define LOG4CPLUS_HAVE_FCNTL_H

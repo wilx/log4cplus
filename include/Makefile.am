@@ -84,5 +84,6 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/tstring.h \
 	log4cplus/version.h \
 	log4cplus/win32consoleappender.h \
-	log4cplus/win32debugappender.h
+	log4cplus/win32debugappender.h \
+	log4cplus/win32traceloggingappender.h
 

@@ -10,4 +10,9 @@
     and `force-vt` modes can emit ANSI SGR color sequences from the existing
     `TextColor` setting, while redirected output remains plain unless
     `force-vt` is selected.
+
+  - Added `Win32TraceLoggingAppender`, a manifest-free ETW TraceLogging
+    appender for modern Windows builds with `TraceLoggingProvider.h`. It uses
+    a fixed log4cplus provider and emits structured fields from each logging
+    event.
   

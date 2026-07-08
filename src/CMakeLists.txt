@@ -63,6 +63,10 @@ elseif (WIN32)
     socket-win32.cxx
     win32consoleappender.cxx
     win32debugappender.cxx)
+  if (LOG4CPLUS_HAVE_WIN32_TRACELOGGING)
+    set (log4cplus_sources ${log4cplus_sources}
+      win32traceloggingappender.cxx)
+  endif ()
 
   #add_compile_definitions (LOG4CPLUS_STATIC)
   #set (log4cplus_postfix "${log4cplus_postfix}S")
@@ -235,6 +239,7 @@ install(FILES ../include/log4cplus/appender.h
               ../include/log4cplus/version.h
               ../include/log4cplus/win32debugappender.h
               ../include/log4cplus/win32consoleappender.h
+              ../include/log4cplus/win32traceloggingappender.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/log4cplus )
 
 install(FILES ../include/log4cplus/boost/deviceappender.hxx

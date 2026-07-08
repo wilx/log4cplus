@@ -610,6 +610,22 @@ AS_CASE(["$target_os"],
     LOG4CPLUS_CHECK_FUNCS([OutputDebugStringW],
       [LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING])])
 
+AS_CASE(["$target_os"],
+  [cygwin*|mingw*], [
+    AC_CACHE_CHECK([for TraceLoggingProvider.h],
+      [log4cplus_cv_have_traceloggingprovider_h],
+      [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+          [[#include <windows.h>
+            #include <traceloggingprovider.h>
+            #include <winmeta.h>]],
+          [[]])],
+        [log4cplus_cv_have_traceloggingprovider_h=yes],
+        [log4cplus_cv_have_traceloggingprovider_h=no])])
+    LOG4CPLUS_DEFINE_MACRO_IF([LOG4CPLUS_HAVE_WIN32_TRACELOGGING],
+      [Define if TraceLoggingProvider.h is available.],
+      [test "x$log4cplus_cv_have_traceloggingprovider_h" = "xyes"], [1])])
+
 AC_CACHE_CHECK([for ENAMETOOLONG], [ax_cv_have_enametoolong],
   [AC_COMPILE_IFELSE(
     [AC_LANG_PROGRAM([#include <errno.h>], [int value = ENAMETOOLONG;])],

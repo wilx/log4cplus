@@ -32,6 +32,7 @@
 #include <log4cplus/syslogappender.h>
 #include <log4cplus/win32debugappender.h>
 #include <log4cplus/win32consoleappender.h>
+#include <log4cplus/win32traceloggingappender.h>
 #include <log4cplus/log4judpappender.h>
 
 
@@ -174,6 +175,9 @@ void initializeFactoryRegistry()
 #  endif
 #  if defined(LOG4CPLUS_HAVE_WIN32_CONSOLE)
     LOG4CPLUS_REG_APPENDER (reg, Win32ConsoleAppender);
+#  endif
+#  if defined(LOG4CPLUS_HAVE_WIN32_TRACELOGGING)
+    LOG4CPLUS_REG_APPENDER (reg, Win32TraceLoggingAppender);
 #  endif
     LOG4CPLUS_REG_APPENDER (reg, Win32DebugAppender);
 #endif

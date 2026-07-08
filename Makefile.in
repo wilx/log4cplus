@@ -354,6 +354,7 @@ am__objects_5 = src/liblog4cplus_la-appenderattachableimpl.lo \
 	src/liblog4cplus_la-version.lo \
 	src/liblog4cplus_la-win32consoleappender.lo \
 	src/liblog4cplus_la-win32debugappender.lo \
+	src/liblog4cplus_la-win32traceloggingappender.lo \
 	src/liblog4cplus_la-win32fstream.lo $(am__objects_4)
 am__objects_6 = $(am__objects_5)
 am_liblog4cplus_la_OBJECTS = $(am__objects_6)
@@ -419,6 +420,7 @@ am__objects_8 = src/liblog4cplusU_la-appenderattachableimpl.lo \
 	src/liblog4cplusU_la-version.lo \
 	src/liblog4cplusU_la-win32consoleappender.lo \
 	src/liblog4cplusU_la-win32debugappender.lo \
+	src/liblog4cplusU_la-win32traceloggingappender.lo \
 	src/liblog4cplusU_la-win32fstream.lo $(am__objects_7)
 am__objects_9 = $(am__objects_8)
 @BUILD_WITH_WCHAR_T_SUPPORT_TRUE@am_liblog4cplusU_la_OBJECTS =  \
@@ -893,6 +895,7 @@ am__depfiles_remade = $(top_builddir)/catch/extras/$(DEPDIR)/liblog4cplusU_la-ca
 	src/$(DEPDIR)/liblog4cplusU_la-win32consoleappender.Plo \
 	src/$(DEPDIR)/liblog4cplusU_la-win32debugappender.Plo \
 	src/$(DEPDIR)/liblog4cplusU_la-win32fstream.Plo \
+	src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Plo \
 	src/$(DEPDIR)/liblog4cplus_la-appender.Plo \
 	src/$(DEPDIR)/liblog4cplus_la-appenderattachableimpl.Plo \
 	src/$(DEPDIR)/liblog4cplus_la-asyncappender.Plo \
@@ -951,6 +954,7 @@ am__depfiles_remade = $(top_builddir)/catch/extras/$(DEPDIR)/liblog4cplusU_la-ca
 	src/$(DEPDIR)/liblog4cplus_la-win32consoleappender.Plo \
 	src/$(DEPDIR)/liblog4cplus_la-win32debugappender.Plo \
 	src/$(DEPDIR)/liblog4cplus_la-win32fstream.Plo \
+	src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Plo \
 	tests/appender_test/$(DEPDIR)/appender_test-main.Po \
 	tests/appender_test/$(DEPDIR)/appender_testU-main.Po \
 	tests/configandwatch_test/$(DEPDIR)/configandwatch_test-main.Po \
@@ -1322,8 +1326,8 @@ LIB_SRC = src/appenderattachableimpl.cxx src/appender.cxx \
 	src/stringhelper-iconv.cxx src/syncprims.cxx \
 	src/syslogappender.cxx src/threads.cxx src/timehelper.cxx \
 	src/tls.cxx src/version.cxx src/win32consoleappender.cxx \
-	src/win32debugappender.cxx src/win32fstream.cxx \
-	$(am__append_1)
+	src/win32debugappender.cxx src/win32traceloggingappender.cxx \
+	src/win32fstream.cxx $(am__append_1)
 common_liblog4cplus_la_cppflags = $(AM_CPPFLAGS) -DINSIDE_LOG4CPLUS \
 	$(am__append_2)
 liblog4cplus_la_CPPFLAGS = $(common_liblog4cplus_la_cppflags)
@@ -1989,6 +1993,8 @@ src/liblog4cplus_la-win32consoleappender.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplus_la-win32debugappender.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/liblog4cplus_la-win32traceloggingappender.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplus_la-win32fstream.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplus_la-boost_tests.lo: src/$(am__dirstamp) \
@@ -2117,6 +2123,8 @@ src/liblog4cplusU_la-win32consoleappender.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplusU_la-win32debugappender.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
+src/liblog4cplusU_la-win32traceloggingappender.lo:  \
+	src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplusU_la-win32fstream.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/liblog4cplusU_la-boost_tests.lo: src/$(am__dirstamp) \
@@ -2678,6 +2686,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplusU_la-win32consoleappender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplusU_la-win32debugappender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplusU_la-win32fstream.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-appender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-appenderattachableimpl.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-asyncappender.Plo@am__quote@ # am--include-marker
@@ -2736,6 +2745,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-win32consoleappender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-win32debugappender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-win32fstream.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/appender_test/$(DEPDIR)/appender_test-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/appender_test/$(DEPDIR)/appender_testU-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@tests/configandwatch_test/$(DEPDIR)/configandwatch_test-main.Po@am__quote@ # am--include-marker
@@ -3213,6 +3223,13 @@ src/liblog4cplus_la-win32debugappender.lo: src/win32debugappender.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/liblog4cplus_la-win32debugappender.lo `test -f 'src/win32debugappender.cxx' || echo '$(srcdir)/'`src/win32debugappender.cxx
 
+src/liblog4cplus_la-win32traceloggingappender.lo: src/win32traceloggingappender.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/liblog4cplus_la-win32traceloggingappender.lo -MD -MP -MF src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Tpo -c -o src/liblog4cplus_la-win32traceloggingappender.lo `test -f 'src/win32traceloggingappender.cxx' || echo '$(srcdir)/'`src/win32traceloggingappender.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Tpo src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/win32traceloggingappender.cxx' object='src/liblog4cplus_la-win32traceloggingappender.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/liblog4cplus_la-win32traceloggingappender.lo `test -f 'src/win32traceloggingappender.cxx' || echo '$(srcdir)/'`src/win32traceloggingappender.cxx
+
 src/liblog4cplus_la-win32fstream.lo: src/win32fstream.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplus_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/liblog4cplus_la-win32fstream.lo -MD -MP -MF src/$(DEPDIR)/liblog4cplus_la-win32fstream.Tpo -c -o src/liblog4cplus_la-win32fstream.lo `test -f 'src/win32fstream.cxx' || echo '$(srcdir)/'`src/win32fstream.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblog4cplus_la-win32fstream.Tpo src/$(DEPDIR)/liblog4cplus_la-win32fstream.Plo
@@ -3625,6 +3642,13 @@ src/liblog4cplusU_la-win32debugappender.lo: src/win32debugappender.cxx
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/win32debugappender.cxx' object='src/liblog4cplusU_la-win32debugappender.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplusU_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/liblog4cplusU_la-win32debugappender.lo `test -f 'src/win32debugappender.cxx' || echo '$(srcdir)/'`src/win32debugappender.cxx
+
+src/liblog4cplusU_la-win32traceloggingappender.lo: src/win32traceloggingappender.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplusU_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/liblog4cplusU_la-win32traceloggingappender.lo -MD -MP -MF src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Tpo -c -o src/liblog4cplusU_la-win32traceloggingappender.lo `test -f 'src/win32traceloggingappender.cxx' || echo '$(srcdir)/'`src/win32traceloggingappender.cxx
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Tpo src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/win32traceloggingappender.cxx' object='src/liblog4cplusU_la-win32traceloggingappender.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplusU_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/liblog4cplusU_la-win32traceloggingappender.lo `test -f 'src/win32traceloggingappender.cxx' || echo '$(srcdir)/'`src/win32traceloggingappender.cxx
 
 src/liblog4cplusU_la-win32fstream.lo: src/win32fstream.cxx
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(liblog4cplusU_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/liblog4cplusU_la-win32fstream.lo -MD -MP -MF src/$(DEPDIR)/liblog4cplusU_la-win32fstream.Tpo -c -o src/liblog4cplusU_la-win32fstream.lo `test -f 'src/win32fstream.cxx' || echo '$(srcdir)/'`src/win32fstream.cxx
@@ -4640,6 +4664,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32consoleappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32debugappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32fstream.Plo
+	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-appender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-appenderattachableimpl.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-asyncappender.Plo
@@ -4698,6 +4723,7 @@ distclean: distclean-recursive
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32consoleappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32debugappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32fstream.Plo
+	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Plo
 	-rm -f tests/appender_test/$(DEPDIR)/appender_test-main.Po
 	-rm -f tests/appender_test/$(DEPDIR)/appender_testU-main.Po
 	-rm -f tests/configandwatch_test/$(DEPDIR)/configandwatch_test-main.Po
@@ -4855,6 +4881,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32consoleappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32debugappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32fstream.Plo
+	-rm -f src/$(DEPDIR)/liblog4cplusU_la-win32traceloggingappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-appender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-appenderattachableimpl.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-asyncappender.Plo
@@ -4913,6 +4940,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32consoleappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32debugappender.Plo
 	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32fstream.Plo
+	-rm -f src/$(DEPDIR)/liblog4cplus_la-win32traceloggingappender.Plo
 	-rm -f tests/appender_test/$(DEPDIR)/appender_test-main.Po
 	-rm -f tests/appender_test/$(DEPDIR)/appender_testU-main.Po
 	-rm -f tests/configandwatch_test/$(DEPDIR)/configandwatch_test-main.Po
