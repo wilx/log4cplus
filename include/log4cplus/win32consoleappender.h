@@ -57,7 +57,21 @@ namespace log4cplus
     * <dt><tt>TextColor</tt></dt>
     * <dd>See MSDN documentation for
     * <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ms682088(v=vs.85).aspx#_win32_character_attributes">
-    * Character Attributes</a>.
+    * Character Attributes</a>.</dd>
+    *
+    * <dt><tt>ColorMode</tt></dt>
+    * <dd>Controls how <tt>TextColor</tt> is applied. The supported values
+    * are <tt>classic</tt>, <tt>vt</tt>, and <tt>force-vt</tt>, using these
+    * lowercase spellings. Unknown values are treated as <tt>classic</tt>.
+    * <tt>classic</tt> is the default and uses
+    * <code>SetConsoleTextAttribute()</code> for real console handles.
+    * <tt>vt</tt> enables virtual terminal processing for real console handles
+    * and writes SGR sequences. If virtual terminal processing cannot be
+    * enabled, this appender falls back to <tt>classic</tt> for subsequent
+    * output. Redirected output is written without color. <tt>force-vt</tt>
+    * behaves like <tt>vt</tt> for real console handles and also writes SGR
+    * sequences to redirected output. When <tt>TextColor</tt> is zero, no color
+    * handling is performed.</dd>
     * </dl>
     */
     class LOG4CPLUS_EXPORT Win32ConsoleAppender
@@ -79,11 +93,16 @@ namespace log4cplus
         virtual void append (spi::InternalLoggingEvent const &) override;
 
         void write_handle (void *, tchar const *, std::size_t);
+        void write_handle_vt (void *, tchar const *, std::size_t);
         void write_console (void *, tchar const *, std::size_t);
+        bool enable_console_vt (void *);
+        void write_console_vt (void *, tchar const *, std::size_t);
 
         bool alloc_console;
         bool log_to_std_err;
         unsigned int text_color;
+        unsigned int color_mode;
+        bool console_vt_failed;
     };
 
 } // namespace log4cplus

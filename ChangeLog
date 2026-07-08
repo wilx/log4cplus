@@ -5,4 +5,9 @@
     another process, and file contents are stored as UTF-8.
 
   - **IMPORTANT**: Implementation language is now C++17.
+
+  - `Win32ConsoleAppender` now supports a `ColorMode` property. The new `vt`
+    and `force-vt` modes can emit ANSI SGR color sequences from the existing
+    `TextColor` setting, while redirected output remains plain unless
+    `force-vt` is selected.
   
