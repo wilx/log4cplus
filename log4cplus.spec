@@ -7,7 +7,7 @@ License: Apache
 Group: Development/Libraries
 Vendor: log4cplus project 
 Packager: Yusuke SATO <y-sato@y-sa.to>
-Url: http://log4cplus.sourceforge.net/
+Url: https://github.com/log4cplus/log4cplus
 
 Source: %name-%version.tar.gz
 

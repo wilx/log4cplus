@@ -9343,34 +9343,6 @@ printf '%s\n' "#define HAVE_CXX23 1" >>confdefs.h
 
 as_fn_append CPPFLAGS " -D_GNU_SOURCE=1"
 
-if test "$enable_year2038,$ac_have_year2038,$cross_compiling" = yes,no,no
-then :
-  # If we're not cross compiling and 'touch' works with a large
-  # timestamp, then we can presume the system supports wider time_t
-  # *somehow* and we just weren't able to detect it.  One common
-  # case that we deliberately *don't* probe for is a system that
-  # supports both 32- and 64-bit ABIs but only the 64-bit ABI offers
-  # wide time_t.  (It would be inappropriate for us to override an
-  # intentional use of -m32.)  Error out, demanding use of
-  # --disable-year2038 if this is intentional.
-  if TZ=UTC0 touch -t 210602070628.15 conftest.time 2>/dev/null
-then :
-  case `TZ=UTC0 LC_ALL=C ls -l conftest.time 2>/dev/null` in #(
-  *'Feb  7  2106'* | *'Feb  7 17:10'*) :
-    { { printf '%s\n' "$as_me:${as_lineno-$LINENO}: error: in '$ac_pwd':" >&5
-printf '%s\n' "$as_me: error: in '$ac_pwd':" >&2;}
-as_fn_error $? "this system appears to support timestamps after
-mid-January 2038, but no mechanism for enabling wide
-'time_t' was detected. Did you mean to build a 64-bit
-binary? (E.g., 'CC=\"${CC} -m64\"'.) To proceed with
-32-bit time_t, configure with '--disable-year2038'.
-See 'config.log' for more details" "$LINENO" 5; } ;; #(
-  *) :
-     ;;
-esac
-fi
-fi
-
 case "$target_os" in #(
   mingw*) :
                 as_fn_append CPPFLAGS " -U__STRICT_ANSI__"
@@ -9381,7 +9353,7 @@ case "$target_os" in #(
 then :
 
 else case e in #(
-  e) as_fn_append CPPFLAGS " -D_WIN32_WINNT=0x600" ;;
+  e) as_fn_append CPPFLAGS " -D_WIN32_WINNT=0x0A00" ;;
 esac
 fi ;; #(
   cygwin*) :
@@ -15621,6 +15593,49 @@ then :
 fi
 
 done ;; #(
+  *) :
+     ;;
+esac
+
+case "$target_os" in #(
+  cygwin*|mingw*) :
+
+    { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for TraceLoggingProvider.h" >&5
+printf %s "checking for TraceLoggingProvider.h... " >&6; }
+if test ${log4cplus_cv_have_traceloggingprovider_h+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <windows.h>
+            #include <traceloggingprovider.h>
+            #include <winmeta.h>
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  log4cplus_cv_have_traceloggingprovider_h=yes
+else case e in #(
+  e) log4cplus_cv_have_traceloggingprovider_h=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $log4cplus_cv_have_traceloggingprovider_h" >&5
+printf '%s\n' "$log4cplus_cv_have_traceloggingprovider_h" >&6; }
+       if test "x$log4cplus_cv_have_traceloggingprovider_h" = "xyes"
+then :
+  printf '%s\n' "#define LOG4CPLUS_HAVE_WIN32_TRACELOGGING 1" >>confdefs.h
+
+fi ;; #(
   *) :
      ;;
 esac

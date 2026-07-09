@@ -1,8 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl This version of log4cplus requires the following autotools versions:
-dnl autoconf-2.69
-dnl automake-1.16.1
-dnl libtool-2.4.6
+dnl autoconf-2.73
+dnl automake-1.18.1
+dnl libtool-2.5.4
 
 AC_INIT([log4cplus],[3.0.0])
 AC_CANONICAL_TARGET
@@ -183,8 +183,6 @@ AX_CXX_COMPILE_STDCXX([23],[],[mandatory])
 
 AS_VAR_APPEND([CPPFLAGS], [" -D_GNU_SOURCE=1"])
 
-AC_SYS_YEAR2038
-
 AS_CASE(["$target_os"],
   [mingw*],
   [dnl Undefining __STRICT_ANSI__ is a workaround for MinGW
@@ -198,7 +196,7 @@ AS_CASE(["$target_os"],
    AS_IF([AS_ECHO_N(["$CPPFLAGS"]) dnl
           | $GREP -e '_WIN32_WINNT=' >/dev/null],
      [],
-     [AS_VAR_APPEND([CPPFLAGS], [" -D_WIN32_WINNT=0x600"])])],
+     [AS_VAR_APPEND([CPPFLAGS], [" -D_WIN32_WINNT=0x0A00"])])],
   [cygwin*],
   [dnl Undefining __STRICT_ANSI__ is a workaround for compilation
    dnl problem.  C <stdio.h> header does not define vsnprintf() or
@@ -611,6 +609,22 @@ AS_CASE(["$target_os"],
   [cygwin*], [
     LOG4CPLUS_CHECK_FUNCS([OutputDebugStringW],
       [LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING])])
+
+AS_CASE(["$target_os"],
+  [cygwin*|mingw*], [
+    AC_CACHE_CHECK([for TraceLoggingProvider.h],
+      [log4cplus_cv_have_traceloggingprovider_h],
+      [AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+          [[#include <windows.h>
+            #include <traceloggingprovider.h>
+            #include <winmeta.h>]],
+          [[]])],
+        [log4cplus_cv_have_traceloggingprovider_h=yes],
+        [log4cplus_cv_have_traceloggingprovider_h=no])])
+    LOG4CPLUS_DEFINE_MACRO_IF([LOG4CPLUS_HAVE_WIN32_TRACELOGGING],
+      [Define if TraceLoggingProvider.h is available.],
+      [test "x$log4cplus_cv_have_traceloggingprovider_h" = "xyes"], [1])])
 
 AC_CACHE_CHECK([for ENAMETOOLONG], [ax_cv_have_enametoolong],
   [AC_COMPILE_IFELSE(

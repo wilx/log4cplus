@@ -43,7 +43,7 @@ ported to and tested on the following platforms:
   - Windows/AMD64 with GCC version 4.8.2 (x86_64-posix-seh-rev3, Built by
     MinGW-W64 project) using CMake build system
   - Windows/AMD64 with GCC version 4.9.2 (tdm64-1) using CMake build system
-  - Windows 7 with MS Visual Studio 2015
+  - Windows 10 with MS Visual Studio 2022
   - OpenBSD 5.6/AMD64 with GCC version 4.9.0
   - FreeBSD 10.1/i386 with Clang version 3.4.1 (tags/RELEASE_34/dot1-final 208032)
   - NetBSD 6.1.5/AMD64 with GCC version 4.9.1
@@ -55,7 +55,7 @@ Testing on the above-listed platforms was done at some point in time
 with some version of the source. Continuous testing is performed only
 on the Linux platform offered by the [Travis CI][11] service.
 
-The oldest Windows version that is supported by 2.x releases is Windows Vista.
+The oldest Windows version that is supported by 3.x releases is Windows 10.
 
 The following platforms were supported by the 1.x series of [log4cplus]. They
 either do not have a reasonably C++23-capable compiler or have not yet been
@@ -253,8 +253,8 @@ Autotools-based build system or the CMake build system. The
 Autotools-based build system is considered to be primary for
 Unix--like platforms.
 
-On Windows, the primary build system is Visual Studio 2015 solution
-and projects (`msvc14/log4cplus.sln`).
+On Windows, the primary build system is Visual Studio solution
+and projects (`msvc14/log4cplus.sln`), currently tested with Visual Studio 2022.
 
 MinGW is supported by the Autotools-based build system. The CMake build system
 is supported as well, and it should be used to compile [log4cplus] with
@@ -314,17 +314,21 @@ and/or on DLL load, and will not tear down until all `log4cplus:Initializer`
 instances are destroyed.
 
 
-Windows and rolling file Appenders
-----------------------------------
+Windows and file Appenders
+--------------------------
 
-On Windows, the standard C++ file streams open files in a way that the
-underlying Win32 file `HANDLE` is not opened with the `FILE_SHARE_DELETE`
-flag. This flag, besides shared delete, allows renaming files that have
-handles open to them. This issue manifests as error code 13 when the file
-needs to be rolled over while it is still open by another process.
+On Windows, file-based appenders use [log4cplus]' Win32-backed file stream
+instead of the standard C++ file streams. The Win32-backed stream opens files
+using `CreateFileW()` with read, write, and delete sharing. This allows log
+files to be renamed or deleted while they are open by another process and lets
+rolling file appenders roll over files in that situation. It stores file
+contents as UTF-8.
 
-This is also [bug #167](https://sourceforge.net/p/log4cplus/bugs/167/) on
-SourceForge.
+Older [log4cplus] releases used the standard C++ file streams on Windows. Those
+streams did not open the underlying Win32 file `HANDLE` with
+`FILE_SHARE_DELETE`, which could make rollover fail with error code 13 if
+another process still had the log file open. This was tracked as
+[bug #167](https://sourceforge.net/p/log4cplus/bugs/167/) on SourceForge.
 
 
 Windows and TLS
@@ -345,8 +349,7 @@ dependency of such loaded library), then accessing
 (GPF) errors.  This is because Windows prior to Windows Vista do not
 extend the TLS for libraries loaded at run time using `LoadLibrary()`.
 To allow using the best available method, [log4cplus] enables the
-method (2) by checking `_WIN32_WINNT >= 0x0600` condition, when
-compiling [log4cplus] targeted to Windows Vista or later.
+method (2) when compiling [log4cplus] targeted to Windows 10 or later.
 
 [tlsvista]: https://learn.microsoft.com/en-us/cpp/parallel/thread-local-storage-tls?view=msvc-170
 
@@ -636,7 +639,7 @@ Unsupported compilers and platforms
 version 3.0.0, it means it does not support any platform or compiler without
 decent C++23 support.
 
-  - Visual Studio prior to 2015
+  - Visual Studio prior to 2022
   - GCC prior to 4.8
 
 

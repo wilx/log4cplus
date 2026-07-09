@@ -56,7 +56,9 @@ LIB_SRC = \
 	%D%/tls.cxx \
 	%D%/version.cxx \
 	%D%/win32consoleappender.cxx \
-	%D%/win32debugappender.cxx
+	%D%/win32debugappender.cxx \
+	%D%/win32traceloggingappender.cxx \
+	%D%/win32fstream.cxx
 if ENABLE_UNIT_TESTS
 LIB_SRC+= \
 	%D%/boost_tests.cxx \

@@ -1,4 +1,18 @@
 # log4cplus 3.0.0
 
+  - **IMPORTANT**: File-based appenders on Windows now use a custom
+    Win32-backed file stream. Log files can be renamed or deleted while open by
+    another process, and file contents are stored as UTF-8.
+
   - **IMPORTANT**: Implementation language is now C++17.
+
+  - `Win32ConsoleAppender` now supports a `ColorMode` property. The new `vt`
+    and `force-vt` modes can emit ANSI SGR color sequences from the existing
+    `TextColor` setting, while redirected output remains plain unless
+    `force-vt` is selected.
+
+  - Added `Win32TraceLoggingAppender`, a manifest-free ETW TraceLogging
+    appender for modern Windows builds with `TraceLoggingProvider.h`. It uses
+    a fixed log4cplus provider and emits structured fields from each logging
+    event.
   

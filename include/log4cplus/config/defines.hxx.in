@@ -237,6 +237,9 @@
 /* Define to 1 if you have the `OutputDebugString' function. */
 #undef LOG4CPLUS_HAVE_OUTPUTDEBUGSTRING
 
+/* Define to 1 if TraceLoggingProvider.h is available. */
+#undef LOG4CPLUS_HAVE_WIN32_TRACELOGGING
+
 /* Define to 1 if the system has the `constructor' function attribute
    with priority */
 #undef LOG4CPLUS_HAVE_FUNC_ATTRIBUTE_CONSTRUCTOR_PRIORITY

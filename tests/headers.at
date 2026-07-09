@@ -50,6 +50,7 @@ m4_foreach_w([HEADER],
   log4cplus/helpers/socketbuffer.h
   log4cplus/helpers/stringhelper.h
   log4cplus/helpers/timehelper.h
+  log4cplus/helpers/win32fstream.h
 
   log4cplus/spi/appenderattachable.h
   log4cplus/spi/factory.h

@@ -97,6 +97,15 @@ check_symbol_exists(__FUNCTION__          ""            LOG4CPLUS_HAVE_FUNCTION_
 check_symbol_exists(__PRETTY_FUNCTION__   ""            LOG4CPLUS_HAVE_PRETTY_FUNCTION_MACRO )
 check_symbol_exists(__func__              ""            LOG4CPLUS_HAVE_FUNC_SYMBOL )
 
+if(WIN32)
+  check_cxx_source_compiles(
+    "#include <windows.h>
+     #include <traceloggingprovider.h>
+     #include <winmeta.h>
+     int main() { return 0; }"
+    LOG4CPLUS_HAVE_WIN32_TRACELOGGING)
+endif()
+
 # clock_gettime() needs -lrt here
 # TODO AC says this exists
 if (LIBRT)

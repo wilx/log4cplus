@@ -6,7 +6,7 @@ SUMMARY="C++ logging library"
 DESCRIPTION="log4cplus is a simple to use C++ logging API providing thread-safe,
 flexible, and arbitrarily granular control over log management and
 configuration. It is modelled after the Java log4j API."
-HOMEPAGE="http://log4cplus.sourceforge.net/"
+HOMEPAGE="https://github.com/log4cplus/log4cplus"
 SRC_URI="mirror://sourceforge/log4cplus/log4cplus-stable/${PV%-rc*}/${P}.tar.xz"
 
 PATCH_URI="configure.ac.patch"

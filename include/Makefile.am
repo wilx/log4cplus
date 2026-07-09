@@ -35,6 +35,7 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/helpers/stringhelper.h \
 	log4cplus/helpers/thread-config.h \
 	log4cplus/helpers/timehelper.h \
+	log4cplus/helpers/win32fstream.h \
 	log4cplus/hierarchy.h \
 	log4cplus/hierarchylocker.h \
 	log4cplus/initializer.h \
@@ -83,5 +84,6 @@ nobase_log4cplusinc_HEADERS = \
 	log4cplus/tstring.h \
 	log4cplus/version.h \
 	log4cplus/win32consoleappender.h \
-	log4cplus/win32debugappender.h
+	log4cplus/win32debugappender.h \
+	log4cplus/win32traceloggingappender.h
 
