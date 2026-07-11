@@ -2,6 +2,12 @@
 
   - **IMPORTANT**: CMake 3.20 or later is now required.
 
+  - **IMPORTANT**: Implementation language is now C++23.
+
+  - **IMPORTANT**: File-based appenders on Windows now use a custom
+    Win32-backed file stream. Log files can be renamed or deleted while open by
+    another process, and file contents are stored as UTF-8.
+
   - **IMPORTANT**: Apple embedded-platform builds now use CMake's native iOS
     support. The legacy custom iOS toolchain, `IOS_PLATFORM`/`CMAKE_IOS_*`
     variables, and ARMv7/i386 build scripts have been removed. The obsolete
@@ -36,12 +42,6 @@
     socket writes and using native descriptor and size types without narrowing
     conversions.
 
-  - **IMPORTANT**: File-based appenders on Windows now use a custom
-    Win32-backed file stream. Log files can be renamed or deleted while open by
-    another process, and file contents are stored as UTF-8.
-
-  - **IMPORTANT**: Implementation language is now C++17.
-
   - `Win32ConsoleAppender` now supports a `ColorMode` property. The new `vt`
     and `force-vt` modes can emit ANSI SGR color sequences from the existing
     `TextColor` setting, while redirected output remains plain unless
@@ -51,4 +51,4 @@
     appender for modern Windows builds with `TraceLoggingProvider.h`. It uses
     a fixed log4cplus provider and emits structured fields from each logging
     event.
-  
+
