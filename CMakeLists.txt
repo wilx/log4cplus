@@ -18,10 +18,17 @@ endif ()
 
 # Use "-fPIC" / "-fPIE" for all targets by default, including static libs.
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
-# Enable LTO / IPO by default.
-set (CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
-set (CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
-set (CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL ON)
+# Enable LTO / IPO by default. Keep it disabled for iOS static libraries:
+# xcodebuild -create-xcframework cannot determine the architectures of an
+# archive whose members are LLVM bitcode rather than Mach-O object files.
+if (IOS)
+  set (_LOG4CPLUS_IPO_DEFAULT OFF)
+else ()
+  set (_LOG4CPLUS_IPO_DEFAULT ON)
+endif ()
+set (CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ${_LOG4CPLUS_IPO_DEFAULT})
+set (CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ${_LOG4CPLUS_IPO_DEFAULT})
+set (CMAKE_INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL ${_LOG4CPLUS_IPO_DEFAULT})
 # Hint to prefer -pthread over -lpthread
 set (THREADS_PREFER_PTHREAD_FLAG ON)
 

@@ -607,8 +607,10 @@ Macs:
     $ cmake --build build/ios-simulator --config Release --target install
 
 The iOS defaults disable the logging server and executable test suite while
-retaining normal multithreading and thread-local storage detection. These
-options can also be set explicitly with `LOG4CPLUS_BUILD_LOGGINGSERVER` and
+retaining normal multithreading and thread-local storage detection. Release
+IPO is also disabled so that the static archives contain Mach-O object files
+whose architectures `xcodebuild -create-xcframework` can inspect. These options
+can also be set explicitly with `LOG4CPLUS_BUILD_LOGGINGSERVER` and
 `LOG4CPLUS_BUILD_TESTING`.
 
 Package both installed variants as an XCFramework:
