@@ -8,10 +8,7 @@ if (CMAKE_TOOLCHAIN_FILE)
       "root for library output, set this to change where Android libs are compiled to")
   endif()
 endif ()
-# Remove when CMake >= 2.8.4 is required
-set (CMAKE_LEGACY_CYGWIN_WIN32 0)
-
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.20)
 
 project (log4cplus)
 
@@ -53,8 +50,20 @@ if (APPLE)
   set (log4cplus_macho_compatibility_version 3.0.0)
 endif ()
 
-option(LOG4CPLUS_BUILD_TESTING "Build the test suite." ON)
-option(LOG4CPLUS_BUILD_LOGGINGSERVER "Build the logging server." ON)
+if (IOS)
+  set (LOG4CPLUS_BUILD_TESTING_DEFAULT OFF)
+  set (LOG4CPLUS_BUILD_LOGGINGSERVER_DEFAULT OFF)
+  set (LOG4CPLUS_BUILD_SHARED_LIBS_DEFAULT OFF)
+else ()
+  set (LOG4CPLUS_BUILD_TESTING_DEFAULT ON)
+  set (LOG4CPLUS_BUILD_LOGGINGSERVER_DEFAULT ON)
+  set (LOG4CPLUS_BUILD_SHARED_LIBS_DEFAULT ON)
+endif ()
+
+option(LOG4CPLUS_BUILD_TESTING "Build the test suite."
+  ${LOG4CPLUS_BUILD_TESTING_DEFAULT})
+option(LOG4CPLUS_BUILD_LOGGINGSERVER "Build the logging server."
+  ${LOG4CPLUS_BUILD_LOGGINGSERVER_DEFAULT})
 
 option(LOG4CPLUS_REQUIRE_EXPLICIT_INITIALIZATION "Require explicit initialization (see log4cplus::Initializer)" OFF)
 if (LOG4CPLUS_REQUIRE_EXPLICIT_INITIALIZATION)
@@ -75,7 +84,8 @@ if(LOG4CPLUS_SINGLE_THREADED AND LOG4CPLUS_BUILD_LOGGINGSERVER)
   message (FATAL_ERROR "The logging server requires the multi-thread capability.")
 endif(LOG4CPLUS_SINGLE_THREADED AND LOG4CPLUS_BUILD_LOGGINGSERVER)
 
-set(BUILD_SHARED_LIBS TRUE CACHE BOOL "If TRUE, log4cplus is built as a shared library, otherwise as a static library")
+set(BUILD_SHARED_LIBS ${LOG4CPLUS_BUILD_SHARED_LIBS_DEFAULT} CACHE BOOL
+  "If TRUE, log4cplus is built as a shared library, otherwise as a static library")
 
 if (WIN32)
   set (UNICODE_DEFAULT ON)
