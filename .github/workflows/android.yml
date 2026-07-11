@@ -42,8 +42,12 @@ jobs:
       - name: Select Android NDK r29
         run: |
           set -euo pipefail
-          sdkmanager "ndk;$ANDROID_NDK_VERSION"
-          ndk_home="$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION"
+          android_sdk_root="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          ndk_home="$android_sdk_root/ndk/$ANDROID_NDK_VERSION"
+          if [[ ! -f "$ndk_home/build/cmake/android.toolchain.cmake" ]]; then
+            "$android_sdk_root/cmdline-tools/latest/bin/sdkmanager" \
+              "ndk;$ANDROID_NDK_VERSION"
+          fi
           test -f "$ndk_home/build/cmake/android.toolchain.cmake"
           printf 'ANDROID_NDK_HOME=%s\n' "$ndk_home" >> "$GITHUB_ENV"
           printf 'ANDROID_READELF=%s\n' \
@@ -139,8 +143,12 @@ jobs:
       - name: Select Android NDK r29
         run: |
           set -euo pipefail
-          sdkmanager "ndk;$ANDROID_NDK_VERSION"
-          ndk_home="$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION"
+          android_sdk_root="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          ndk_home="$android_sdk_root/ndk/$ANDROID_NDK_VERSION"
+          if [[ ! -f "$ndk_home/build/cmake/android.toolchain.cmake" ]]; then
+            "$android_sdk_root/cmdline-tools/latest/bin/sdkmanager" \
+              "ndk;$ANDROID_NDK_VERSION"
+          fi
           test -f "$ndk_home/build/cmake/android.toolchain.cmake"
           printf 'ANDROID_NDK_HOME=%s\n' "$ndk_home" >> "$GITHUB_ENV"
           printf 'ANDROID_READELF=%s\n' \
