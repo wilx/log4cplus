@@ -29,6 +29,7 @@ jobs:
           -DCMAKE_OSX_SYSROOT=iphoneos \
           -DCMAKE_OSX_ARCHITECTURES=arm64 \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
+          -DCMAKE_CXX_FLAGS=-Werror=shorten-64-to-32 \
           -DCMAKE_INSTALL_PREFIX="$PWD/staging/ios-device" \
           -DBUILD_SHARED_LIBS=OFF \
           -DLOG4CPLUS_BUILD_TESTING=OFF \
@@ -42,6 +43,7 @@ jobs:
           -DCMAKE_OSX_SYSROOT=iphonesimulator \
           '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64' \
           -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
+          -DCMAKE_CXX_FLAGS=-Werror=shorten-64-to-32 \
           -DCMAKE_INSTALL_PREFIX="$PWD/staging/ios-simulator" \
           -DBUILD_SHARED_LIBS=OFF \
           -DLOG4CPLUS_BUILD_TESTING=OFF \
@@ -50,8 +52,9 @@ jobs:
 
     - name: Validate library architectures
       run: |
-        lipo -verify_arch arm64 staging/ios-device/lib/liblog4cplusS.a
-        lipo -verify_arch arm64 x86_64 staging/ios-simulator/lib/liblog4cplusS.a
+        lipo staging/ios-device/lib/liblog4cplusS.a -verify_arch arm64
+        lipo staging/ios-simulator/lib/liblog4cplusS.a \
+          -verify_arch arm64 x86_64
 
     - name: Create and validate XCFramework
       run: |
