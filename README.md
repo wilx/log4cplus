@@ -402,6 +402,34 @@ runtime as follows:
 The application or Gradle packaging must include exactly one compatible copy
 of `libc++_shared.so`. [log4cplus] does not distribute that runtime.
 
+Android builds also provide `log4cplus::AndroidAppender`, which writes to the
+main Android Logcat buffer through the NDK `liblog` API. The Logcat tag is
+configurable and defaults to `log4cplus`:
+
+    log4cplus.appender.LOGCAT=log4cplus::AndroidAppender
+    log4cplus.appender.LOGCAT.Tag=MyApplication
+    log4cplus.appender.LOGCAT.layout=log4cplus::PatternLayout
+    log4cplus.appender.LOGCAT.layout.ConversionPattern=%c - %m
+
+The equivalent programmatic setup is:
+
+    #include <log4cplus/androidappender.h>
+
+    log4cplus::SharedAppenderPtr appender (
+        new log4cplus::AndroidAppender (
+            LOG4CPLUS_TEXT ("MyApplication")));
+    logger.addAppender (appender);
+
+For compatibility with Android API levels 21 through 25, tags are limited to
+23 UTF-8 bytes. Formatted messages longer than a Logcat entry are split at
+UTF-8 boundaries. Log levels map to the corresponding Logcat priorities, with
+TRACE using `VERBOSE` and FATAL using `FATAL`.
+
+The shared Android library therefore has an intentional dependency on the
+system-provided `liblog.so`. Static CMake package consumers receive the `log`
+link requirement transitively. Android supplies this library; [log4cplus]
+does not package or distribute it.
+
 Alternatively, build static [log4cplus] and link it into the application's
 final JNI shared library. This permits the final shared library to contain one
 statically linked C++ runtime:

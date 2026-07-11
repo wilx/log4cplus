@@ -104,8 +104,11 @@ jobs:
           grep -Eq 'Machine:[[:space:]]+${{ matrix.elf_machine }}' <<< "$header"
           grep -Eq '\(SONAME\).*\[liblog4cplus\.so\]' <<< "$dynamic"
           grep -Eq '\(NEEDED\).*\[libc\+\+_shared\.so\]' <<< "$dynamic"
-          if grep -Eq '\(NEEDED\).*\[liblog\.so\]' <<< "$dynamic"; then
-            echo 'Production log4cplus unexpectedly depends on liblog.so' >&2
+          grep -Eq '\(NEEDED\).*\[liblog\.so\]' <<< "$dynamic"
+
+          package_dir="staging/${{ matrix.target_abi }}/shared/lib/cmake/log4cplus"
+          if grep -R -F "$ANDROID_NDK_HOME" "$package_dir"; then
+            echo 'Installed CMake package contains an absolute NDK path' >&2
             exit 1
           fi
 
@@ -176,6 +179,12 @@ jobs:
           cmake --install build/android-static
           test -f "$install_prefix/lib/liblog4cplusS.a"
 
+          package_dir="$install_prefix/lib/cmake/log4cplus"
+          if grep -R -F "$ANDROID_NDK_HOME" "$package_dir"; then
+            echo 'Installed CMake package contains an absolute NDK path' >&2
+            exit 1
+          fi
+
       - name: Build and validate static-package consumer
         run: |
           set -euo pipefail
@@ -198,6 +207,7 @@ jobs:
 
           grep -Eq 'Class:[[:space:]]+ELF64' <<< "$consumer_header"
           grep -Eq 'Machine:[[:space:]]+AArch64' <<< "$consumer_header"
+          grep -Eq '\(NEEDED\).*\[liblog\.so\]' <<< "$consumer_dynamic"
           if grep -Eq '\(NEEDED\).*\[(liblog4cplus|libc\+\+_shared)\.so\]' \
               <<< "$consumer_dynamic"; then
             echo 'Static consumer unexpectedly has a shared log4cplus or libc++ dependency' >&2

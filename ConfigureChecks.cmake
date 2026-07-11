@@ -55,7 +55,7 @@ find_library(LIBPOSIX4 posix4)
 find_library(LIBCPOSIX cposix)
 find_library(LIBSOCKET socket)
 find_library(LIBWS2_32 ws2_32)
-if (ANDROID AND WITH_UNIT_TESTS)
+if (ANDROID)
   find_library (ANDROID_LOG_LIB log REQUIRED)
 endif ()
 
