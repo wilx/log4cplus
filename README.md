@@ -48,7 +48,10 @@ continuously built and tested by GitHub Actions on these host platforms:
 GitHub Actions also performs compile and installation validation for these
 cross-compiled targets:
 
-  - Android with Clang for `armeabi-v7a`, `arm64-v8a`, `x86` and `x86_64`;
+  - Android API 21 or later with NDK Clang for `armeabi-v7a`, `arm64-v8a`,
+    `x86` and `x86_64`. The Android job compiles and links the test suite,
+    validates production installations and links external consumers, but does
+    not execute on an Android device or emulator;
   - iOS 15 or later for ARM64 devices and ARM64/x86_64 Simulator targets.
     The iOS job also creates an unsigned static-library XCFramework. It does
     not execute the test suite on an iOS device or in Simulator.
@@ -260,6 +263,9 @@ and projects (`msvc14/log4cplus.sln`), currently tested with Visual Studio 2022.
 Apple embedded platforms, including iOS and iOS Simulator, are supported using
 CMake 3.20 or later with the Xcode generator.
 
+Android is supported using CMake 3.20 or later with the toolchain file supplied
+by the Android NDK.
+
 MinGW is supported by the Autotools-based build system. The CMake build system
 is supported as well, and it should be used to compile [log4cplus] with
 older versions of Visual Studio or with less common compiler suites
@@ -366,19 +372,58 @@ If you are linking your application with the DLL variant of [log4cplus], define
 `LOG4CPLUS_EXPORT` symbol to `__declspec(dllimport)`.
 
 
-Android, TLS and CMake
-----------------------
+Android and CMake
+-----------------
 
-[log4cplus] uses thread--local storage (TLS, see "Windows and TLS" for
-details). On the Android platform, when [log4cplus] is being compiled using
-the `android/android.toolchain.cmake`, you might get errors featuring the
-`__emutls` symbol:
+[log4cplus] is distributed as source code for Android. Build it with CMake and
+the toolchain file supplied by the Android NDK so that it uses the same NDK,
+minimum API level, C++ runtime and compiler settings as the rest of the
+application. Continuous integration uses NDK r29 (`29.0.14206865`), C++23 and
+API level 21 as its baseline. It checks the `armeabi-v7a`, `arm64-v8a`, `x86`
+and `x86_64` ABIs.
 
+For example, build and install a shared ARM64 library using the shared C++
+runtime as follows:
 
-    global-init.cxx:268:46: error: log4cplus::internal::__emutls_t._ZN9log4cplus8internal3ptdE causes a section type conflict with log4cplus::internal::ptd
+    $ NDK="$ANDROID_SDK_ROOT/ndk/29.0.14206865"
+    $ cmake -S . -B build/android-arm64-v8a-shared -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="$PWD/build/android-arm64-v8a-shared/install" \
+        -DANDROID_ABI=arm64-v8a \
+        -DANDROID_PLATFORM=android-21 \
+        -DANDROID_STL=c++_shared \
+        -DBUILD_SHARED_LIBS=ON \
+        -DLOG4CPLUS_BUILD_TESTING=OFF \
+        -DWITH_UNIT_TESTS=OFF
+    $ cmake --build build/android-arm64-v8a-shared
+    $ cmake --install build/android-arm64-v8a-shared
 
-To work around this issue, invoke CMake with
-`-DANDROID_FUNCTION_LEVEL_LINKING:BOOL=OFF` option.
+The application or Gradle packaging must include exactly one compatible copy
+of `libc++_shared.so`. [log4cplus] does not distribute that runtime.
+
+Alternatively, build static [log4cplus] and link it into the application's
+final JNI shared library. This permits the final shared library to contain one
+statically linked C++ runtime:
+
+    $ cmake -S . -B build/android-arm64-v8a-static -G Ninja \
+        -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX="$PWD/build/android-arm64-v8a-static/install" \
+        -DANDROID_ABI=arm64-v8a \
+        -DANDROID_PLATFORM=android-21 \
+        -DANDROID_STL=c++_static \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DLOG4CPLUS_BUILD_TESTING=OFF \
+        -DWITH_UNIT_TESTS=OFF
+    $ cmake --build build/android-arm64-v8a-static
+    $ cmake --install build/android-arm64-v8a-static
+
+Use a separate build directory for every ABI and shared/static runtime choice.
+The Android logging server is disabled by default. The test suite remains
+enabled by default and can be cross-compiled and linked, but it is not executed
+without an Android device or emulator. Android CI does not publish libraries,
+libc++, `liblog` or other Android artifacts.
 
 
 Threads and signals
@@ -756,6 +801,10 @@ untested and unsupported.
 
 For Apple embedded platforms, use CMake with the Xcode generator and CMake's
 native platform variables. Custom iOS toolchain files are not supported.
+
+For Android, use CMake with the toolchain file supplied by the Android NDK.
+Legacy third-party Android toolchain files and their custom variables are not
+supported.
 
 #### Autotools
 

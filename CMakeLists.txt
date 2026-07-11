@@ -1,13 +1,3 @@
-# This block needs to stay before the project (log4cplus) line so that
-#  the output files placed into Android's libs directory.
-if (CMAKE_TOOLCHAIN_FILE)
-  get_filename_component(TOOL_CHAIN_FILE_NAME "${CMAKE_TOOLCHAIN_FILE}" NAME_WE)
-  if("${TOOL_CHAIN_FILE_NAME}" MATCHES "android.toolchain")
-    # Android: set output folder to ${CMAKE_BINARY_DIR}
-    set (LIBRARY_OUTPUT_PATH_ROOT ${CMAKE_BINARY_DIR} CACHE PATH
-      "root for library output, set this to change where Android libs are compiled to")
-  endif()
-endif ()
 cmake_minimum_required (VERSION 3.20)
 
 project (log4cplus)
@@ -61,6 +51,10 @@ if (IOS)
   set (LOG4CPLUS_BUILD_TESTING_DEFAULT OFF)
   set (LOG4CPLUS_BUILD_LOGGINGSERVER_DEFAULT OFF)
   set (LOG4CPLUS_BUILD_SHARED_LIBS_DEFAULT OFF)
+elseif (ANDROID)
+  set (LOG4CPLUS_BUILD_TESTING_DEFAULT ON)
+  set (LOG4CPLUS_BUILD_LOGGINGSERVER_DEFAULT OFF)
+  set (LOG4CPLUS_BUILD_SHARED_LIBS_DEFAULT ON)
 else ()
   set (LOG4CPLUS_BUILD_TESTING_DEFAULT ON)
   set (LOG4CPLUS_BUILD_LOGGINGSERVER_DEFAULT ON)
