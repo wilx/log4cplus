@@ -46,3 +46,27 @@ endif (WITH_UNIT_TESTS)
 if (LOG4CPLUS_QT6)
   add_subdirectory (qt6messagehandler_test)
 endif (LOG4CPLUS_QT6)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
+  function(log4cplus_add_libtool_versioning_test name compiler compiler_arg1)
+    add_test(NAME "${name}"
+      COMMAND "${CMAKE_COMMAND}"
+        "-DUTILS=${PROJECT_SOURCE_DIR}/Log4CPlusUtils.cmake"
+        "-DTEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/${name}"
+        "-DCOMPILER=${compiler}"
+        "-DCOMPILER_ARG1=${compiler_arg1}"
+        "-DTEST_GENERATOR=${CMAKE_GENERATOR}"
+        "-DTEST_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+        "-DTEST_CONFIG=$<CONFIG>"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake_libtool_versioning/run.cmake")
+  endfunction()
+
+  log4cplus_add_libtool_versioning_test(cmake_libtool_versioning
+    "${CMAKE_C_COMPILER}" "${CMAKE_C_COMPILER_ARG1}")
+  # Exercise required arguments and quoting without depending on ccache or
+  # another external compiler wrapper. Retain any parent compiler arguments.
+  set(log4cplus_test_compiler_arg1
+    "-E env 'LOG4CPLUS_TEST_COMPILER_ARG=two words;one argument' '${CMAKE_C_COMPILER}' ${CMAKE_C_COMPILER_ARG1}")
+  log4cplus_add_libtool_versioning_test(cmake_libtool_versioning_compiler_args
+    "${CMAKE_COMMAND}" "${log4cplus_test_compiler_arg1}")
+endif ()

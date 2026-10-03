@@ -143,22 +143,25 @@ if (ANDROID)
   endif ()
 endif ()
 
-if (ANDROID)
-  # Android does not seem to have SO version support.
-elseif (WIN32)
-  set_target_properties (${log4cplus} PROPERTIES
-    VERSION "${log4cplus_version_major}.${log4cplus_version_minor}.${log4cplus_version_patch}")
-else ()
-  set_target_properties (${log4cplus} PROPERTIES
-    SOVERSION "${log4cplus_soversion}")
+log4cplus_apply_libtool_version (${log4cplus} log4cplus_namelink_option)
+if (NOT log4cplus_namelink_option)
+  if (ANDROID)
+    # Android does not seem to have SO version support.
+  elseif (WIN32)
+    set_target_properties (${log4cplus} PROPERTIES
+      VERSION "${log4cplus_version_major}.${log4cplus_version_minor}.${log4cplus_version_patch}")
+  else ()
+    set_target_properties (${log4cplus} PROPERTIES
+      SOVERSION "${log4cplus_soversion}")
+  endif ()
+
+  if (APPLE)
+    set_target_properties (${log4cplus} PROPERTIES
+      MACHO_CURRENT_VERSION "${log4cplus_macho_current_version}"
+      MACHO_COMPATIBILITY_VERSION "${log4cplus_macho_compatibility_version}")
+  endif ()
 endif ()
 target_compile_definitions (${log4cplus} PRIVATE INSIDE_LOG4CPLUS)
-
-if (APPLE)
-  set_target_properties (${log4cplus} PROPERTIES
-    MACHO_CURRENT_VERSION "${log4cplus_macho_current_version}"
-    MACHO_COMPATIBILITY_VERSION "${log4cplus_macho_compatibility_version}")
-endif ()
 
 if (MINGW AND LOG4CPLUS_MINGW_STATIC_RUNTIME)
   # avoid dependency from mingw libstdc++/libgcc in resulting dll
@@ -218,11 +221,13 @@ install(
     DESTINATION "${config_install_dir}"
 )
 
+log4cplus_prepare_libtool_install (${log4cplus} "${CMAKE_INSTALL_LIBDIR}")
 install(TARGETS ${log4cplus} EXPORT "${targets_export_name}"
                           INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-                          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ${log4cplus_namelink_option}
                           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
                           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+log4cplus_install_libtool_alias (${log4cplus} "${CMAKE_INSTALL_LIBDIR}")
 
 install(FILES ../include/log4cplus/appender.h
               ../include/log4cplus/androidappender.h

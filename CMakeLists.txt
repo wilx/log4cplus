@@ -88,6 +88,18 @@ endif(LOG4CPLUS_SINGLE_THREADED AND LOG4CPLUS_BUILD_LOGGINGSERVER)
 set(BUILD_SHARED_LIBS ${LOG4CPLUS_BUILD_SHARED_LIBS_DEFAULT} CACHE BOOL
   "If TRUE, log4cplus is built as a shared library, otherwise as a static library")
 
+option(LOG4CPLUS_ENABLE_LIBTOOL_VERSIONING
+  "Use experimental libtool-compatible shared-library versions on supported Unix platforms." ON)
+option(LOG4CPLUS_ENABLE_LIBTOOL_RELEASE
+  "Include the LT_RELEASE suffix in names of libtool-versioned shared libraries." ON)
+set(log4cplus_use_libtool_versioning OFF)
+if(LOG4CPLUS_ENABLE_LIBTOOL_VERSIONING AND BUILD_SHARED_LIBS AND UNIX
+    AND NOT ANDROID AND NOT CYGWIN AND NOT WIN32
+    AND (APPLE OR CMAKE_SYSTEM_NAME MATCHES "^(Linux|FreeBSD|DragonFly|NetBSD|OpenBSD|Haiku)$"))
+  set(log4cplus_use_libtool_versioning ON)
+  log4cplus_read_libtool_version("${PROJECT_SOURCE_DIR}/configure.ac")
+endif()
+
 if (WIN32)
   set (UNICODE_DEFAULT ON)
 else (WIN32)

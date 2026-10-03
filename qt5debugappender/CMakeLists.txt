@@ -21,32 +21,37 @@ target_link_libraries (${qt5debugappender}
 target_include_directories (${qt5debugappender} PUBLIC ${Qt5Widgets_INCLUDES})
 target_compile_definitions (${qt5debugappender} PUBLIC ${Qt5Widgets_DEFINITIONS})
 
-if (ANDROID)
-  # Android does not seem to have SO version support.
-elseif (WIN32)
-  set_target_properties (${qt5debugappender} PROPERTIES
-    VERSION "${log4cplus_version_major}.${log4cplus_version_minor}.${log4cplus_version_patch}")
-else ()
-  set_target_properties (${qt5debugappender} PROPERTIES
-    SOVERSION "${log4cplus_soversion}")
+log4cplus_apply_libtool_version (${qt5debugappender} log4cplus_namelink_option)
+if (NOT log4cplus_namelink_option)
+  if (ANDROID)
+    # Android does not seem to have SO version support.
+  elseif (WIN32)
+    set_target_properties (${qt5debugappender} PROPERTIES
+      VERSION "${log4cplus_version_major}.${log4cplus_version_minor}.${log4cplus_version_patch}")
+  else ()
+    set_target_properties (${qt5debugappender} PROPERTIES
+      SOVERSION "${log4cplus_soversion}")
+  endif ()
+
+  if (APPLE)
+    set_target_properties (${log4cplus} PROPERTIES
+      MACHO_CURRENT_VERSION "${log4cplus_macho_current_version}"
+      MACHO_COMPATIBILITY_VERSION "${log4cplus_macho_compatibility_version}")
+  endif ()
 endif ()
 target_compile_definitions (${qt5debugappender} PRIVATE INSIDE_LOG4CPLUS_QT5DEBUGAPPENDER)
-
-if (APPLE)
-  set_target_properties (${log4cplus} PROPERTIES
-    MACHO_CURRENT_VERSION "${log4cplus_macho_current_version}"
-    MACHO_COMPATIBILITY_VERSION "${log4cplus_macho_compatibility_version}")
-endif ()
 
 if (WIN32)
   set_target_properties (${qt5debugappender} PROPERTIES
     DEBUG_POSTFIX "D")
 endif ()
 
+log4cplus_prepare_libtool_install (${qt5debugappender} "${CMAKE_INSTALL_LIBDIR}")
 install (TARGETS ${qt5debugappender}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ${log4cplus_namelink_option}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+log4cplus_install_libtool_alias (${qt5debugappender} "${CMAKE_INSTALL_LIBDIR}")
 
 install (FILES ../include/log4cplus/qt5debugappender.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/log4cplus)

@@ -834,6 +834,55 @@ For Android, use CMake with the toolchain file supplied by the Android NDK.
 Legacy third-party Android toolchain files and their custom variables are not
 supported.
 
+#### CMake shared-library naming
+
+`LOG4CPLUS_ENABLE_LIBTOOL_VERSIONING` defaults to `ON`. For shared libraries,
+it reads `LT_VERSION` and `LT_RELEASE` from `configure.ac` and uses CMake's
+native version properties to match the bundled libtool rules. This experimental
+mode covers Linux, FreeBSD, DragonFly, NetBSD, OpenBSD, Haiku and Apple platforms.
+Static builds and other platforms (including Android and Windows) keep their
+existing naming and version metadata. Set the option to `OFF` to retain the
+previous CMake behavior everywhere.
+
+`LOG4CPLUS_ENABLE_LIBTOOL_RELEASE` defaults to `ON` and controls the
+`-${LT_RELEASE}` suffix in the library basename. Set it to `OFF` to omit the
+release label while retaining libtool-compatible ABI versioning. It takes
+effect only when libtool versioning is enabled for that shared build.
+
+With the current `LT_VERSION=0:0:0` and `LT_RELEASE=3.0`, Linux names are:
+
+| Libtool versioning | Release suffix | Runtime file | SONAME | Linker alias |
+|--------------------|----------------|--------------|--------|--------------|
+| `ON` | `ON` | `liblog4cplus-3.0.so.0.0.0` | `liblog4cplus-3.0.so.0` | `liblog4cplus.so` |
+| `ON` | `OFF` | `liblog4cplus.so.0.0.0` | `liblog4cplus.so.0` | `liblog4cplus.so` |
+| `OFF` | Either | `liblog4cplus.so.0` | `liblog4cplus.so.0` | `liblog4cplus.so` |
+
+The same rules apply to enabled Qt4, Qt5 and Qt6 appenders. Release decoration
+is independent of `LOG4CPLUS_ENABLE_DECORATED_LIBRARY_NAME`; Unicode builds
+still retain their existing `U` decoration when that option is enabled. Logical
+CMake target names and canonical aliases such as `log4cplus::log4cplus` remain
+the same.
+
+For `LT_VERSION=current:revision:age`, Linux, FreeBSD, DragonFly and Haiku use
+`(current-age).age.revision` for the file version and `current-age` for the
+SONAME. NetBSD uses `current.revision` and `current`, respectively. OpenBSD
+uses `current.revision` for both, including the linker alias's version suffix.
+Apple uses `current-age` in the filename and install name, with Mach-O
+compatibility version `current+1` and current version `(current+1).revision`.
+
+The linker alias is a relative symlink to the runtime file. On OpenBSD with the
+release suffix disabled, the linker name is the runtime file itself.
+With release suffixes enabled, installing different release labels into one
+prefix retains both sets of runtime libraries and updates the alias to the
+latest installation. This coexistence applies to
+runtime libraries: headers, linker aliases, pkg-config files and CMake package
+metadata represent the latest installation. On OpenBSD, linker aliases include
+`current.revision`; reinstalling that alias selects the latest release with
+that interface version.
+
+With release suffixes disabled, release labels no longer distinguish runtime
+names; installing the same ABI file version replaces the previous runtime file.
+
 #### Autotools
 
 The `Makefile.am` files for this build system are hand-written. Some of them,
