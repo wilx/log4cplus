@@ -36,7 +36,7 @@ getPropertiesFileArgument (int argc, char * argv[])
         char const * arg = argv[1];
         log4cplus::tstring file = LOG4CPLUS_C_STR_TO_TSTRING (arg);
         log4cplus::helpers::FileInfo fi;
-        if (getFileInfo (&fi, file) == 0)
+        if (getFileInfo (&fi, file))
             return file;
     }
 

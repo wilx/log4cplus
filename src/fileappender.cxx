@@ -587,7 +587,7 @@ RollingFileAppender::rollover(bool alreadyLocked)
         // process can rollover the file before us.
 
         helpers::FileInfo fi;
-        if (getFileInfo (&fi, filename) == -1
+        if (! getFileInfo (&fi, filename)
             || fi.size < maxFileSize)
         {
             // The file has already been rolled by another
@@ -1416,7 +1416,7 @@ TimeBasedRollingFileAppender::open(std::ios_base::openmode mode)
         if (! filename.empty () && (mode & std::ios_base::app))
         {
             helpers::FileInfo info;
-            if (helpers::getFileInfo (&info, filename) == 0
+            if (helpers::getFileInfo (&info, filename)
                 && info.size > 0 && info.mtime <= now)
             {
                 tstring const archive = helpers::getFormattedTime (
@@ -2227,7 +2227,7 @@ struct TimeBasedTestDirectory
     static bool exists (tstring const & name)
     {
         helpers::FileInfo info;
-        return helpers::getFileInfo (&info, name) == 0;
+        return helpers::getFileInfo (&info, name);
     }
 
     static std::string read (tstring const & name)
@@ -2436,7 +2436,7 @@ CATCH_TEST_CASE ("TimeBasedRollingFileAppender tolerates unavailable startup met
     auto const archive = directory.file (LOG4CPLUS_TEXT ("archive-20251114.log"));
     directory.write (blocker, "not a directory\n");
     helpers::FileInfo info;
-    CATCH_REQUIRE (helpers::getFileInfo (&info, current) == -1);
+    CATCH_REQUIRE_FALSE (helpers::getFileInfo (&info, current));
     auto properties = timeBasedTestProperties (directory.path
         + LOG4CPLUS_TEXT ("/archive-%d{yyyyMMdd}.log"));
     properties.setProperty (LOG4CPLUS_TEXT ("File"), current);

@@ -609,7 +609,7 @@ ConfigurationWatchDogThread::checkForFileModification()
 {
     helpers::FileInfo fi;
 
-    if (helpers::getFileInfo (&fi, propertyFilename) != 0)
+    if (! helpers::getFileInfo (&fi, propertyFilename))
         return false;
 
     bool modified = fi.mtime > lastFileInfo.mtime
@@ -638,7 +638,7 @@ ConfigurationWatchDogThread::updateLastModInfo()
 {
     helpers::FileInfo fi;
 
-    if (helpers::getFileInfo (&fi, propertyFilename) == 0)
+    if (helpers::getFileInfo (&fi, propertyFilename))
         lastFileInfo = fi;
 }
 

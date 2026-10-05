@@ -688,7 +688,7 @@ make_dirs (tstring const & file_path)
         // Check whether path exists.
 
         helpers::FileInfo fi;
-        if (helpers::getFileInfo (&fi, path) == 0)
+        if (helpers::getFileInfo (&fi, path))
             // This directory exists. Move forward onto another path component.
             continue;
 

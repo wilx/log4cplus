@@ -342,6 +342,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        unicode: ['ON', 'OFF']
         config:
         - os: 'windows-2022'
           msvc: '2022'
@@ -374,6 +375,7 @@ jobs:
         -A ${{ matrix.config.arch }}
         -T ${{ matrix.config.toolset }}
         -DCMAKE_BUILD_TYPE=Release
+        -DUNICODE=${{ matrix.unicode }}
     - name: build
       run: cmake --build objdir --config Release
     - name: test
