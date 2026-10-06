@@ -83,6 +83,7 @@ long const LOG4CPLUS_FILE_NOT_FOUND = ENOENT;
 
 #if defined (LOG4CPLUS_WITH_UNIT_TESTS)
 thread_local Time const * timeBasedAppenderTestTime = nullptr;
+thread_local bool dailyAppenderTestFailInitialLock = false;
 #endif
 
 Time
@@ -269,6 +270,12 @@ FileAppenderBase::FileAppenderBase(const Properties& props,
 void
 FileAppenderBase::init()
 {
+    init(true);
+}
+
+void
+FileAppenderBase::init(bool openFile)
+{
     if (useLockFile && lockFileName.empty ())
     {
         if (filename.empty())
@@ -289,7 +296,7 @@ FileAppenderBase::init()
     }
 
     helpers::LockFileGuard guard;
-    if (useLockFile && ! lockFile)
+    if (openFile && useLockFile && ! lockFile)
     {
         if (createDirs)
             internal::make_dirs (lockFileName);
@@ -307,7 +314,8 @@ FileAppenderBase::init()
         }
     }
 
-    open(fileOpenMode);
+    if (openFile)
+        open(fileOpenMode);
     imbue (internal::get_locale_by_name (localeName));
 }
 
@@ -389,6 +397,12 @@ FileAppenderBase::open(std::ios_base::openmode mode)
 bool
 FileAppenderBase::reopen()
 {
+    return reopen(std::ios_base::out | std::ios_base::ate | std::ios_base::app);
+}
+
+bool
+FileAppenderBase::reopen(std::ios_base::openmode mode)
+{
     // When append never failed and the file re-open attempt must
     // be delayed, set the time when reopen should take place.
     if (reopen_time == log4cplus::helpers::Time () && reopenDelay != 0)
@@ -408,7 +422,7 @@ FileAppenderBase::reopen()
             out.clear();
 
             // Re-open the file.
-            open(std::ios_base::out | std::ios_base::ate | std::ios_base::app);
+            open(mode);
 
             // Reset last fail time.
             reopen_time = log4cplus::helpers::Time ();
@@ -449,6 +463,16 @@ FileAppender::~FileAppender()
     destructorImpl();
 }
 
+FileAppender::FileAppender(DeferInit, const tstring& filename_,
+    std::ios_base::openmode mode_, bool immediateFlush_, bool createDirs_)
+    : FileAppenderBase(filename_, mode_, immediateFlush_, createDirs_)
+{ }
+
+FileAppender::FileAppender(DeferInit, const Properties& props,
+    std::ios_base::openmode mode_)
+    : FileAppenderBase(props, mode_)
+{ }
+
 ///////////////////////////////////////////////////////////////////////////////
 // FileAppender protected methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -456,13 +480,19 @@ FileAppender::~FileAppender()
 void
 FileAppender::init()
 {
+    init(true);
+}
+
+void
+FileAppender::init(bool openFile)
+{
     if (filename.empty())
     {
         getErrorHandler()->error( LOG4CPLUS_TEXT("Invalid filename") );
         return;
     }
 
-    FileAppenderBase::init();
+    FileAppenderBase::init(openFile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -644,7 +674,8 @@ DailyRollingFileAppender::DailyRollingFileAppender(
     const tstring& filename_, DailyRollingFileSchedule schedule_,
     bool immediateFlush_, int maxBackupIndex_, bool createDirs_,
     bool rollOnClose_, const tstring& datePattern_, FirstDayOfWeek firstDayOfWeek_)
-    : FileAppender(filename_, std::ios_base::app, immediateFlush_, createDirs_)
+    : FileAppender(DeferInit {}, filename_, std::ios_base::app,
+          immediateFlush_, createDirs_)
     , firstDayOfWeek(firstDayOfWeek_)
     , maxBackupIndex(maxBackupIndex_)
     , rollOnClose(rollOnClose_)
@@ -657,7 +688,7 @@ DailyRollingFileAppender::DailyRollingFileAppender(
 
 DailyRollingFileAppender::DailyRollingFileAppender(
     const Properties& properties)
-    : FileAppender(properties, std::ios_base::app)
+    : FileAppender(DeferInit {}, properties, std::ios_base::app)
     , firstDayOfWeek(FirstDayOfWeek::MONDAY)
     , maxBackupIndex(10)
     , rollOnClose(true)
@@ -772,6 +803,32 @@ DailyRollingFileAppender::init(DailyRollingFileSchedule sch)
             LOG4CPLUS_TEXT("invalid FirstDayOfWeek; using MONDAY"));
         firstDayOfWeek = FirstDayOfWeek::MONDAY;
     }
+    // The base initialization creates and locks a default lock file. An
+    // explicitly configured lock file already exists and must be locked here.
+    helpers::LockFileGuard guard;
+    bool initializeFile = true;
+    if (useLockFile && lockFile)
+    {
+        try
+        {
+#if defined (LOG4CPLUS_WITH_UNIT_TESTS)
+            if (dailyAppenderTestFailInitialLock)
+            {
+                dailyAppenderTestFailInitialLock = false;
+                throw std::runtime_error ("Injected daily appender initial lock failure");
+            }
+#endif
+            guard.attach_and_lock (*lockFile);
+        }
+        catch (std::runtime_error const &)
+        {
+            initializeFile = false;
+        }
+    }
+    FileAppender::init(initializeFile);
+
+    // Recovery and close-time rollover need a valid schedule even when the
+    // initial lock acquisition failed and the file could not be opened.
     Time now = helpers::truncate_fractions (helpers::now ());
     scheduledFilename = getFilename(now);
     nextRolloverTime = calculateNextRolloverTime(now);
@@ -810,6 +867,9 @@ DailyRollingFileAppender::close()
 void
 DailyRollingFileAppender::append(const spi::InternalLoggingEvent& event)
 {
+    if (useLockFile && lockFile && ! prepareForAppend())
+        return;
+
     if(event.getTimestamp() >= nextRolloverTime) {
         rollover(true);
     }
@@ -817,6 +877,63 @@ DailyRollingFileAppender::append(const spi::InternalLoggingEvent& event)
     FileAppender::append(event);
 }
 
+
+
+void
+DailyRollingFileAppender::open(std::ios_base::openmode mode)
+{
+    fileIdentity = helpers::FileIdentity {};
+    FileAppender::open(mode);
+    if (useLockFile && lockFile && out.good())
+    {
+        helpers::FileInfo info;
+        if (helpers::getFileInfo(&info, filename))
+            fileIdentity = info.identity;
+        else
+            getErrorHandler()->error(
+                LOG4CPLUS_TEXT("Unable to query file identity: ") + filename);
+    }
+}
+
+// Called under doAppend()'s shared lock, before the daily rollover decision.
+bool
+DailyRollingFileAppender::prepareForAppend()
+{
+    auto const mode = std::ios_base::out | std::ios_base::ate | std::ios_base::app
+        | (fileOpenMode & std::ios_base::binary);
+    // A deferred initial open leaves goodbit set even without an open file.
+    if (! out.is_open() || ! out.good())
+    {
+        if (! reopen(mode))
+        {
+            getErrorHandler()->error(LOG4CPLUS_TEXT("file is not open: ") + filename);
+            return false;
+        }
+        if (fileIdentity.isValid())
+            getErrorHandler()->reset();
+        return true;
+    }
+
+    helpers::FileInfo info;
+    if (! helpers::getFileInfo(&info, filename))
+    {
+        getErrorHandler()->error(
+            LOG4CPLUS_TEXT("Unable to query file identity: ") + filename);
+        return true;
+    }
+    if (fileIdentity.isValid() && fileIdentity == info.identity)
+        return true;
+
+    out.close();
+    out.clear();
+    reopen_time = Time {};
+    open(mode);
+    if (! out.good())
+        return false;
+    if (fileIdentity.isValid())
+        getErrorHandler()->reset();
+    return true;
+}
 
 
 void
@@ -3056,6 +3173,600 @@ CATCH_TEST_CASE ("TimeBasedRollingFileAppender cleanup across partial periods",
     CATCH_CHECK (std::filesystem::exists (unrelated));
     CATCH_CHECK (std::filesystem::exists (
         std::filesystem::path (prefix + LOG4CPLUS_TEXT ("current.log"))));
+}
+namespace
+{
+
+struct DailyIdentityDirectory
+{
+    std::filesystem::path path = std::filesystem::temp_directory_path ()
+        / ("log4cplus-daily-" + std::to_string (internal::get_process_id ())
+            + "-" + std::to_string (
+                std::chrono::steady_clock::now ().time_since_epoch ().count ()));
+
+    DailyIdentityDirectory () { CATCH_REQUIRE (std::filesystem::create_directory (path)); }
+    ~DailyIdentityDirectory ()
+    {
+        std::error_code error;
+        std::filesystem::remove_all (path, error);
+    }
+
+    tstring file (char const * name) const
+    {
+        return LOG4CPLUS_STRING_TO_TSTRING ((path / name).string ());
+    }
+
+    std::string read (char const * name) const
+    {
+        std::ifstream input (path / name, std::ios::binary);
+        CATCH_REQUIRE (input.good ());
+        return {std::istreambuf_iterator<char> (input), {}};
+    }
+
+    void write (char const * name, char const * contents) const
+    {
+        std::ofstream output (path / name, std::ios::binary);
+        output << contents;
+        CATCH_REQUIRE (output.good ());
+    }
+
+    Properties properties () const
+    {
+        Properties props;
+        props.setProperty (LOG4CPLUS_TEXT ("File"), file ("active.log"));
+        props.setProperty (LOG4CPLUS_TEXT ("LockFile"), file ("shared.lock"));
+        props.setProperty (LOG4CPLUS_TEXT ("UseLockFile"), LOG4CPLUS_TEXT ("true"));
+        props.setProperty (LOG4CPLUS_TEXT ("Schedule"), LOG4CPLUS_TEXT ("DAILY"));
+        props.setProperty (LOG4CPLUS_TEXT ("DatePattern"), LOG4CPLUS_TEXT ("archive"));
+        props.setProperty (LOG4CPLUS_TEXT ("RollOnClose"), LOG4CPLUS_TEXT ("false"));
+        props.setProperty (LOG4CPLUS_TEXT ("MaxBackupIndex"), LOG4CPLUS_TEXT ("2"));
+        props.setProperty (LOG4CPLUS_TEXT ("ImmediateFlush"), LOG4CPLUS_TEXT ("false"));
+        props.setProperty (LOG4CPLUS_TEXT ("TextMode"), LOG4CPLUS_TEXT ("Binary"));
+        props.setProperty (LOG4CPLUS_TEXT ("ReopenDelay"), LOG4CPLUS_TEXT ("0"));
+        return props;
+    }
+};
+
+class DailyIdentityAppender : public DailyRollingFileAppender
+{
+public:
+    using DailyRollingFileAppender::DailyRollingFileAppender;
+    using DailyRollingFileAppender::rollover;
+    using DailyRollingFileAppender::nextRolloverTime;
+    using DailyRollingFileAppender::scheduledFilename;
+    using FileAppenderBase::reopen_time;
+    unsigned opens = 0;
+    std::ios_base::openmode lastMode {};
+
+    void invalidateBaseline () { fileIdentity = helpers::FileIdentity {}; }
+    bool isOpen () const { return out.is_open (); }
+    bool isGood () const { return out.good (); }
+    bool hasFileIdentity () const { return fileIdentity.isValid (); }
+    bool hasBuffer () const { return buffer != nullptr; }
+
+    void log (tstring const & message, Time time = helpers::now ())
+    {
+        spi::InternalLoggingEvent event (LOG4CPLUS_TEXT ("daily-identity-test"),
+            INFO_LOG_LEVEL, LOG4CPLUS_TEXT (""), MappedDiagnosticContextMap {},
+            message, LOG4CPLUS_TEXT ("thread"), LOG4CPLUS_TEXT (""),
+            time, LOG4CPLUS_TEXT (""), 0);
+        doAppend (event);
+    }
+
+protected:
+    void open (std::ios_base::openmode mode) override
+    {
+        ++opens;
+        lastMode = mode;
+        DailyRollingFileAppender::open (mode);
+    }
+};
+
+class DailyIdentityErrors : public ErrorHandler
+{
+public:
+    std::vector<tstring> errors;
+    unsigned resets = 0;
+    void error (tstring const & message) override { errors.push_back (message); }
+    void reset () override { ++resets; }
+};
+
+void dailyIdentityLayout (Appender & appender)
+{
+    appender.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m%n")));
+}
+
+struct DailyInitialLockFailure
+{
+    bool previous = dailyAppenderTestFailInitialLock;
+    DailyInitialLockFailure () { dailyAppenderTestFailInitialLock = true; }
+    ~DailyInitialLockFailure () { dailyAppenderTestFailInitialLock = previous; }
+};
+
+struct DailyLocaleMarker : std::locale::facet
+{
+    static std::locale::id id;
+};
+
+std::locale::id DailyLocaleMarker::id;
+
+struct DailyGlobalLocale
+{
+    std::locale previous = std::locale::global (
+        std::locale (std::locale::classic (), new DailyLocaleMarker));
+    ~DailyGlobalLocale () { std::locale::global (previous); }
+};
+
+void requireDailyInitialSchedule (DailyIdentityAppender & appender,
+    DailyIdentityDirectory const & directory, Time beforeConstruction)
+{
+    // Keep a failing regression from rolling with an empty destination during
+    // stack unwinding when RollOnClose=true.
+    if (appender.scheduledFilename.empty ()
+        || appender.nextRolloverTime <= beforeConstruction)
+        appender.FileAppender::close ();
+    CATCH_REQUIRE (appender.scheduledFilename == directory.file ("active.log.archive"));
+    CATCH_REQUIRE (appender.nextRolloverTime > beforeConstruction);
+}
+
+} // namespace
+
+CATCH_TEST_CASE ("Daily appender creates its log after its initial lock fails",
+    "[appender][daily-file-identity][daily-initial-lock-failure][daily-unopened-stream]")
+{
+    DailyIdentityDirectory directory;
+    auto props = directory.properties ();
+    props.setProperty (LOG4CPLUS_TEXT ("Append"), LOG4CPLUS_TEXT ("false"));
+    bool binary = true;
+    CATCH_SECTION ("binary recovery") {}
+    CATCH_SECTION ("text recovery") { binary = false; }
+    props.setProperty (LOG4CPLUS_TEXT ("TextMode"),
+        binary ? LOG4CPLUS_TEXT ("Binary") : LOG4CPLUS_TEXT ("Text"));
+    Time const before = helpers::now ();
+    DailyInitialLockFailure failInitialLock;
+    DailyIdentityAppender appender (props);
+    appender.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    CATCH_CHECK_FALSE (dailyAppenderTestFailInitialLock);
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    CATCH_CHECK (appender.isGood ());
+    CATCH_CHECK_FALSE (appender.hasFileIdentity ());
+    CATCH_CHECK_FALSE (std::filesystem::exists (directory.path / "active.log"));
+    requireDailyInitialSchedule (appender, directory, before);
+    auto const deadline = appender.nextRolloverTime;
+    auto errors = std::make_unique<DailyIdentityErrors> ();
+    auto * observed = errors.get ();
+    appender.setErrorHandler (std::move (errors));
+
+    appender.log (LOG4CPLUS_TEXT ("first"), before);
+    CATCH_REQUIRE (appender.isOpen ());
+    CATCH_CHECK (appender.isGood ());
+    CATCH_CHECK (appender.hasFileIdentity ());
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (observed->errors.empty ());
+    CATCH_CHECK (observed->resets > 0);
+    CATCH_CHECK (((appender.lastMode & std::ios::binary) != 0) == binary);
+    CATCH_CHECK ((appender.lastMode & std::ios::app) != 0);
+    CATCH_CHECK ((appender.lastMode & std::ios::trunc) == 0);
+    CATCH_CHECK (directory.read ("active.log") == "first|");
+    appender.log (LOG4CPLUS_TEXT ("second"), before);
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (appender.nextRolloverTime == deadline);
+    CATCH_CHECK (appender.scheduledFilename == directory.file ("active.log.archive"));
+    appender.close ();
+    CATCH_CHECK (directory.read ("active.log") == "first|second|");
+    CATCH_CHECK_FALSE (std::filesystem::exists (directory.path / "active.log.archive"));
+}
+
+CATCH_TEST_CASE ("Daily unopened stream honors ReopenDelay after its initial lock fails",
+    "[appender][daily-file-identity][daily-initial-lock-failure][daily-unopened-stream]")
+{
+    DailyIdentityDirectory directory;
+    bool existing = false;
+    CATCH_SECTION ("missing active path") {}
+    CATCH_SECTION ("existing active path") { existing = true; }
+    if (existing)
+        directory.write ("active.log", "existing|");
+    auto props = directory.properties ();
+    props.setProperty (LOG4CPLUS_TEXT ("Append"), LOG4CPLUS_TEXT ("false"));
+    props.setProperty (LOG4CPLUS_TEXT ("ReopenDelay"), LOG4CPLUS_TEXT ("60"));
+    Time const before = helpers::now ();
+    DailyInitialLockFailure failInitialLock;
+    DailyIdentityAppender appender (props);
+    appender.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    CATCH_CHECK_FALSE (dailyAppenderTestFailInitialLock);
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    CATCH_CHECK (appender.isGood ());
+    requireDailyInitialSchedule (appender, directory, before);
+    auto const deadline = appender.nextRolloverTime;
+    auto errors = std::make_unique<DailyIdentityErrors> ();
+    auto * observed = errors.get ();
+    appender.setErrorHandler (std::move (errors));
+
+    appender.log (LOG4CPLUS_TEXT ("delayed first"), before);
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    CATCH_CHECK (appender.opens == 0);
+    CATCH_REQUIRE (appender.reopen_time > helpers::now ());
+    auto const retry = appender.reopen_time;
+    CATCH_REQUIRE_FALSE (observed->errors.empty ());
+    CATCH_CHECK (observed->errors.front ().find (LOG4CPLUS_TEXT ("file is not open"))
+        != tstring::npos);
+    appender.log (LOG4CPLUS_TEXT ("delayed second"), before);
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    CATCH_CHECK (appender.opens == 0);
+    CATCH_CHECK (appender.isGood ());
+    CATCH_CHECK (appender.reopen_time == retry);
+    CATCH_CHECK (std::filesystem::exists (directory.path / "active.log") == existing);
+    if (existing)
+        CATCH_CHECK (directory.read ("active.log") == "existing|");
+
+    appender.reopen_time = helpers::now () - helpers::chrono::seconds (1);
+    appender.log (LOG4CPLUS_TEXT ("recovered"), before);
+    CATCH_REQUIRE (appender.isOpen ());
+    CATCH_CHECK (appender.isGood ());
+    CATCH_CHECK (appender.hasFileIdentity ());
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (appender.reopen_time == Time {});
+    CATCH_CHECK (observed->resets > 0);
+    CATCH_CHECK ((appender.lastMode & std::ios::binary) != 0);
+    CATCH_CHECK ((appender.lastMode & std::ios::app) != 0);
+    CATCH_CHECK ((appender.lastMode & std::ios::trunc) == 0);
+    CATCH_CHECK (appender.nextRolloverTime == deadline);
+    CATCH_CHECK (appender.scheduledFilename == directory.file ("active.log.archive"));
+    appender.close ();
+    CATCH_CHECK (directory.read ("active.log") == (existing ? "existing|recovered|" : "recovered|"));
+    CATCH_CHECK_FALSE (std::filesystem::exists (directory.path / "active.log.archive"));
+}
+
+CATCH_TEST_CASE ("Daily appender recovers safely after its initial lock fails",
+    "[appender][daily-file-identity][daily-initial-lock-failure][daily-stream-initialization]")
+{
+    DailyIdentityDirectory directory;
+    directory.write ("active.log", "existing\n");
+    directory.write ("active.log.archive", "dated\n");
+    directory.write ("active.log.archive.1", "first backup\n");
+    directory.write ("active.log.archive.2", "second backup\n");
+    // Distinguish the stream's default locale from the configured CLASSIC
+    // factory result without requiring an installed operating-system locale.
+    DailyGlobalLocale globalLocale;
+    auto props = directory.properties ();
+    props.setProperty (LOG4CPLUS_TEXT ("Locale"), LOG4CPLUS_TEXT ("CLASSIC"));
+    props.setProperty (LOG4CPLUS_TEXT ("BufferSize"), LOG4CPLUS_TEXT ("4096"));
+    Time const before = helpers::now ();
+    DailyInitialLockFailure failInitialLock;
+    DailyIdentityAppender appender (props);
+    dailyIdentityLayout (appender);
+    CATCH_CHECK_FALSE (dailyAppenderTestFailInitialLock);
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    CATCH_CHECK_FALSE (appender.hasFileIdentity ());
+    CATCH_CHECK (appender.hasBuffer ());
+    CATCH_REQUIRE (appender.getloc () == std::locale::classic ());
+    requireDailyInitialSchedule (appender, directory, before);
+    auto const deadline = appender.nextRolloverTime;
+    CATCH_CHECK (directory.read ("active.log") == "existing\n");
+
+    // Apply a caller locale before recovery, while the file is still unopened.
+    // Windows streams prohibit encoding changes after I/O has started.
+    auto const customLocale = std::locale (std::locale::classic (), new DailyLocaleMarker);
+    appender.imbue (customLocale);
+
+    // The event precedes the initialized deadline even across midnight, so the
+    // test exercises recovery without depending on the wall-clock date.
+    appender.log (LOG4CPLUS_TEXT ("recovered"), before);
+    CATCH_CHECK (appender.isOpen ());
+    CATCH_CHECK (appender.hasFileIdentity ());
+    CATCH_CHECK (appender.hasBuffer ());
+    CATCH_CHECK (appender.getloc () == customLocale);
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (appender.nextRolloverTime == deadline);
+    CATCH_CHECK (appender.scheduledFilename == directory.file ("active.log.archive"));
+    appender.log (LOG4CPLUS_TEXT ("again"), before);
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (directory.read ("active.log") == "existing\nrecovered\nagain\n");
+
+    // Recovery must retain the caller's locale across another replacement.
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    directory.write ("active.log", "replacement\n");
+    appender.log (LOG4CPLUS_TEXT ("replacement recovered"), before);
+    CATCH_CHECK (appender.opens == 2);
+    CATCH_CHECK (appender.getloc () == customLocale);
+    CATCH_CHECK (appender.hasBuffer ());
+    CATCH_CHECK (directory.read ("active.log") == "replacement\nreplacement recovered\n");
+    CATCH_CHECK (directory.read ("old.log") == "existing\nrecovered\nagain\n");
+    appender.close ();
+    CATCH_CHECK (directory.read ("active.log.archive") == "dated\n");
+    CATCH_CHECK (directory.read ("active.log.archive.1") == "first backup\n");
+    CATCH_CHECK (directory.read ("active.log.archive.2") == "second backup\n");
+}
+
+#if defined (UNICODE) && ! defined (_WIN32)
+CATCH_TEST_CASE ("Daily appender retains UTF-8 output after its initial lock fails",
+    "[appender][daily-file-identity][daily-initial-lock-failure][daily-stream-initialization]")
+{
+    std::optional<std::locale> utf8Locale;
+    tstring localeName;
+    for (auto name : {"C.UTF-8", "en_US.UTF-8", ".UTF-8"})
+    {
+        try
+        {
+            utf8Locale.emplace (name);
+            localeName = LOG4CPLUS_STRING_TO_TSTRING (name);
+            break;
+        }
+        catch (std::runtime_error const &) { }
+    }
+    if (! utf8Locale)
+        CATCH_SKIP ("No UTF-8 stream locale available for Unicode recovery output");
+
+    DailyIdentityDirectory directory;
+    directory.write ("active.log", "existing\n");
+    auto props = directory.properties ();
+    props.setProperty (LOG4CPLUS_TEXT ("Locale"), localeName);
+    Time const before = helpers::now ();
+    DailyInitialLockFailure failInitialLock;
+    DailyIdentityAppender appender (props);
+    appender.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    // Fail before writing so the unfixed test does not leave unconvertible
+    // wide characters pending in the stream during stack unwinding.
+    CATCH_REQUIRE (appender.getloc () == *utf8Locale);
+    appender.log (LOG4CPLUS_TEXT ("\u03a9"), before);
+    CATCH_CHECK (appender.isOpen ());
+    CATCH_CHECK (appender.hasFileIdentity ());
+    CATCH_CHECK (appender.getloc () == *utf8Locale);
+    appender.close ();
+    CATCH_CHECK (directory.read ("active.log") == "existing\n\xCE\xA9|");
+}
+#endif
+
+CATCH_TEST_CASE ("Daily close policy remains safe after its initial lock fails",
+    "[appender][daily-file-identity][daily-initial-lock-failure]")
+{
+    DailyIdentityDirectory directory;
+    directory.write ("active.log", "existing\n");
+    auto props = directory.properties ();
+    bool roll = false;
+    CATCH_SECTION ("RollOnClose=false") {}
+    CATCH_SECTION ("RollOnClose=true") { roll = true; }
+    props.setProperty (LOG4CPLUS_TEXT ("RollOnClose"),
+        roll ? LOG4CPLUS_TEXT ("true") : LOG4CPLUS_TEXT ("false"));
+    Time const before = helpers::now ();
+    DailyInitialLockFailure failInitialLock;
+    DailyIdentityAppender appender (props);
+    CATCH_CHECK_FALSE (dailyAppenderTestFailInitialLock);
+    CATCH_CHECK_FALSE (appender.isOpen ());
+    requireDailyInitialSchedule (appender, directory, before);
+    appender.close ();
+    CATCH_CHECK (directory.read ("active.log") == (roll ? "" : "existing\n"));
+    CATCH_CHECK (std::filesystem::exists (directory.path / "active.log.archive") == roll);
+    if (roll)
+        CATCH_CHECK (directory.read ("active.log.archive") == "existing\n");
+    CATCH_CHECK_FALSE (std::filesystem::exists (directory.path / "active.log.archive.1"));
+}
+
+CATCH_TEST_CASE ("Daily appender detects replacement with unchanged metadata",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    auto props = directory.properties ();
+    CATCH_SECTION ("explicit lock") {}
+    CATCH_SECTION ("default lock") { props.removeProperty (LOG4CPLUS_TEXT ("LockFile")); }
+    DailyIdentityAppender appender (props);
+    dailyIdentityLayout (appender);
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    auto const deadline = appender.nextRolloverTime;
+    auto const archive = appender.scheduledFilename;
+    auto const mtime = std::filesystem::last_write_time (directory.path / "active.log");
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    directory.write ("active.log", "replaced\n");
+    // Apply the same setter to both files: some libraries discard fractions.
+    std::filesystem::last_write_time (directory.path / "old.log", mtime);
+    std::filesystem::last_write_time (directory.path / "active.log", mtime);
+    helpers::FileInfo oldInfo, newInfo;
+    CATCH_REQUIRE (helpers::getFileInfo (&oldInfo, directory.file ("old.log")));
+    CATCH_REQUIRE (helpers::getFileInfo (&newInfo, directory.file ("active.log")));
+    CATCH_REQUIRE (oldInfo.size == newInfo.size);
+    CATCH_REQUIRE (oldInfo.mtime == newInfo.mtime);
+    CATCH_REQUIRE (oldInfo.identity != newInfo.identity);
+    appender.log (LOG4CPLUS_TEXT ("recovered"));
+    CATCH_CHECK (directory.read ("active.log") == "replaced\nrecovered\n");
+    CATCH_CHECK (directory.read ("old.log") == "original\n");
+    CATCH_CHECK (appender.nextRolloverTime == deadline);
+    CATCH_CHECK (appender.scheduledFilename == archive);
+    CATCH_CHECK ((appender.lastMode & std::ios::binary) != 0);
+    CATCH_CHECK ((appender.lastMode & std::ios::app) != 0);
+    appender.log (LOG4CPLUS_TEXT ("again"));
+    CATCH_CHECK (appender.opens == 1);
+}
+
+CATCH_TEST_CASE ("Daily appender recovers after rollover and refreshes its baseline",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    DailyIdentityAppender first (directory.properties ());
+    DailyIdentityAppender second (directory.properties ());
+    first.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    second.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    first.log (LOG4CPLUS_TEXT ("original"));
+    first.rollover ();
+    first.log (LOG4CPLUS_TEXT ("first"));
+    CATCH_CHECK (first.opens == 1);
+    second.log (LOG4CPLUS_TEXT ("second"));
+    CATCH_CHECK (directory.read ("active.log") == "first|second|");
+    CATCH_CHECK (directory.read ("active.log.archive") == "original|");
+    first.log (LOG4CPLUS_TEXT ("third"));
+    CATCH_CHECK (first.opens == 1);
+    CATCH_CHECK (directory.read ("active.log") == "first|second|third|");
+}
+
+CATCH_TEST_CASE ("Daily appender keeps a usable stream on identity query failure",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    DailyIdentityAppender appender (directory.properties ());
+    dailyIdentityLayout (appender);
+    auto errors = std::make_unique<DailyIdentityErrors> ();
+    auto * observed = errors.get ();
+    appender.setErrorHandler (std::move (errors));
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    appender.log (LOG4CPLUS_TEXT ("best effort"));
+    CATCH_CHECK (directory.read ("old.log") == "original\nbest effort\n");
+    CATCH_CHECK_FALSE (observed->errors.empty ());
+    CATCH_CHECK (appender.opens == 0);
+    CATCH_SECTION ("restoring the original path retains its baseline")
+    {
+        std::filesystem::rename (directory.path / "old.log", directory.path / "active.log");
+        appender.log (LOG4CPLUS_TEXT ("restored"));
+        CATCH_CHECK (appender.opens == 0);
+        CATCH_CHECK (directory.read ("active.log") == "original\nbest effort\nrestored\n");
+    }
+    CATCH_SECTION ("a replacement path recovers")
+    {
+        directory.write ("active.log", "replacement\n");
+        appender.log (LOG4CPLUS_TEXT ("recovered"));
+        CATCH_CHECK (directory.read ("active.log") == "replacement\nrecovered\n");
+        CATCH_CHECK (directory.read ("old.log") == "original\nbest effort\n");
+        CATCH_CHECK (observed->resets > 0);
+    }
+}
+
+CATCH_TEST_CASE ("Daily recovery precedes rollover and delays failed reopening",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    auto props = directory.properties ();
+    props.setProperty (LOG4CPLUS_TEXT ("ReopenDelay"), LOG4CPLUS_TEXT ("60"));
+    DailyIdentityAppender appender (props);
+    dailyIdentityLayout (appender);
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    std::filesystem::create_directory (directory.path / "active.log");
+    appender.nextRolloverTime = Time {};
+    appender.log (LOG4CPLUS_TEXT ("skipped"));
+    CATCH_CHECK (std::filesystem::is_directory (directory.path / "active.log"));
+    CATCH_CHECK_FALSE (std::filesystem::exists (directory.path / "active.log.archive"));
+    CATCH_CHECK (appender.opens == 1);
+    std::filesystem::remove (directory.path / "active.log");
+    directory.write ("active.log", "replacement\n");
+    appender.nextRolloverTime = helpers::now () + helpers::chrono::hours (24);
+    appender.log (LOG4CPLUS_TEXT ("delayed"));
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (appender.reopen_time > helpers::now ());
+    appender.reopen_time = helpers::now () - helpers::chrono::seconds (1);
+    appender.log (LOG4CPLUS_TEXT ("recovered"));
+    CATCH_CHECK (appender.opens == 2);
+    CATCH_CHECK (directory.read ("active.log") == "replacement\nrecovered\n");
+    CATCH_CHECK (directory.read ("old.log") == "original\n");
+    CATCH_CHECK ((appender.lastMode & std::ios::binary) != 0);
+}
+
+CATCH_TEST_CASE ("Daily recovery occurs before a successful forced rollover",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    DailyIdentityAppender appender (directory.properties ());
+    appender.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    directory.write ("active.log", "replacement\n");
+    appender.nextRolloverTime = Time {};
+    appender.log (LOG4CPLUS_TEXT ("new period"));
+    CATCH_CHECK (appender.opens == 2);
+    CATCH_CHECK (directory.read ("active.log.archive") == "replacement\n");
+    CATCH_CHECK (directory.read ("active.log") == "new period|");
+    CATCH_CHECK (directory.read ("old.log") == "original|");
+}
+
+CATCH_TEST_CASE ("Daily recovery retries immediately with zero ReopenDelay",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    DailyIdentityAppender appender (directory.properties ());
+    dailyIdentityLayout (appender);
+    auto errors = std::make_unique<DailyIdentityErrors> ();
+    auto * observed = errors.get ();
+    appender.setErrorHandler (std::move (errors));
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    std::filesystem::create_directory (directory.path / "active.log");
+    appender.log (LOG4CPLUS_TEXT ("skipped"));
+    CATCH_CHECK_FALSE (observed->errors.empty ());
+    CATCH_CHECK (appender.opens == 1);
+    std::filesystem::remove (directory.path / "active.log");
+    directory.write ("active.log", "replacement\n");
+    appender.log (LOG4CPLUS_TEXT ("recovered"));
+    CATCH_CHECK (appender.opens == 2);
+    CATCH_CHECK (directory.read ("active.log") == "replacement\nrecovered\n");
+    CATCH_CHECK (directory.read ("old.log") == "original\n");
+    CATCH_CHECK (observed->resets > 0);
+}
+
+CATCH_TEST_CASE ("Daily recovery appends with an invalid baseline or truncating configuration",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    auto props = directory.properties ();
+    props.setProperty (LOG4CPLUS_TEXT ("Append"), LOG4CPLUS_TEXT ("false"));
+    bool binary = true;
+    CATCH_SECTION ("binary recovery") {}
+    CATCH_SECTION ("text recovery") { binary = false; }
+    props.setProperty (LOG4CPLUS_TEXT ("TextMode"),
+        binary ? LOG4CPLUS_TEXT ("Binary") : LOG4CPLUS_TEXT ("Text"));
+    DailyIdentityAppender appender (props);
+    appender.setLayout (std::make_unique<PatternLayout> (LOG4CPLUS_TEXT ("%m|")));
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    appender.invalidateBaseline ();
+    appender.log (LOG4CPLUS_TEXT ("baseline restored"));
+    CATCH_CHECK (appender.opens == 1);
+    CATCH_CHECK (directory.read ("active.log") == "original|baseline restored|");
+    CATCH_CHECK (((appender.lastMode & std::ios::binary) != 0) == binary);
+    CATCH_CHECK ((appender.lastMode & std::ios::app) != 0);
+    CATCH_CHECK ((appender.lastMode & std::ios::trunc) == 0);
+    appender.log (LOG4CPLUS_TEXT ("verified"));
+    CATCH_CHECK (appender.opens == 1);
+    std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+    directory.write ("active.log", "replacement|");
+    appender.log (LOG4CPLUS_TEXT ("recovered"));
+    CATCH_CHECK (directory.read ("active.log") == "replacement|recovered|");
+    CATCH_CHECK (directory.read ("old.log") == "original|baseline restored|verified|");
+}
+
+CATCH_TEST_CASE ("Daily identity recovery leaves unlocked streams and close policy unchanged",
+    "[appender][daily-file-identity]")
+{
+    DailyIdentityDirectory directory;
+    auto props = directory.properties ();
+    bool locked = true;
+    bool roll = false;
+    CATCH_SECTION ("unlocked stream keeps the original handle") { locked = false; }
+    CATCH_SECTION ("RollOnClose=false") {}
+    CATCH_SECTION ("RollOnClose=true") { roll = true; }
+    props.setProperty (LOG4CPLUS_TEXT ("UseLockFile"),
+        locked ? LOG4CPLUS_TEXT ("true") : LOG4CPLUS_TEXT ("false"));
+    props.setProperty (LOG4CPLUS_TEXT ("RollOnClose"),
+        roll ? LOG4CPLUS_TEXT ("true") : LOG4CPLUS_TEXT ("false"));
+    props.setProperty (LOG4CPLUS_TEXT ("ImmediateFlush"), LOG4CPLUS_TEXT ("true"));
+    DailyIdentityAppender appender (props);
+    dailyIdentityLayout (appender);
+    appender.log (LOG4CPLUS_TEXT ("original"));
+    if (! locked)
+    {
+        auto errors = std::make_unique<DailyIdentityErrors> ();
+        auto * observed = errors.get ();
+        appender.setErrorHandler (std::move (errors));
+        std::filesystem::rename (directory.path / "active.log", directory.path / "old.log");
+        appender.log (LOG4CPLUS_TEXT ("unchanged"));
+        CATCH_CHECK (observed->errors.empty ());
+        directory.write ("active.log", "replacement\n");
+        appender.log (LOG4CPLUS_TEXT ("still original"));
+        CATCH_CHECK (directory.read ("old.log") == "original\nunchanged\nstill original\n");
+        CATCH_CHECK (directory.read ("active.log") == "replacement\n");
+        CATCH_CHECK (appender.opens == 0);
+    }
+    appender.close ();
+    CATCH_CHECK (std::filesystem::exists (directory.path / "active.log.archive") == roll);
+    if (roll)
+        CATCH_CHECK (directory.read ("active.log.archive") == "original\n");
 }
 #endif
 

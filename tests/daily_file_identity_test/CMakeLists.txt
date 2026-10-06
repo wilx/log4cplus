@@ -1,0 +1,7 @@
+add_executable (daily_file_identity_test main.cxx)
+target_link_libraries (daily_file_identity_test PRIVATE ${log4cplus})
+if (MINGW)
+  target_link_options (daily_file_identity_test PRIVATE -municode)
+endif ()
+add_test (NAME daily_file_identity_test COMMAND daily_file_identity_test)
+set_tests_properties (daily_file_identity_test PROPERTIES TIMEOUT 60)

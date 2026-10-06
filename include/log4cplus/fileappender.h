@@ -34,6 +34,7 @@
 #include <log4cplus/fstreams.h>
 #include <log4cplus/helpers/timehelper.h>
 #include <log4cplus/helpers/lockfile.h>
+#include <log4cplus/helpers/fileinfo.h>
 #include <fstream>
 #include <locale>
 #include <memory>
@@ -138,11 +139,14 @@ namespace log4cplus
                          std::ios_base::openmode mode = std::ios_base::trunc);
 
         void init();
+        //! Configure the stream without opening the file when openFile is false.
+        void init(bool openFile);
 
         virtual void append(const spi::InternalLoggingEvent& event) override;
 
         virtual void open(std::ios_base::openmode mode);
         bool reopen();
+        bool reopen(std::ios_base::openmode mode);
 
       // Data
         /**
@@ -221,7 +225,14 @@ namespace log4cplus
         virtual ~FileAppender();
 
     protected:
+        struct DeferInit {};
+        FileAppender(DeferInit, const log4cplus::tstring& filename,
+                     std::ios_base::openmode mode, bool immediateFlush,
+                     bool createDirs);
+        FileAppender(DeferInit, const log4cplus::helpers::Properties& properties,
+                     std::ios_base::openmode mode);
         void init();
+        void init(bool openFile);
     };
 
     typedef helpers::SharedObjectPtr<FileAppender> SharedFileAppenderPtr;
@@ -289,6 +300,20 @@ namespace log4cplus
     /**
      * DailyRollingFileAppender extends {@link FileAppender} so that the
      * underlying file is rolled over at a user chosen frequency.
+     *
+     * With <tt>UseLockFile=true</tt>, the appender checks the identity of
+     * <tt>File</tt> under the shared lock before each append and before deciding
+     * whether to roll over. If another process replaced the file, it reopens
+     * the configured path in append mode, retaining the configured text or
+     * binary mode. Participating processes must use the same lock file.
+     * Recovery does not change the local rollover schedule or
+     * <tt>RollOnClose</tt>; independent processes can still roll redundantly.
+     *
+     * Identity queries are best effort: a failed query reports an error but
+     * continues through a usable stream, which may still refer to an old file.
+     * A failed recovery open skips the event and subsequent attempts honor
+     * <tt>ReopenDelay</tt>. Identity recovery is disabled when
+     * <tt>UseLockFile=false</tt>.
      *
      * <h3>Properties</h3>
      * <p>Properties additional to {@link FileAppender}'s properties:
@@ -360,6 +385,8 @@ namespace log4cplus
 
     protected:
         virtual void append(const spi::InternalLoggingEvent& event) override;
+        virtual void open(std::ios_base::openmode mode) override;
+        bool prepareForAppend();
         void rollover(bool alreadyLocked = false);
         log4cplus::helpers::Time calculateNextRolloverTime(const log4cplus::helpers::Time& t) const;
         log4cplus::tstring getFilename(const log4cplus::helpers::Time& t) const;
@@ -372,6 +399,7 @@ namespace log4cplus
         int maxBackupIndex;
         bool rollOnClose;
         log4cplus::tstring datePattern;
+        log4cplus::helpers::FileIdentity fileIdentity;
 
     private:
         LOG4CPLUS_PRIVATE void init(DailyRollingFileSchedule schedule);
